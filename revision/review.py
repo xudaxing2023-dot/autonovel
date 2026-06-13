@@ -16,7 +16,13 @@ from core.state_manager import step, banner
 from prompts.review_prompts import build_review_prompt, REVIEW_SYSTEM_PROMPT
 
 
-def run_review_loop(state: dict = None, max_tokens: int = 8192, max_rounds: int = 4) -> None:
+def run_review_loop(
+    state: dict = None,
+    max_tokens: int = 8192,
+    max_rounds: int = 4,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> None:
     """运行深度审阅循环。"""
     banner("深度审阅循环", "-")
 
@@ -40,7 +46,10 @@ def run_review_loop(state: dict = None, max_tokens: int = 8192, max_rounds: int 
         prompt = build_review_prompt(manuscript, outline_text=outline)
 
         try:
-            result = call_judge(prompt, system=REVIEW_SYSTEM_PROMPT, max_tokens=max_tokens)
+            result = call_judge(
+                prompt, system=REVIEW_SYSTEM_PROMPT, max_tokens=max_tokens,
+                retries=retries, max_total_time=max_total_time,
+            )
         except Exception as e:
             step(f"审阅失败: {e}")
             break

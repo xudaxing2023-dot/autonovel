@@ -15,7 +15,13 @@ from core.state_manager import step
 from prompts.revision_prompts import build_revision_prompt, REVISION_SYSTEM_PROMPT
 
 
-def revise_chapter(ch_num: int, brief_file: str, max_tokens: int = 16000) -> None:
+def revise_chapter(
+    ch_num: int,
+    brief_file: str,
+    max_tokens: int = 16000,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> None:
     """根据修订摘要重写章节。"""
     brief_path = Path(brief_file) if isinstance(brief_file, str) else brief_file
     brief_text = brief_path.read_text(encoding="utf-8") if brief_path.exists() else ""
@@ -45,11 +51,14 @@ def revise_chapter(ch_num: int, brief_file: str, max_tokens: int = 16000) -> Non
     )
 
     step(f"按摘要重写第 {ch_num} 章 ...")
-    result = call_writer(prompt, system=REVISION_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(
+        prompt, system=REVISION_SYSTEM_PROMPT, max_tokens=max_tokens,
+        retries=retries, max_total_time=max_total_time,
+    )
 
     old_path = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
     old_path.write_text(result, encoding="utf-8")
-    step(f"第 {ch_num} 章修订完成")
+    step(f"针对性修订 第 {ch_num} 章 完成 ✓")
 
 
 if __name__ == "__main__":

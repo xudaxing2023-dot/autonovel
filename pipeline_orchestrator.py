@@ -174,7 +174,7 @@ def run_drafting(state: dict) -> dict:
         from evaluation.evaluate import evaluate_chapter
 
         for attempt in range(1, max_attempts + 1):
-            step(f"尝试 {attempt}/{max_attempts}")
+            step(f"起草 第 {ch}/{total} 章 — 尝试 {attempt}/{max_attempts}")
 
             # 起草
             try:
@@ -206,6 +206,7 @@ def run_drafting(state: dict) -> dict:
                 state["chapters_drafted"] = ch
                 save_state(state)
                 drafted = True
+                step(f"起草 第 {ch}/{total} 章 完成 ✓ (评分 {score}, {word_count} 字)")
                 break
             else:
                 step(f"评分 {score} < {threshold}，丢弃重试")
@@ -216,7 +217,7 @@ def run_drafting(state: dict) -> dict:
                     ch_file.unlink()
 
         if not drafted:
-            step(f"警告: 第 {ch} 章全部 {max_attempts} 次尝试失败，保留最后结果继续")
+            step(f"⚠ 警告: 第 {ch}/{total} 章全部 {max_attempts} 次尝试失败，保留最后结果继续")
             ch_file = CHAPTERS_DIR / f"ch_{ch:02d}.md"
             if ch_file.exists():
                 word_count = len(ch_file.read_text(encoding="utf-8").replace(" ", "").replace("\n", ""))
@@ -324,9 +325,10 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     for cycle in range(start_cycle, max_cycles + 1):
         banner(f"修订 循环 {cycle}/{max_cycles}", "-")
 
-        # Step 1: 对抗性编辑
-        step("对抗性编辑全部章节 ...")
-        run_adversarial_edit("all", max_tokens=max_tokens)
+        # Step 1: 对抗性编辑（retries=2, max_total_time=1200  = 20分钟）
+        step("对抗性编辑全部章节 (retries=2, 总超时=1200s) ...")
+        run_adversarial_edit("all", max_tokens=max_tokens, retries=2, max_total_time=1200)
+        step("对抗性编辑全部章节 完成 ✓")
 
         # Step 2: 应用裁剪
         step("应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...")
@@ -335,9 +337,10 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
         except Exception as e:
             step(f"apply_cuts 跳过: {e}")
 
-        # Step 3: 读者评审团
-        step("运行读者评审团 ...")
-        run_reader_panel(max_tokens=max_tokens)
+        # Step 3: 读者评审团（retries=2, max_total_time=600 = 10分钟）
+        step("运行读者评审团 (retries=2, 总超时=600s) ...")
+        run_reader_panel(max_tokens=max_tokens, retries=2, max_total_time=600)
+        step("读者评审团 完成 ✓")
 
         # Step 4: 解析共识
         panel_path = EDIT_LOGS_DIR / "reader_panel.json"
@@ -357,13 +360,13 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             question = item["question"]
             banner(f"  修订 第 {ch_num} 章 ({question}) [{idx+1}/{len(consensus_items)}]", ".")
 
-            pre_eval = evaluate_chapter(ch_num)
+            pre_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
             pre_score = parse_score(pre_eval, "overall_score")
 
-            # 生成修订摘要
+            # 生成修订摘要（retries=2, max_total_time=1200 = 20分钟）
             brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_cycle{cycle}_{question}.md"
             try:
-                generate_brief(ch_num, panel_data=panel_path)
+                generate_brief(ch_num, panel_data=panel_path, retries=2, max_total_time=1200)
             except Exception:
                 # 创建最小摘要
                 brief_content = (
@@ -379,12 +382,12 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                 step(f"无摘要文件，跳过第 {ch_num} 章")
                 continue
 
-            # 执行修订
-            step(f"按摘要修订第 {ch_num} 章 ...")
-            revise_chapter(ch_num, brief_file, max_tokens=max_tokens)
+            # 执行修订（retries=2, max_total_time=1200 = 20分钟）
+            step(f"按摘要修订第 {ch_num} 章 (retries=2, 总超时=1200s) ...")
+            revise_chapter(ch_num, brief_file, max_tokens=max_tokens, retries=2, max_total_time=1200)
 
             # 评估修订后章节
-            post_eval = evaluate_chapter(ch_num)
+            post_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
             post_score = parse_score(post_eval, "overall_score")
 
             ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
@@ -392,6 +395,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
             step(f"第 {ch_num} 章: {pre_score} -> {post_score}")
 
+            step(f"针对性修订 第 {ch_num} 章 完成 ✓ ({pre_score} -> {post_score})")
             if post_score >= pre_score:
                 commit_hash = git_add_commit(
                     f"修订 循环{cycle}: ch{ch_num:02d} "
@@ -407,9 +411,9 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                            word_count, "discard",
                            f"循环 {cycle}: {question} 倒退 {pre_score}->{post_score}")
 
-        # Step 6: 全文评估
-        step("运行全文评估 ...")
-        full_eval = evaluate_full()
+        # Step 6: 全文评估（max_total_time=600 = 10分钟）
+        step("运行全文评估 (总超时=600s) ...")
+        full_eval = evaluate_full(max_total_time=600)
         novel_score = parse_score(full_eval, "novel_score")
         if novel_score < 0:
             novel_score = parse_score(full_eval, "overall_score")
@@ -441,7 +445,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     # =========================================================
     try:
         from revision.review import run_review_loop
-        run_review_loop(state, max_tokens=max_tokens)
+        run_review_loop(state, max_tokens=max_tokens, retries=2, max_total_time=1200)
     except Exception as e:
         step(f"深度审阅跳过: {e}")
 

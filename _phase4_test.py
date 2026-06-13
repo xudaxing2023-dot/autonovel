@@ -230,13 +230,13 @@ def run_pipeline(mode: str = "from_scratch", timeout_minutes: int = 120) -> tupl
 
 def verify_file(path: Path, min_bytes: int = 100,
                 label: str = "") -> tuple:
-    """验证文件存在且 >= min_bytes。返回 (ok, message)。"""
+    """验证文件存在且 >= min_bytes。返回 (label, ok, message)。"""
     if not path.exists():
-        return False, f"{label} 不存在"
+        return label, False, f"{label} 不存在"
     size = path.stat().st_size
     if size < min_bytes:
-        return False, f"{label} 过小 ({size} < {min_bytes} bytes)"
-    return True, f"{label} [v] ({size} bytes)"
+        return label, False, f"{label} 过小 ({size} < {min_bytes} bytes)"
+    return label, True, f"{label} [v] ({size} bytes)"
 
 
 def print_results(results: list, test_name: str, elapsed: float) -> None:
@@ -357,7 +357,7 @@ def test_2_twelve_chapters() -> list:
     # 所有 12 章
     all_chapters_ok = True
     for ch in range(1, 13):
-        ok, msg = verify_file(CHAPTERS / f"ch_{ch:02d}.md", 500,
+        label, ok, msg = verify_file(CHAPTERS / f"ch_{ch:02d}.md", 500,
                               f"ch_{ch:02d}.md")
         if not ok:
             all_chapters_ok = False
@@ -445,7 +445,7 @@ def test_3_resume_recovery() -> list:
     foundation_results = []
     for label in ["world.md", "characters.md", "outline.md",
                    "canon.md", "voice.md"]:
-        ok, msg = verify_file(OUTPUT / label, 200, label)
+        label, ok, msg = verify_file(OUTPUT / label, 200, label)
         foundation_results.append((f"Foundation: {label}", ok, msg))
 
     print(f"\n  Foundation 完成 ({foundation_elapsed:.0f}s)")

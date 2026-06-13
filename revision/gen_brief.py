@@ -26,6 +26,8 @@ def generate_brief(
     chapter_num: int = 0,
     panel_data: Optional[Path] = None,
     max_tokens: int = 4096,
+    retries: int = 3,
+    max_total_time: int = None,
 ) -> Optional[Path]:
     """为指定章节生成修订摘要。如果 chapter_num=0，自动选择最弱章节。"""
     BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
@@ -69,7 +71,10 @@ def generate_brief(
 
     step(f"生成第 {chapter_num} 章修订摘要 ...")
     try:
-        result = call_writer(prompt, system=BRIEF_SYSTEM_PROMPT, max_tokens=max_tokens)
+        result = call_writer(
+            prompt, system=BRIEF_SYSTEM_PROMPT, max_tokens=max_tokens,
+            retries=retries, max_total_time=max_total_time,
+        )
     except Exception as e:
         step(f"摘要生成失败: {e}")
         # 创建最小摘要

@@ -16,7 +16,11 @@ from core.state_manager import step
 from prompts.reader_panel_prompts import READER_ROLES, READER_SYSTEM_PROMPT, build_reader_panel_prompt
 
 
-def run_reader_panel(max_tokens: int = 4096) -> None:
+def run_reader_panel(
+    max_tokens: int = 4096,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> None:
     """运行读者评审团。"""
     EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -28,8 +32,9 @@ def run_reader_panel(max_tokens: int = 4096) -> None:
     # 限制评审章节数量，避免 API 开销过大
     max_chapters_to_review = min(len(chapter_files), 8)
     selected = chapter_files[:max_chapters_to_review]
+    total_reviews = len(READER_ROLES) * len(selected)
 
-    step(f"读者评审团: {len(READER_ROLES)} 位读者 × {len(selected)} 章 ...")
+    step(f"读者评审团: {len(READER_ROLES)} 位读者 × {len(selected)} 章 (共 {total_reviews} 次评审) ...")
 
     panel_data = {
         "timestamp": datetime.now().isoformat(),
@@ -37,6 +42,7 @@ def run_reader_panel(max_tokens: int = 4096) -> None:
         "disagreements": [],
     }
 
+    review_count = 0
     for role_key, role_info in READER_ROLES.items():
         step(f"  {role_info['name']} 评审中 ...")
         reader_answers = {}
@@ -48,7 +54,10 @@ def run_reader_panel(max_tokens: int = 4096) -> None:
             prompt = build_reader_panel_prompt(ch_num, ch_text, reader_role=role_info)
 
             try:
-                response = call_judge(prompt, system=READER_SYSTEM_PROMPT, max_tokens=max_tokens)
+                response = call_judge(
+                    prompt, system=READER_SYSTEM_PROMPT, max_tokens=max_tokens,
+                    retries=retries, max_total_time=max_total_time,
+                )
             except Exception as e:
                 step(f"    第 {ch_num} 章评审失败: {e}")
                 response = f"(评审失败: {e})"
@@ -59,6 +68,7 @@ def run_reader_panel(max_tokens: int = 4096) -> None:
             }
 
         panel_data["readers"][role_key] = reader_answers
+        step(f"  {role_info['name']} 评审完成 ✓")
 
     # 找出被多位读者共同标记的章节
     disagreements = []

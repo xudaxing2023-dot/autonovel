@@ -54,7 +54,12 @@ def extract_next_chapter_preview(outline_text: str, chapter_num: int) -> str:
     return '\n'.join(lines)
 
 
-def draft_chapter(chapter_num: int, max_tokens: int = 16000) -> None:
+def draft_chapter(
+    chapter_num: int,
+    max_tokens: int = 16000,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> None:
     """起草指定章节。"""
     cfg = config
     cfg.load()
@@ -91,7 +96,10 @@ def draft_chapter(chapter_num: int, max_tokens: int = 16000) -> None:
     )
 
     step(f"起草第 {chapter_num} 章 ...")
-    result = call_writer(prompt, system=DRAFT_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(
+        prompt, system=DRAFT_SYSTEM_PROMPT, max_tokens=max_tokens,
+        retries=retries, max_total_time=max_total_time,
+    )
 
     CHAPTERS_DIR.mkdir(parents=True, exist_ok=True)
     out_path = CHAPTERS_DIR / f"ch_{chapter_num:02d}.md"

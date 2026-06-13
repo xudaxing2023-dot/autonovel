@@ -87,6 +87,7 @@ def call_llm(
     temperature: float = 0.8,
     timeout: int = 600,
     retries: int = 3,
+    max_total_time: int = None,
 ) -> str:
     """
     调用 OpenAI Chat Completions 兼容 API。
@@ -98,12 +99,13 @@ def call_llm(
         temperature: 采样温度。
         timeout: 请求超时（秒）。
         retries: 失败重试次数。
+        max_total_time: 整个调用（含重试）的最长总耗时（秒）。None = 不限制。
 
     Returns:
         LLM 生成的文本内容。
 
     Raises:
-        RuntimeError: 所有重试均失败。
+        RuntimeError: 所有重试均失败，或超过 max_total_time 限制。
     """
     cfg = config
     cfg.load()
@@ -146,10 +148,24 @@ def call_llm(
     limiter = get_rate_limiter()
 
     last_error = None
+    t_start = time.time()
 
     for attempt in range(1, retries + 1):
+        # 总超时检查（在速率限制等待之前，避免等待后才发现超时）
+        if max_total_time is not None:
+            elapsed_total = time.time() - t_start
+            if elapsed_total > max_total_time:
+                raise RuntimeError(
+                    f"API 调用总超时: 累计 {elapsed_total:.0f}s 超过 "
+                    f"{max_total_time}s 限制（共 {retries} 次重试机会）"
+                )
+
         # 速率限制等待
         waited = limiter.wait()
+
+        elapsed_total = time.time() - t_start if max_total_time is not None else 0
+        total_info = f"（累计 {elapsed_total:.0f}s / 限制 {max_total_time}s）" if max_total_time is not None else ""
+
         if waited > 0.5:
             print(f"  [API] 速率限制等待 {waited:.1f}s ...", file=sys.stderr)
 
@@ -205,26 +221,30 @@ def call_llm(
                     payload["messages"] = messages
                     continue
 
-                print(f"  [API] HTTP {resp.status_code}: {resp.text[:300]}", file=sys.stderr)
+                print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — HTTP {resp.status_code}: {resp.text[:300]}",
+                      file=sys.stderr)
                 last_error = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:300]}")
                 if attempt < retries:
                     time.sleep(5 * attempt)
                 continue
 
             else:
-                print(f"  [API] HTTP {resp.status_code}: {resp.text[:300]}", file=sys.stderr)
+                print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — HTTP {resp.status_code}: {resp.text[:300]}",
+                      file=sys.stderr)
                 last_error = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:300]}")
                 if attempt < retries:
                     time.sleep(5 * attempt)
                 continue
 
         except httpx.TimeoutException:
-            print(f"  [API] 超时 ({timeout}s)，重试 {attempt}/{retries} ...", file=sys.stderr)
+            print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 超时 ({timeout}s)",
+                  file=sys.stderr)
             last_error = RuntimeError(f"请求超时 ({timeout}s)")
             continue
 
         except httpx.RequestError as e:
-            print(f"  [API] 网络错误: {e}，重试 {attempt}/{retries} ...", file=sys.stderr)
+            print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 网络错误: {e}",
+                  file=sys.stderr)
             last_error = e
             time.sleep(5 * attempt)
             continue
@@ -248,9 +268,14 @@ def call_writer(
     system: Optional[str] = None,
     max_tokens: int = 16000,
     temperature: float = 0.8,
+    retries: int = 3,
+    max_total_time: int = None,
 ) -> str:
     """写作模型调用（默认高温度，偏创造力）。"""
-    return call_llm(prompt, system=system, max_tokens=max_tokens, temperature=temperature)
+    return call_llm(
+        prompt, system=system, max_tokens=max_tokens, temperature=temperature,
+        retries=retries, max_total_time=max_total_time,
+    )
 
 
 def call_judge(
@@ -258,6 +283,11 @@ def call_judge(
     system: Optional[str] = None,
     max_tokens: int = 4096,
     temperature: float = 0.3,
+    retries: int = 3,
+    max_total_time: int = None,
 ) -> str:
     """裁判模型调用（默认低温度，偏判断力）。"""
-    return call_llm(prompt, system=system, max_tokens=max_tokens, temperature=temperature)
+    return call_llm(
+        prompt, system=system, max_tokens=max_tokens, temperature=temperature,
+        retries=retries, max_total_time=max_total_time,
+    )

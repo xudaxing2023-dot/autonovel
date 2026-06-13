@@ -141,7 +141,11 @@ def slop_score_zh(text: str) -> dict:
 # 评估入口
 # ============================================================================
 
-def evaluate_foundation(max_tokens: int = 4096) -> str:
+def evaluate_foundation(
+    max_tokens: int = 4096,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
     """评估基础构建文档。"""
     cfg = config
     cfg.load()
@@ -165,7 +169,10 @@ def evaluate_foundation(max_tokens: int = 4096) -> str:
     )
 
     print("  [评估] 调用 LLM 裁判评估基础构建 ...", file=sys.stderr)
-    result = call_judge(prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_judge(
+        prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens,
+        retries=retries, max_total_time=max_total_time,
+    )
 
     # 记录日志
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -180,7 +187,12 @@ def evaluate_foundation(max_tokens: int = 4096) -> str:
     return result
 
 
-def evaluate_chapter(ch_num: int, max_tokens: int = 4096) -> str:
+def evaluate_chapter(
+    ch_num: int,
+    max_tokens: int = 4096,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
     """评估单个章节。"""
     ch_path = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
     if not ch_path.exists():
@@ -210,7 +222,10 @@ def evaluate_chapter(ch_num: int, max_tokens: int = 4096) -> str:
     )
 
     print(f"  [评估] 调用 LLM 裁判评估第 {ch_num} 章 ...", file=sys.stderr)
-    result = call_judge(prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_judge(
+        prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens,
+        retries=retries, max_total_time=max_total_time,
+    )
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"chapter_{ch_num:02d}_{ts}.json"
@@ -223,7 +238,11 @@ def evaluate_chapter(ch_num: int, max_tokens: int = 4096) -> str:
     return result
 
 
-def evaluate_full(max_tokens: int = 8192) -> str:
+def evaluate_full(
+    max_tokens: int = 8192,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
     """全文评估。"""
     chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
     if not chapter_files:
@@ -244,7 +263,10 @@ def evaluate_full(max_tokens: int = 8192) -> str:
     )
 
     print("  [评估] 调用 LLM 裁判评估全文 ...", file=sys.stderr)
-    result = call_judge(prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_judge(
+        prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens,
+        retries=retries, max_total_time=max_total_time,
+    )
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"full_{ts}.json"
