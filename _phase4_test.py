@@ -122,13 +122,14 @@ def clean_output(keep_config: bool = True) -> None:
             print(f"  [CLEAN] 已删除 {fn}")
 
 
-def run_pipeline(mode: str = "from_scratch", timeout_minutes: int = 120) -> tuple:
+def run_pipeline(mode: str = "from_scratch") -> tuple:
     """
     以子进程方式运行 pipeline_orchestrator，实时流式输出。
-    
-    使用独立线程读取 stdout 到队列 + 主线程超时轮询，
+
+    使用独立线程读取 stdout 到队列 + 主线程轮询，
     彻底消除 Popen stdout 阻塞死锁风险。
-    
+    无超时限制——流水线自然完成，用户可按 Ctrl+C 随时中断。
+
     返回 (exit_code, elapsed_seconds, output_lines)。
     """
     print(f"\n{'=' * 70}")
@@ -169,11 +170,9 @@ def run_pipeline(mode: str = "from_scratch", timeout_minutes: int = 120) -> tupl
     reader = threading.Thread(target=_reader_thread, daemon=True)
     reader.start()
 
-    timeout_deadline = t0 + timeout_minutes * 60
-
     try:
         while True:
-            # 主线程轮询：检查子进程是否退出、是否超时
+            # 主线程轮询：检查子进程是否退出
             poll_rc = proc.poll()
             if poll_rc is not None:
                 # 子进程已退出，排空剩余队列
@@ -190,14 +189,6 @@ def run_pipeline(mode: str = "from_scratch", timeout_minutes: int = 120) -> tupl
                         captured_lines.append(line)
                     except Empty:
                         break
-                break
-
-            # 超时检测
-            if time.time() >= timeout_deadline:
-                proc.kill()
-                proc.wait()
-                captured_lines.append("[TIMEOUT] 流水线超时")
-                print("[TIMEOUT] 流水线超时", flush=True)
                 break
 
             # 非阻塞消费队列中的行
@@ -271,7 +262,7 @@ def test_1_three_chapters() -> list:
     write_config(total_chapters=3)
     reset_state()
 
-    rc, elapsed, lines = run_pipeline("from_scratch", timeout_minutes=60)
+    rc, elapsed, lines = run_pipeline("from_scratch")
 
     results = []
     results.append(("流水线退出码", rc == 0,
@@ -343,7 +334,7 @@ def test_2_twelve_chapters() -> list:
     write_config(total_chapters=12)
     reset_state()
 
-    rc, elapsed, lines = run_pipeline("from_scratch", timeout_minutes=150)
+    rc, elapsed, lines = run_pipeline("from_scratch")
 
     results = []
     results.append(("流水线退出码", rc == 0,
@@ -481,7 +472,7 @@ def test_3_resume_recovery() -> list:
     json.dump(cfg_data, open(CONFIG_FILE, "w", encoding="utf-8"),
               indent=2, ensure_ascii=False)
 
-    rc, elapsed, lines = run_pipeline("resume", timeout_minutes=60)
+    rc, elapsed, lines = run_pipeline("resume")
 
     results = []
     results.append(("Resume 退出码", rc == 0,
@@ -579,7 +570,7 @@ def test_4_file_backup_mode() -> list:
         write_config(total_chapters=3)
         reset_state()
 
-        rc, elapsed, lines = run_pipeline("from_scratch", timeout_minutes=60)
+        rc, elapsed, lines = run_pipeline("from_scratch")
         results.append(("流水线退出码", rc == 0,
                         f"exit={rc} ({elapsed/60:.1f}min)"))
 
