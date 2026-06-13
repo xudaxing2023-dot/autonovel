@@ -1,6 +1,0 @@
-commit	phase	score	word_count	status	description
-553fb04	foundation	9.0	0	keep	迭代 1: 评分提升 0.0 -> 9.0
-9d24420	ch01	10.0	2492	keep	第 1 章 (尝试 1)
-38d8a2c	ch02	8.5	3980	keep	第 2 章 (尝试 1)
-6546613	ch03	8.5	2832	keep	第 3 章 (尝试 1)
-cc34038	revision-cycle-1	9.2	9304	cycle	循环 1: novel_score 0.0->9.2

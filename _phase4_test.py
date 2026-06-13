@@ -22,10 +22,12 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import traceback
 from datetime import datetime
 from pathlib import Path
+from queue import Queue, Empty
 
 # Windows 控制台 GBK 编码不支持 emoji，强制使用 UTF-8
 if sys.platform == "win32":
@@ -123,6 +125,10 @@ def clean_output(keep_config: bool = True) -> None:
 def run_pipeline(mode: str = "from_scratch", timeout_minutes: int = 120) -> tuple:
     """
     以子进程方式运行 pipeline_orchestrator，实时流式输出。
+    
+    使用独立线程读取 stdout 到队列 + 主线程超时轮询，
+    彻底消除 Popen stdout 阻塞死锁风险。
+    
     返回 (exit_code, elapsed_seconds, output_lines)。
     """
     print(f"\n{'=' * 70}")
@@ -132,9 +138,6 @@ def run_pipeline(mode: str = "from_scratch", timeout_minutes: int = 120) -> tupl
 
     t0 = time.time()
 
-    # 使用 Popen 实现实时输出流式化
-    # 注意：不使用 text=True，改为二进制读取后手动 UTF-8 解码，
-    # 以彻底避开 Python _readerthread 在 Windows 上的 GBK 编码问题
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
     proc = subprocess.Popen(
@@ -147,21 +150,79 @@ def run_pipeline(mode: str = "from_scratch", timeout_minutes: int = 120) -> tupl
     )
 
     captured_lines = []
+    line_queue: Queue = Queue()
+    reader_done = threading.Event()
+
+    def _reader_thread():
+        """独立线程读取 stdout，避免主线程阻塞。"""
+        try:
+            for raw_line in proc.stdout:
+                line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
+                line_queue.put(line)
+        except Exception:
+            pass
+        finally:
+            reader_done.set()
+            # 确保主线程不会在 queue.get 上无限等
+            line_queue.put(None)
+
+    reader = threading.Thread(target=_reader_thread, daemon=True)
+    reader.start()
+
+    timeout_deadline = t0 + timeout_minutes * 60
+
     try:
-        for raw_line in proc.stdout:
-            line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
-            # 打印前再次用 errors='replace' 保护控制台输出
+        while True:
+            # 主线程轮询：检查子进程是否退出、是否超时
+            poll_rc = proc.poll()
+            if poll_rc is not None:
+                # 子进程已退出，排空剩余队列
+                reader.join(timeout=5)
+                while True:
+                    try:
+                        line = line_queue.get_nowait()
+                        if line is None:
+                            break
+                        try:
+                            print(line, flush=True)
+                        except UnicodeEncodeError:
+                            print(line.encode("ascii", errors="replace").decode("ascii"), flush=True)
+                        captured_lines.append(line)
+                    except Empty:
+                        break
+                break
+
+            # 超时检测
+            if time.time() >= timeout_deadline:
+                proc.kill()
+                proc.wait()
+                captured_lines.append("[TIMEOUT] 流水线超时")
+                print("[TIMEOUT] 流水线超时", flush=True)
+                break
+
+            # 非阻塞消费队列中的行
             try:
-                print(line, flush=True)
-            except UnicodeEncodeError:
-                print(line.encode("ascii", errors="replace").decode("ascii"), flush=True)
-            captured_lines.append(line)
-        proc.wait(timeout=timeout_minutes * 60)
-    except subprocess.TimeoutExpired:
+                line = line_queue.get(timeout=2.0)
+                if line is None:
+                    break
+                try:
+                    print(line, flush=True)
+                except UnicodeEncodeError:
+                    print(line.encode("ascii", errors="replace").decode("ascii"), flush=True)
+                captured_lines.append(line)
+            except Empty:
+                # 2秒无输出，继续轮询
+                pass
+
+    except KeyboardInterrupt:
         proc.kill()
         proc.wait()
-        captured_lines.append("[TIMEOUT] 流水线超时")
-        print("[TIMEOUT] 流水线超时", flush=True)
+        captured_lines.append("[INTERRUPT] 用户中断")
+        print("[INTERRUPT] 用户中断", flush=True)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+            proc.wait()
 
     elapsed = time.time() - t0
     return proc.returncode, elapsed, captured_lines
@@ -514,7 +575,7 @@ def test_4_file_backup_mode() -> list:
 
         # Step 2: 运行流水线
         print("\n  -- Step 2: 运行 3 章流水线 --")
-        clean_output(keep_config=False)
+        clean_output(keep_config=True)
         write_config(total_chapters=3)
         reset_state()
 

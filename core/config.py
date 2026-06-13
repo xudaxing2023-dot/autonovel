@@ -142,7 +142,7 @@ class Config:
 
     def _guess_model_tier(self) -> str:
         model = self.model_name.lower()
-        if any(k in model for k in ["deepseek-v3", "deepseek-chat", "deepseek-r1", "llama-3.3-70b", "llama-3.1-405b", "qwen2.5-72b"]):
+        if any(k in model for k in ["deepseek-v3", "deepseek-v4", "deepseek-chat", "deepseek-r1", "llama-3.3-70b", "llama-3.1-405b", "qwen2.5-72b"]):
             return "high"
         if any(k in model for k in ["qwen2.5-32b", "llama-3.1-70b", "llama-3-70b"]):
             return "medium"

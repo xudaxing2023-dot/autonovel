@@ -554,7 +554,7 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
         start_idx = 0
     phases = PHASE_ORDER[start_idx:]
 
-    banner(f"🌏 中文长篇小说自动生成 — 阶段: {' → '.join(phases)}")
+    banner(f"[ZH] 中文长篇小说自动生成 — 阶段: {' → '.join(phases)}")
     print(f"  状态: phase={state.get('phase')}, "
           f"foundation_score={state.get('foundation_score', 0)}, "
           f"chapters={state.get('chapters_drafted', 0)}/{state.get('chapters_total', '?')}, "
@@ -588,7 +588,7 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
     elapsed = datetime.now() - start_time
     hours = elapsed.total_seconds() / 3600
 
-    banner("🎉 流水线完成！")
+    banner("[DONE] 流水线完成！")
     print(f"  耗时:       {hours:.1f} 小时")
     print(f"  阶段:       {state.get('phase')}")
     print(f"  基础构建:   {state.get('foundation_score', 0)}")
