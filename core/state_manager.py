@@ -38,6 +38,7 @@ def _has_git() -> bool:
             ["git", "--version"],
             capture_output=True, text=True, timeout=5,
             cwd=str(ROOT_DIR),
+            encoding="utf-8", errors="replace",
         )
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -129,6 +130,7 @@ def _git_run(cmd: str, timeout: int = 60) -> subprocess.CompletedProcess:
     return subprocess.run(
         cmd, shell=True, capture_output=True, text=True,
         timeout=timeout, cwd=str(ROOT_DIR),
+        encoding="utf-8", errors="replace",
     )
 
 
@@ -293,16 +295,66 @@ def step(text: str):
 def parse_score(stdout: str, key: str = "overall_score") -> float:
     """
     从 evaluate.py 输出中解析分数。
-    查找形如 'key: 8.0' 的行。
+    兼容两种格式：
+      1. key: 8.0           （冒号格式）
+      2. **评分**: 9/10      （分数格式，出现在 key 标题下方的 markdown 中）
     """
-    for line in stdout.splitlines():
-        line = line.strip()
-        if line.startswith(f"{key}:"):
-            val = line.split(":", 1)[1].strip()
+    lines = stdout.splitlines()
+    in_section = False
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+
+        # 格式 1: key: 8.0
+        if stripped.startswith(f"{key}:"):
+            val = stripped.split(":", 1)[1].strip()
             try:
                 return float(val)
             except ValueError:
                 continue
+
+        # 格式 2: 检测是否进入了目标 key 的 markdown 小节
+        if key in stripped and stripped.startswith("###"):
+            in_section = True
+            continue
+
+        # 如果在 key 小节内，查找 **评分**: X/Y 格式
+        if in_section:
+            # 遇到下一个 ### 就离开当前小节
+            if stripped.startswith("###"):
+                in_section = False
+                continue
+            # 匹配 **评分**: 9/10 或 **Score**: 9/10 等
+            m = re.match(
+                r"\*\*.*?(?:评分|Score|score)\*\*\s*:\s*(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)",
+                stripped,
+            )
+            if m:
+                numerator = float(m.group(1))
+                denominator = float(m.group(2))
+                if denominator > 0:
+                    return numerator / denominator * 10.0  # 转换为 10 分制
+                return numerator
+            # 也尝试匹配纯数字评分: **评分**: 8.5
+            m2 = re.match(
+                r"\*\*.*?(?:评分|Score|score)\*\*\s*:\s*(\d+(?:\.\d+)?)",
+                stripped,
+            )
+            if m2:
+                val = float(m2.group(1))
+                # 如果值 > 10 可能是百分制，缩放到10分制
+                if val > 11:
+                    return val / 10.0
+                return val
+
+    # 兜底：全文搜索 "X/10" 分数
+    for line in lines:
+        m = re.search(
+            r"(?:评分|Score|score).*?(\d+(?:\.\d+)?)\s*/\s*(10|十)",
+            line.strip(),
+        )
+        if m:
+            return float(m.group(1))
+
     return -1.0
 
 

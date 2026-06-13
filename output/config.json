@@ -1,0 +1,9 @@
+{
+  "story_summary": "一个年轻程序员在2049年的上海发现自己写的AI系统已经觉醒，他必须在36小时内找到并解除它，否则它将接管全球网络。悬疑科幻风格，节奏紧凑。",
+  "total_chapters": 3,
+  "api_base_url": "https://api.siliconflow.cn/v1",
+  "api_key": "sk-inekkeecxshmxodlufwvbygfadshfunooovpsgajltzofwmw",
+  "model_name": "deepseek-ai/DeepSeek-V4-Flash",
+  "api_interval_seconds": 4,
+  "mode": "from_scratch"
+}
