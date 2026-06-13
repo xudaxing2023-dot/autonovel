@@ -19,6 +19,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+# Windows 控制台 GBK 编码不支持中文，强制使用 UTF-8
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 # 核心基础设施
 from core.config import config, ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, BRIEFS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, STATE_FILE
 from core.api_client import call_llm, call_writer, call_judge, get_rate_limiter
