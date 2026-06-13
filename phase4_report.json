@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-06-13T13:10:30.107855",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "total_passed": 0,
+  "total_failed": 1,
+  "total_checks": 1,
+  "elapsed_minutes": 60.0,
+  "tests": {
+    "test1": [
+      {
+        "name": "异常",
+        "ok": false,
+        "message": "not enough values to unpack (expected 3, got 2)"
+      }
+    ]
+  }
+}

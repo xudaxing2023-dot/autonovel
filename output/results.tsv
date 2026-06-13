@@ -4,3 +4,4 @@ c791051	foundation	9.0	0	keep	迭代 1: 评分提升 0.0 -> 9.0
 355f510	ch02	9.0	3503	keep	第 2 章 (尝试 1)
 c126726	ch03	7.0	4496	keep	第 3 章 (尝试 1)
 f9cb3c3	revision-cycle-1	6.5	10964	cycle	循环 1: novel_score 0.0->6.5
+4731a3d	revision-cycle-2	7.0	10964	cycle	循环 2: novel_score 6.5->7.0

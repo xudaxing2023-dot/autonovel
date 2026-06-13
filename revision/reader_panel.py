@@ -13,7 +13,7 @@ from pathlib import Path
 from core.config import CHAPTERS_DIR, EDIT_LOGS_DIR
 from core.api_client import call_judge
 from core.state_manager import step
-from prompts.reader_panel_prompts import READER_ROLES, build_reader_panel_prompt
+from prompts.reader_panel_prompts import READER_ROLES, READER_SYSTEM_PROMPT, build_reader_panel_prompt
 
 
 def run_reader_panel(max_tokens: int = 4096) -> None:
