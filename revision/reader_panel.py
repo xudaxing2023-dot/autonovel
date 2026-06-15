@@ -47,9 +47,12 @@ def run_reader_panel(
         step(f"  {role_info['name']} 评审中 ...")
         reader_answers = {}
 
-        for ch_file in selected:
+        for idx_ch, ch_file in enumerate(selected):
             ch_num = int(ch_file.stem.split("_")[1])
             ch_text = ch_file.read_text(encoding="utf-8")
+
+            # 每章评审前输出进度日志（防止长时间无输出被误判为卡死）
+            step(f"    [{idx_ch+1}/{len(selected)}] 第 {ch_num} 章 提交评审 ...")
 
             prompt = build_reader_panel_prompt(ch_num, ch_text, reader_role=role_info)
 
@@ -58,6 +61,8 @@ def run_reader_panel(
                     prompt, system=READER_SYSTEM_PROMPT, max_tokens=max_tokens,
                     retries=retries, max_total_time=max_total_time,
                 )
+                step(f"    [{idx_ch+1}/{len(selected)}] 第 {ch_num} 章 评审返回 ✓ "
+                     f"({len(response)} chars)")
             except Exception as e:
                 step(f"    第 {ch_num} 章评审失败: {e}")
                 response = f"(评审失败: {e})"

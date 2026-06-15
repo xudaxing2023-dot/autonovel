@@ -1,10 +1,28 @@
-eval_logs/
-edit_logs/
-briefs/
+# === 高频/大体积生成产物（禁止 Git 追踪）===
+# 这些文件每次运行都会大量生成/修改，纳入 Git 会严重拖慢 VSCode
+output/backups/
+output/chapters/
+output/briefs/
+output/edit_logs/
+output/eval_logs/
+output/results.tsv
+output/manuscript.md
+output/arc_summary.md
+output/config.json
+output/phase4_report.json
+output/_test_backup.txt
+
+# === 缓存 ===
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# === 环境 ===
 .env
 .venv/
+venv/
+
+# === 排版产物 ===
 typeset/*.pdf
 typeset/chapters_content.tex
 *.pdf

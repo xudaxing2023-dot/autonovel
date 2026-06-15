@@ -14,6 +14,7 @@ core/state_manager.py — 状态管理 + git/文件备份双模式
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -32,11 +33,14 @@ from core.config import (
 # ============================================================================
 
 def _has_git() -> bool:
-    """检测当前环境是否可用 git。"""
+    """检测当前环境是否可用 git（.git 目录存在 + git 命令可用）。"""
+    git_dir = ROOT_DIR / ".git"
+    if not git_dir.exists():
+        return False
     try:
         result = subprocess.run(
-            ["git", "--version"],
-            capture_output=True, text=True, timeout=5,
+            ["git", "status"],
+            capture_output=True, text=True, timeout=10,
             cwd=str(ROOT_DIR),
             encoding="utf-8", errors="replace",
         )
@@ -125,10 +129,11 @@ def count_chapter_files() -> int:
 # Git 模式操作
 # ============================================================================
 
-def _git_run(cmd: str, timeout: int = 60) -> subprocess.CompletedProcess:
-    """执行 git 命令，返回 CompletedProcess。"""
+def _git_run(cmd: str, timeout: int = 30) -> subprocess.CompletedProcess:
+    """执行 git 命令，返回 CompletedProcess。使用 shlex.split 安全解析参数。"""
     return subprocess.run(
-        cmd, shell=True, capture_output=True, text=True,
+        shlex.split(cmd),
+        capture_output=True, text=True,
         timeout=timeout, cwd=str(ROOT_DIR),
         encoding="utf-8", errors="replace",
     )
@@ -144,10 +149,29 @@ def git_short_hash() -> str:
     return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
+# 核心产出文件（纳入 Git 版本控制）
+# 注意：backups/, chapters/, briefs/, edit_logs/, eval_logs/ 等高频/大体积产物
+#      已通过 .gitignore 排除，不纳入 Git 追踪。
+_GIT_TRACKED_GLOBS = [
+    "world.md", "characters.md", "outline.md", "canon.md",
+    "voice.md", "story_summary.txt",
+    # state.json 保持追踪（小文件、低频变更、中断恢复关键）
+    "state.json",
+    # 基础模板
+    "MYSTERY.md",
+]
+
+
 def git_add_commit(message: str) -> str:
-    """Stage all changes and commit。返回短哈希。"""
+    """Stage core output files and commit。返回短哈希。"""
     if git_available():
-        _git_run("git add -A")
+        # 只 add 核心产出文件，不再 git add -A
+        # 避免将 backups/ 等高频大体积产物纳入 Git 索引
+        from core.config import OUTPUT_DIR
+        for pattern in _GIT_TRACKED_GLOBS:
+            target = OUTPUT_DIR / pattern
+            if target.exists():
+                _git_run(f"git add \"{target}\"")
         result = _git_run(f'git commit -m "{message}" --allow-empty')
         if result.returncode == 0:
             return git_short_hash()
