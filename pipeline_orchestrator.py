@@ -25,7 +25,7 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # 核心基础设施
-from core.config import config, ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, BRIEFS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, STATE_FILE
+from core.config import config, ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, BRIEFS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, STATE_FILE, BACKUPS_DIR
 from core.api_client import call_llm, call_writer, call_judge, get_rate_limiter
 from core.state_manager import (
     load_state, save_state, default_state,
@@ -56,6 +56,14 @@ PHASE_ORDER = ["foundation", "drafting", "revision", "export"]
 
 def run_foundation(state: dict) -> dict:
     banner("PHASE 1: FOUNDATION (基础构建)", "=")
+
+    # 确保所有子目录存在（直接调用 run_foundation 时不会走 run_pipeline 的 mkdir）
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    CHAPTERS_DIR.mkdir(parents=True, exist_ok=True)
+    BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
+    EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    EVAL_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    BACKUPS_DIR.mkdir(parents=True, exist_ok=True)
 
     best_score = state.get("foundation_score", 0.0)
     iteration = state.get("iteration", 0)
@@ -592,7 +600,7 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
             import traceback
             traceback.print_exc()
             save_state(state)
-            sys.exit(1)
+            raise
 
     elapsed = datetime.now() - start_time
     hours = elapsed.total_seconds() / 3600

@@ -32,7 +32,7 @@ def generate_world(max_tokens: int = 16000) -> None:
     prompt = build_world_prompt(story, voice_part2=(voice if voice else ""))
 
     step("调用 LLM 生成世界观 ...")
-    result = call_writer(prompt, system=WORLD_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(prompt, system=WORLD_SYSTEM_PROMPT, max_tokens=max_tokens, max_total_time=300)
 
     # 保存到 output/world.md
     world_path = OUTPUT_DIR / "world.md"

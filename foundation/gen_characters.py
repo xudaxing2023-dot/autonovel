@@ -36,7 +36,7 @@ def generate_characters(max_tokens: int = 16000) -> None:
     prompt = build_character_prompt(story, world_text=world, voice_part2=voice)
 
     step("调用 LLM 生成角色注册表 ...")
-    result = call_writer(prompt, system=CHARACTER_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(prompt, system=CHARACTER_SYSTEM_PROMPT, max_tokens=max_tokens, max_total_time=300)
 
     char_path = OUTPUT_DIR / "characters.md"
     char_path.write_text(result, encoding="utf-8")

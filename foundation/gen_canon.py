@@ -62,7 +62,7 @@ def generate_canon(max_tokens: int = 16000) -> None:
 3. 目标：400+ 条事实"""
 
     step("调用 LLM 生成正典 ...")
-    result = call_writer(prompt, system=CANON_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(prompt, system=CANON_SYSTEM_PROMPT, max_tokens=max_tokens, max_total_time=900)
 
     canon_path = OUTPUT_DIR / "canon.md"
     canon_path.write_text(result, encoding="utf-8")

@@ -34,6 +34,8 @@ class Config:
 
     def load(self) -> dict:
         """加载配置文件。若不存在则返回空字典。"""
+        if self._loaded:
+            return self._data
         if CONFIG_FILE.exists():
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 self._data = json.load(f)

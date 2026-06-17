@@ -46,7 +46,7 @@ def generate_outline(max_tokens: int = 16000) -> None:
     )
 
     step("调用 LLM 生成大纲 ...")
-    result = call_writer(prompt, system=OUTLINE_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(prompt, system=OUTLINE_SYSTEM_PROMPT, max_tokens=max_tokens, max_total_time=300)
 
     outline_path = OUTPUT_DIR / "outline.md"
     outline_path.write_text(result, encoding="utf-8")

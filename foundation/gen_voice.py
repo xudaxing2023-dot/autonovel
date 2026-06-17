@@ -69,7 +69,7 @@ def generate_voice(max_tokens: int = 16000) -> None:
 对每种风格，写完后简要标注这种风格适合这个故事的理由（1-2 句）。"""
 
     step("调用 LLM 试写 5 种文风 ...")
-    result = call_writer(prompt, system=VOICE_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(prompt, system=VOICE_SYSTEM_PROMPT, max_tokens=max_tokens, max_total_time=300)
 
     # 选择最佳风格 — 由 LLM 完成
     select_prompt = f"""以下是 5 种候选文风及其试写段落：
