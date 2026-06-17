@@ -1,12 +1,12 @@
 {
-  "phase": "revision",
-  "current_focus": "full_novel",
+  "phase": "export",
+  "current_focus": "export",
   "iteration": 1,
   "foundation_score": 10.0,
   "lore_score": 10.0,
   "chapters_drafted": 1,
   "chapters_total": 1,
-  "novel_score": 6.5,
-  "revision_cycle": 1,
+  "novel_score": 7.0,
+  "revision_cycle": 2,
   "debts": []
 }
