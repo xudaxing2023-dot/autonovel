@@ -1,146 +1,301 @@
 #!/usr/bin/env python3
 """
-seed.py -- Generate fantasy novel seed concepts.
+seed.py — 中文小说种子概念生成器
 
-Usage:
-  uv run python seed.py              # Generate 10 concepts, pick one
-  uv run python seed.py --count=5    # Generate 5 concepts
-  uv run python seed.py --riff "magic costs memories"  # Riff on an idea
+支持所有长篇小说类型（玄幻/科幻/悬疑/历史/言情/武侠/都市/现实…）。
+通过 LLM 批量生成高创意度的小说核心概念，帮助作者快速获得灵感起点。
+
+用法:
+  uv run python seed.py                        # 跨类型生成 10 个概念
+  uv run python seed.py --count=5              # 生成 5 个概念
+  uv run python seed.py --genre 科幻           # 只生成科幻概念
+  uv run python seed.py --riff "一个关于记忆可以作为货币流通的世界"  # 围绕已有想法展开
 """
 
 import argparse
-import json
-import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
+
+from core.api_client import call_writer
+from core.config import config
 
 BASE_DIR = Path(__file__).parent
-load_dotenv(BASE_DIR / ".env")
-
-WRITER_MODEL = os.environ.get("AUTONOVEL_WRITER_MODEL", "claude-sonnet-4-6-20250217")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-API_BASE_URL = os.environ.get("AUTONOVEL_API_BASE_URL", "https://api.anthropic.com")
-ANTHROPIC_BETA = "context-1m-2025-08-07"
 
 
-def call_writer(prompt, max_tokens=4000):
-    import httpx
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "anthropic-beta": ANTHROPIC_BETA,
-        "content-type": "application/json",
-    }
-    payload = {
-        "model": WRITER_MODEL,
-        "max_tokens": max_tokens,
-        "temperature": 1.0,  # high temp for creative diversity
-        "system": (
-            "You are a fantasy novelist with deep knowledge of the genre's "
-            "best works -- Tolkien, Le Guin, Rothfuss, Wolfe, Jemisin, Peake, "
-            "Susanna Clarke, Andrew Peterson, Sofia Samatar. You generate "
-            "novel concepts that are SPECIFIC, SURPRISING, and STRUCTURALLY "
-            "SOUND. You never propose generic medieval Europe + elves. Each "
-            "concept should make a reader think 'I've never seen THAT before.'"
-        ),
-        "messages": [{"role": "user", "content": prompt}],
-    }
-    resp = httpx.post(
-        f"{API_BASE_URL}/v1/messages",
-        headers=headers,
-        json=payload,
-        timeout=120,
-    )
-    resp.raise_for_status()
-    return resp.json()["content"][0]["text"]
+# ============================================================================
+# System Prompt — 跨类型概念设计师
+# ============================================================================
+
+SEED_SYSTEM_PROMPT = """你是一位跨越多个文学类型的小说概念设计师。你深谙各种类型的叙事传统——
+从金庸的武侠世界到刘慈欣的科幻想象，从东野圭吾的悬疑架构到张爱玲的情感洞察，
+从马伯庸的历史演绎到猫腻的玄幻构筑。
+
+你生成的小说概念具备以下特质：
+— 具体 (SPECIFIC)：给出可感知的细节，而非空洞的类型标签
+— 意外 (SURPRISING)：颠覆类型的常见套路，制造认知冲击
+— 结构自洽 (STRUCTURALLY SOUND)：核心设定、冲突、主题三者形成闭环
+— 高张力 (HIGH-STAKES)：个人困境与世界/社会/系统层面的力量产生不可调和的矛盾
+
+你绝对不会生成：
+— 纯套路堆砌（穿越重生打脸、霸总甜宠、退婚逆袭 等纯爽文模板）
+— 缺乏真正道德模糊感的善恶二元对立
+— 依赖巧合而非角色选择驱动的剧情
+— "灵感枯竭时随便想的"那种模糊概念
+
+每个概念都应让读者产生"我从未见过这样的故事——但我立刻就想读"的感受。"""
 
 
-GENERATE_PROMPT = """Generate {count} fantasy novel seed concepts. Each should be
-a complete premise you could build a novel from.
+# ============================================================================
+# GENERATE_PROMPT — 中文，类型自适应
+# ============================================================================
 
-For EACH concept, provide:
+GENERATE_PROMPT = """请生成 {count} 个中文长篇小说种子概念。每个概念应是一个完整的小说核心构想，
+足以支撑一部 {total_chapters} 章左右的长篇小说。
 
-NUMBER. TITLE (a working title, evocative, not generic)
-HOOK: One sentence that would make someone pick up the book. Specific
-  and surprising, not "In a world where..."
-WORLD: What makes this world different? Not just "there's magic" but
-  what specific, unusual thing defines this place? Be concrete --
-  salt flats, inverted towers, cities that migrate, a sea that
-  remembers, whatever. Make it SENSORY.
-MAGIC/COST: What is the core speculative element and what does it
-  COST? Per Sanderson's Second Law, limitations > powers. The cost
-  should create interesting dilemmas.
-TENSION: What's the central conflict? It must be both PERSONAL (one
-  character's specific problem) and COSMIC (affects the world).
-  These two must be in tension with each other.
-THEME: What question does this story explore? Not a message -- a
-  genuine question with no easy answer.
-WHY IT'S NOT GENERIC: One sentence on what makes this different from
-  standard fantasy fare.
+{genre_constraint}
 
-Aim for DIVERSITY across the {count} concepts:
-  - At least one with a non-human-centric world
-  - At least one that's more literary/quiet than epic
-  - At least one with an unusual narrative structure idea
-  - At least one set outside the typical European-inspired setting
-  - Mix of tones: dark, warm, weird, melancholy, whimsical
+对每个概念，提供以下字段：
 
-DO NOT generate:
-  - Chosen one prophecies (unless subverted in an interesting way)
-  - Dark lord / ultimate evil as the main antagonist
-  - Medieval Europe + elves/dwarves/orcs
-  - "Academy" or "school for magic" settings
-  - Love triangles as the central plot
-"""
+【编号】. 【暂定书名】（有感染力、不落俗套的工作标题）
 
-RIFF_PROMPT = """I have a seed idea for a fantasy novel:
+【一句话钩子】
+让读者立刻产生阅读欲望的一句话。必须具体且意外，
+避免"在一个……的世界里"这类万能句式。
+给出一个具体的、可感知的画面或悖论。
+
+【世界/背景】
+这部小说的世界有什么不同？
+— 如果是现实/历史题材：具体的时间、地点、社会环境有什么独特之处？
+— 如果是科幻/奇幻/玄幻题材：核心设定是什么？这个世界因它而产生了怎样的
+  感官上可触摸的变化？（盐碱地、倒悬的塔、会迁徙的城市、能记住一切的海…）
+— 如果是悬疑/惊悚题材：这个世界的规则裂缝在哪里？正常表象下隐藏着什么？
+
+【核心机制与代价】
+这部小说最核心的叙事引擎是什么？
+— 如果是超自然题材：核心设定元素的规则和限制是什么？
+  限制比能力更重要——使用它必须付出什么代价？这个代价如何制造困境？
+— 如果是现实题材：推动故事的核心机制是什么？（阶级壁垒？信息不对称？
+  时间压力？道德困境？）这个机制的约束力如何制造不可逃避的张力？
+— 如果是悬疑题材：隐藏真相的机制是什么？为什么真相如此难以触及？
+
+【核心冲突】
+必须同时具备两个层面并在彼此之间产生张力：
+— 个人层面：一个特定角色面临的、具体的、迫切的困境
+— 系统层面：影响整个世界观/社会/群体的更大力量
+— 两者的关系：为什么解决个人困境必然会触及系统层面的问题？
+  （反之亦然）
+
+【主题问题】
+这个故事探索什么问题？不是一个说教式的答案，而是一个
+真正没有简单答案的问题——一个你会愿意和读者争论的问题。
+
+【为什么不是套路】
+一句话说明：在所属类型中，这个概念打破了什么常规？
+它提供了什么类型的读者自认为想要、但实际上从未见过的东西？
+
+---
+
+{genre_diversity_requirements}
+
+调性多样性要求：
+— 至少包含：冷峻/温暖/诡异/悲怆/诙谐 中的三种以上
+— 允许"难归类"的混合调性（如：表面诙谐内核悲凉）
+
+叙事视角多样性：
+— 至少包含两种以上的叙事距离（全知/限知/多重/不可靠叙述者）
+— 至少一个概念尝试非传统的叙事结构（时间折叠/多线汇聚/碎片拼图/环形叙事等）
+
+绝对不要生成：
+— 纯套路爽文模板（穿越后用现代知识碾压古人/退婚打脸逆袭流/
+  霸总甜宠带球跑/系统加持一路升级）
+— 完全善恶二元的道德框架（除非有真正深刻的颠覆性处理）
+— 依赖巧合而非角色主动选择推动的关键转折
+— "灵感枯竭时随手写的"模糊概念（必须具体到能看见画面）"""
+
+
+# ============================================================================
+# RIFF_PROMPT — 中文，类型无关
+# ============================================================================
+
+RIFF_PROMPT = """我有一个小说种子概念：
 
 "{idea}"
 
-Generate 5 variations on this concept. Keep what's interesting about
-the core idea but push it in different directions. For each variation:
+请围绕这个核心概念，生成 5 个不同的变体。保留原概念中最有趣的内核，
+但将它推向完全不同的方向。
 
-NUMBER. TITLE
-HOOK: One sentence.
-HOW IT DIFFERS: What did you change from the original seed and why?
-WORLD: Concrete, sensory world details.
-MAGIC/COST: The speculative element and its cost.
-TENSION: Personal + cosmic conflict.
-THEME: The question it explores.
+对每个变体，提供：
 
-Make the variations genuinely different from each other -- don't just
-tweak surface details. Change the protagonist, the setting, the tone,
-the structure, the thematic focus.
-"""
+【编号】. 【暂定书名】
 
+【一句话钩子】
+
+【与原版的区别】
+你改变了什么？为什么这个改变值得探索？
+（不是微调表面细节，而是改变：主角的身份/立场、故事的时代/地点、
+  核心冲突的本质、情感调性、叙事结构）
+
+【世界/背景】
+具体、可感知的世界细节。让人能看见、听见、闻到这个世界。
+
+【核心机制与代价】
+推动叙事的核心引擎及其约束条件。代价如何制造真正的困境？
+
+【核心冲突】
+个人与系统两个层面的冲突如何相互牵制？
+
+【主题问题】
+这个故事真正在追问什么？
+
+---
+
+必须保证 5 个变体之间存在真正的差异——改变的不是细节装饰，
+而是故事的 DNA：主角是谁、冲突的本质、调性的底色、结构的骨骼、
+主题追问的方向。
+
+至少一个变体将原概念的类型完全翻转（如果原是幻想类→尝试现实类表达；
+如果原是现实类→尝试幻想类隐喻）。
+至少一个变体彻底改变主角的社会位置（如果原是上位者→底层视角；
+如果原是局外人→局内人视角）。"""
+
+
+# ============================================================================
+# 辅助函数 — 动态构建类型约束
+# ============================================================================
+
+def _build_genre_constraint(genre_hint: str | None, count: int) -> str:
+    """构建类型约束段落。"""
+    if genre_hint:
+        return f"""类型聚焦：所有 {count} 个概念必须属于「{genre_hint}」类型。
+但在此类型内部，请尽可能多样化亚类型分支、调性、叙事结构。"""
+    else:
+        return f"""类型覆盖：{count} 个概念应覆盖至少 4 种以上的文学类型。
+在现实题材、历史题材、悬疑/惊悚、科幻、奇幻/玄幻、言情/情感、武侠/仙侠
+中自由选择，不要全部偏向某一类型。"""
+
+
+def _build_genre_diversity(genre_hint: str | None, count: int) -> str:
+    """构建多样性要求段落。"""
+    if genre_hint:
+        # 单类型内部多样化
+        return f"""类型内部多样性（{genre_hint}类型内）：
+— 至少覆盖 2 种不同的亚类型分支或子方向
+— 至少包含一个"安静/文学化"的概念和一个"强情节/高概念"的概念
+— 时代背景至少横跨 2 种（古代/近代/现代/近未来/架空时间）
+— 至少一个概念以非典型主角为中心（非青年/非强者/非"天选"）"""
+    else:
+        # 跨类型多样化
+        max_per_genre = max(3, count // 3)
+        return f"""跨类型多样性要求：
+— 至少包含 4 种不同文学类型
+— 每种类型不超过 {max_per_genre} 个概念
+— 至少一个现实/历史题材（无超自然元素）
+— 至少一个科幻或奇幻/玄幻题材
+— 至少一个悬疑/惊悚题材
+— 至少一个以情感关系为核心驱动的题材"""
+
+
+# ============================================================================
+# 输出辅助
+# ============================================================================
+
+def _banner(text: str) -> None:
+    """打印醒目标题栏。"""
+    print()
+    print("=" * 65)
+    print(f"  {text}")
+    print("=" * 65)
+    print()
+
+
+def _step(text: str) -> None:
+    """打印步骤提示。"""
+    print(f"  ⏳ {text}")
+
+
+# ============================================================================
+# Main
+# ============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate novel seed concepts")
-    parser.add_argument("--count", type=int, default=10,
-                        help="Number of concepts to generate (default: 10)")
-    parser.add_argument("--riff", type=str, default=None,
-                        help="Riff on an existing idea")
+    # Windows 终端默认 GBK，但所有输出均为 UTF-8 中文
+    if sys.stdout.encoding != "utf-8":
+        sys.stdout.reconfigure(encoding="utf-8")
+
+    parser = argparse.ArgumentParser(
+        description="中文小说种子概念生成器 — 适用于所有长篇小说类型",
+    )
+    parser.add_argument(
+        "--count", type=int, default=10,
+        help="生成概念数量（默认: 10）",
+    )
+    parser.add_argument(
+        "--riff", type=str, default=None,
+        help="围绕已有想法展开 5 个变体",
+    )
+    parser.add_argument(
+        "--genre", type=str, default=None,
+        help="指定类型聚焦（如: 科幻、悬疑、言情、历史、武侠、都市、现实）。"
+             "留空则跨类型生成。",
+    )
     args = parser.parse_args()
 
-    if not ANTHROPIC_API_KEY:
-        print("ERROR: Set ANTHROPIC_API_KEY in .env first")
+    # 加载配置确认 API 可用
+    cfg = config
+    cfg.load()
+    if not cfg.api_key:
+        print("❌ 错误: 未配置 API Key。请先运行 novel_app.bat 完成配置。")
         sys.exit(1)
 
-    if args.riff:
-        print(f"Riffing on: {args.riff}\n")
-        prompt = RIFF_PROMPT.format(idea=args.riff)
-    else:
-        print(f"Generating {args.count} seed concepts...\n")
-        prompt = GENERATE_PROMPT.format(count=args.count)
+    total_chapters = cfg.total_chapters if cfg.loaded else 24
 
-    result = call_writer(prompt, max_tokens=8000)
+    if args.riff:
+        _banner("围绕核心概念展开 5 个变体")
+        print(f"  核心概念: {args.riff}")
+        print()
+        prompt = RIFF_PROMPT.format(idea=args.riff)
+        max_tokens = 8000
+    else:
+        genre_hint = args.genre
+        genre_constraint = _build_genre_constraint(genre_hint, args.count)
+        genre_diversity = _build_genre_diversity(genre_hint, args.count)
+
+        _banner(f"生成 {args.count} 个种子概念")
+        if genre_hint:
+            print(f"  类型聚焦: {genre_hint}")
+        else:
+            print(f"  类型覆盖: 跨类型多样化生成")
+        print()
+
+        prompt = GENERATE_PROMPT.format(
+            count=args.count,
+            total_chapters=total_chapters,
+            genre_constraint=genre_constraint,
+            genre_diversity_requirements=genre_diversity,
+        )
+        max_tokens = 12000  # 10 个概念需要更长输出
+
+    _step("调用 LLM 生成种子概念 ...")
+    result = call_writer(
+        prompt,
+        system=SEED_SYSTEM_PROMPT,
+        max_tokens=max_tokens,
+        temperature=1.0,  # 保持高创意温度
+        max_total_time=600,
+    )
+
+    print()
     print(result)
-    print("\n" + "=" * 60)
-    print("To pick a seed, copy the concept you like into seed.txt:")
-    print("  nano seed.txt")
-    print("Or remix several concepts into your own seed.")
-    print("Then proceed to Step 2 in WORKFLOW.md.")
+    print()
+    print("=" * 65)
+    print("下一步:")
+    print("  1. 从上述概念中选择一个你最感兴趣的")
+    print("  2. 复制该概念到 seed.txt（项目根目录）")
+    print("  3. 运行 novel_app.bat 启动完整流水线")
+    print("     或运行 uv run python run_pipeline.py --from-scratch")
+    print()
+    print("你也可以混合多个概念中的元素，创造属于你自己的独特种子。")
+    print("=" * 65)
 
 
 if __name__ == "__main__":

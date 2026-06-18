@@ -55,6 +55,91 @@ TIER2_CHINESE_SLOP = [
     "心头一",
 ]
 
+# ——— P3-12: 小说 AI 套话（体裁无关，语义级 AI 痕迹） ———
+FICTION_AI_TELLS_ZH = [
+    # 感官/情绪套话 — 不绑定任何题材
+    r"一阵\S{0,3}的感觉",
+    r"一种\S{1,4}的感觉",
+    r"不禁感到",
+    r"不由得",
+    r"空气中弥漫着",
+    r"瞪大了眼睛",
+    r"睁大了双眼",
+    r"一阵\S{0,5}(?:涌上|袭来|席卷)",
+    r"一股\S{0,5}(?:涌上|袭来)",
+    r"一丝\S{0,3}(?:涌上|掠过)",
+    # 心跳/呼吸套话
+    r"心(?:脏)?(?:在胸腔里)?狂跳",
+    r"心脏剧烈(?:地)?跳动",
+    r"(?:长长地|缓缓地)?吐出一口气",
+    # 发型/外貌套话 — 适配所有时代/类型
+    r"(?:乌黑|黑色|棕色|银白|花白)的?(?:长发|短发|发丝|头发)\S{0,5}(?:散落|倾泻|垂落|披散)",
+    # 眼神套话
+    r"锐利的目光",
+    r"深邃的眼眸",
+    r"眼神中(?:闪过|透出|带着)\S{1,6}",
+    # 笑容套话
+    r"会心一笑",
+    r"意味深长的(?:笑|笑容|微笑)",
+    # 情感波动套话
+    r"(?:他|她|它|他们|她们)(?:感到|觉得)\S{0,3}(?:一阵|一股|一丝)\S{1,6}",
+    # 沉默/寂静套话
+    r"(?:沉默|寂静|安静)(?:沉重|压抑|令人窒息|蔓延)",
+    r"(?:谁也没有说话|没有人开口)",
+    # 涌动/苏醒套话
+    r"(?:某种|什么东西|一丝\S{0,3})(?:在体内|在心里|在心底)(?:涌动|苏醒|蔓延|升起)",
+    # 松了口气套话
+    r"(?:暗自|悄悄|终于)(?:松了口气|松了一口气|放下心来)",
+]
+
+# ——— P3-12: 结构修辞公式（论说文式论证出现在叙事中 = AI 铁证） ———
+STRUCTURAL_AI_TICS_ZH = [
+    # "我不是说X，我是说Y"
+    r"(?:我)?不是(?:说|指|要|在)\S{1,20}(?:而是|我是)(?:说|指|要|在)\S{1,20}",
+    # "这意味着要么X，要么Y"
+    r"这意味着(?:要么|要不|不是)\S{1,20}(?:要么|就是|便是)\S{1,20}",
+    # "这是有区别的" 收尾公式
+    r"(?:这|那)(?:是|就是|才是)(?:有区别|有差别的|两回事|不同的)",
+    # "那是两回事"
+    r"那(?:是|就是)两回事",
+    # "不仅仅是X，更是Y"（增强版）
+    r"不仅仅(?:是|在于)\S{1,20}(?:更是|更是为了|而是在于|而是|更是因为)",
+    # "不是因为X，而是因为Y" — 叙事中的论证句式
+    r"不是因为\S{1,30}(?:而是因为|而是)",
+    # "说到底" / "归根结底" 收尾公式
+    r"(?:说到底|归根结底|总而言之|综上所述)",
+]
+
+# ——— P3-12: 说教式情感（show-don't-tell 检测，体裁无关） ———
+TELLING_EMOTION_LABELS = [
+    "愤怒", "悲伤", "高兴", "害怕", "紧张", "兴奋", "嫉妒",
+    "内疚", "焦虑", "孤独", "绝望", "恐惧", "得意", "痛苦",
+    "困惑", "松了一口气", "厌恶", "羞愧", "骄傲", "苦涩",
+    "挫败", "失落", "欣慰", "感动", "震惊", "慌张", "烦躁",
+    "不安", "期待", "满足",
+]
+TELLING_ADVERBS = [
+    "愤怒地", "悲伤地", "高兴地", "紧张地", "兴奋地",
+    "绝望地", "恐惧地", "焦虑地", "内疚地", "苦涩地",
+    "疲惫地", "痛苦地", "不安地", "欣慰地", "烦躁地",
+]
+TELLING_PATTERNS_ZH = (
+    [rf"(?:他|她|它|他们|她们|我|你)\S{{0,4}}(?:感到|觉得|显得|看起来)\S{{0,4}}(?:{'|'.join(TELLING_EMOTION_LABELS)})"]
+    + [rf"(?:{'|'.join(TELLING_ADVERBS)})"]
+)
+
+# ——— P3-12: 段落开头过渡词滥用 ———
+TRANSITION_OPENERS_ZH = [
+    "然而", "但是", "不过", "可是", "却",
+    "此外", "而且", "况且", "再说",
+    "与此同时", "另一方面", "与此相对",
+    "换言之", "换句话说", "也就是说",
+    "事实上", "实际上", "其实",
+    "显然", "毫无疑问", "不可否认",
+    "当然", "诚然", "的确",
+    "毕竟", "终究",
+]
+
 # Tier 3: 结构层面检测
 # — 连续 3+ 四字成语/形容词
 FOUR_CHAR_PATTERN = re.compile(r'[\u4e00-\u9fff]{4}')
@@ -66,13 +151,20 @@ DIALOG_TAG_PATTERN = re.compile(r'(?:说|道)[,，。！？\s]')
 
 def slop_score_zh(text: str) -> dict:
     """
-    中文机械 slop 检测。
+    中文机械 slop 检测。所有检测体裁无关，适用于任何类型的中文小说。
+
     返回:
-      - tier1_hits: list
-      - tier2_hits: list
-      - four_char_density: 连续 4 字词密度
-      - em_dash_density: 破折号密度 (/千字)
-      - slop_penalty: 0-10 惩罚分
+      - tier1_hits: list — 高频 AI 套话
+      - tier2_hits: list — 中等频率 AI 模式
+      - fiction_ai_tells: list — 小说 AI 套话 (P3-12)
+      - structural_ai_tics: list — 修辞公式检测 (P3-12)
+      - telling_violations: int — 说教式情感计数 (P3-12)
+      - four_char_density: float — 四字词密度 (/百字)
+      - em_dash_density: float — 破折号密度 (/千字)
+      - sentence_cv: float — 句子长度变异系数
+      - transition_opener_ratio: float — 过渡词开头的段落比例 (P3-12)
+      - dialog_tag_ratio: float — 对话标签比例
+      - slop_penalty: float — 综合惩罚分 0-10
     """
     char_count = len(text.replace(" ", "").replace("\n", "")) or 1
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
@@ -116,7 +208,37 @@ def slop_score_zh(text: str) -> dict:
     else:
         sentence_cv = 0.5
 
-    # 计算惩罚分
+    # ——— P3-12: 小说 AI 套话检测 ———
+    fiction_tells = []
+    for pattern in FICTION_AI_TELLS_ZH:
+        matches = re.findall(pattern, text)
+        if matches:
+            fiction_tells.append((pattern[:40], len(matches)))
+    fiction_tell_count = sum(c for _, c in fiction_tells)
+
+    # ——— P3-12: 结构修辞公式检测 ———
+    structural_tics = []
+    for pattern in STRUCTURAL_AI_TICS_ZH:
+        matches = re.findall(pattern, text)
+        if matches:
+            structural_tics.append((pattern[:40], len(matches)))
+    structural_tic_count = sum(c for _, c in structural_tics)
+
+    # ——— P3-12: 说教式情感 (show-don't-tell) 检测 ———
+    telling_count = 0
+    for pattern in TELLING_PATTERNS_ZH:
+        telling_count += len(re.findall(pattern, text))
+
+    # ——— P3-12: 段落开头过渡词比例 ———
+    transition_starts = 0
+    for para in paragraphs:
+        stripped = para.lstrip("　 ")  # 中文全角空格
+        first_chars = stripped[:4] if len(stripped) >= 4 else stripped
+        if any(first_chars.startswith(opener) for opener in TRANSITION_OPENERS_ZH):
+            transition_starts += 1
+    transition_ratio = transition_starts / len(paragraphs) if paragraphs else 0
+
+    # ——— 计算惩罚分 ———
     penalty = 0.0
     penalty += sum(c for _, c in tier1_hits) * 0.5  # Tier 1: 每个 0.5 分
     penalty += sum(c for _, c in tier2_hits) * 0.2  # Tier 2: 每个 0.2 分
@@ -124,14 +246,26 @@ def slop_score_zh(text: str) -> dict:
         penalty += (em_density - 3) * 0.5
     if dialog_ratio > 0.6:
         penalty += (dialog_ratio - 0.6) * 5
+    # P3-12 新增
+    penalty += min(fiction_tell_count * 0.3, 2.0)
+    penalty += min(structural_tic_count * 0.5, 2.0)
+    penalty += min(telling_count * 0.2, 1.5)
+    if transition_ratio > 0.3:
+        penalty += min(transition_ratio * 2, 1.0)
+    if sentence_cv < 0.3:
+        penalty += 1.0
     penalty = min(10.0, penalty)
 
     return {
         "tier1_hits": tier1_hits,
         "tier2_hits": tier2_hits,
+        "fiction_ai_tells": fiction_tells,
+        "structural_ai_tics": structural_tics,
+        "telling_violations": telling_count,
         "four_char_density": round(four_char_density, 2),
         "em_dash_density": round(em_density, 2),
         "sentence_cv": round(sentence_cv, 2),
+        "transition_opener_ratio": round(transition_ratio, 2),
         "dialog_tag_ratio": round(dialog_ratio, 2),
         "slop_penalty": round(penalty, 2),
     }
@@ -205,7 +339,10 @@ def evaluate_chapter(
     mech = slop_score_zh(chapter_text)
     print(f"  [机械检测] Tier1={len(mech['tier1_hits'])}, "
           f"Tier2={len(mech['tier2_hits'])}, "
-          f"破折号密度={mech['em_dash_density']}, "
+          f"Fiction={len(mech['fiction_ai_tells'])}, "
+          f"StructTic={len(mech['structural_ai_tics'])}, "
+          f"Telling={mech['telling_violations']}, "
+          f"Transition={mech['transition_opener_ratio']}, "
           f"slop_penalty={mech['slop_penalty']}", file=sys.stderr)
 
     # LLM 裁判
@@ -278,6 +415,27 @@ def evaluate_full(
 
     print(result)
     return result
+
+
+# ============================================================================
+# Slop 惩罚分提取（供 pipeline 决策使用）
+# ============================================================================
+
+def get_last_slop_penalty(ch_num: int) -> float:
+    """读取最近一次章节评估的 slop_penalty。
+
+    从 EVAL_LOGS_DIR/chapter_{ch_num:02d}_*.json 中提取
+    mechanical.slop_penalty，供 pipeline 决策使用。
+
+    体裁无关 — slop_penalty 基于 ANTI-SLOP_ZH 通用套话检测，
+    不依赖题材关键词。
+    """
+    logs = sorted(EVAL_LOGS_DIR.glob(f"chapter_{ch_num:02d}_*.json"))
+    if not logs:
+        return 0.0
+    with open(logs[-1], "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data.get("mechanical", {}).get("slop_penalty", 0.0)
 
 
 # ============================================================================

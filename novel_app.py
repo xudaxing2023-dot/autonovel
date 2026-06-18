@@ -9,6 +9,7 @@ novel_app.py — 中文长篇小说自动生成器 交互式启动入口
   4. API Key
   5. 模型名称
   6. 生成模式 (从头开始 / 继续上次)
+  7. 判断模型（可选，留空则共用写作模型）
 
 然后启动 pipeline_orchestrator.py。
 """
@@ -158,6 +159,25 @@ def collect_input():
     print(f"   → 模式: {'从头开始' if mode == 'from_scratch' else '继续上次'}")
     print()
 
+    # 8. 判断模型（可选，避免 AI 自评偏差）
+    print("━" * 50)
+    print("8. 判断模型（可选，留空则使用写作模型进行评估）：")
+    print("   为避免 AI 自评自夸偏差，可配置独立的高判断力模型。")
+    print("   留空全部字段 = 写作模型兼做判断。")
+    print()
+    judge_model_name = input("   [可选] 判断模型名称（例如 deepseek-ai/DeepSeek-V3）：\n   > ").strip()
+    if judge_model_name:
+        print(f"   → 判断模型: {judge_model_name}")
+    else:
+        print(f"   → 判断模型: [共用写作模型]")
+    judge_api_base_url = input("   [可选] 判断模型 API 端点（留空则使用上述写作端点）：\n   > ").strip()
+    if judge_api_base_url:
+        print(f"   → 判断端点: {judge_api_base_url}")
+    judge_api_key = input("   [可选] 判断模型 API Key（留空则使用上述写作 Key）：\n   > ").strip()
+    if judge_api_key:
+        print(f"   → 判断 Key:  已输入")
+    print()
+
     # 构建配置
     config_data = {
         "story_summary": story,
@@ -169,6 +189,9 @@ def collect_input():
         "mode": mode,
         "provider": provider["name"],
         "started_at": "",  # 在 pipeline 启动时填入
+        "judge_model_name": judge_model_name,
+        "judge_api_base_url": judge_api_base_url,
+        "judge_api_key": judge_api_key,
     }
 
     return config_data
@@ -185,6 +208,11 @@ def confirm_and_start(config_data: dict):
     print(f"  提供商:        {config_data['provider']}")
     print(f"  API 端点:      {config_data['api_base_url']}")
     print(f"  模型:          {config_data['model_name']}")
+    judge_display = config_data.get('judge_model_name', '')
+    if judge_display:
+        print(f"  判断模型:      [独立] {judge_display}")
+    else:
+        print(f"  判断模型:      [共用写作模型]")
     print(f"  API 间隔:      {config_data['api_interval_seconds']} 秒")
     print(f"  生成模式:      {'从头开始' if config_data['mode'] == 'from_scratch' else '继续上次'}")
     print("=" * 65)

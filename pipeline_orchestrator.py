@@ -104,8 +104,21 @@ def run_foundation(state: dict) -> dict:
 
         # 5. 生成正典
         step("生成正典 canon.md ...")
-        from foundation.gen_canon import generate_canon
+        from foundation.gen_canon import generate_canon, count_canon_entries
         generate_canon(max_tokens=max_tokens)
+
+        # ★ P2-11 子项 A: 验证正典规模
+        canon_counts = count_canon_entries()
+        canon_total = canon_counts["total"]
+        canon_threshold = cfg.canon_min_entries if cfg.loaded else 400
+        step(f"正典条目数: {canon_total} "
+             f"(世界观{canon_counts['world']} + 角色{canon_counts['character']} "
+             f"+ 时间线{canon_counts['timeline']} + 规则{canon_counts['rules']})")
+        if canon_total < canon_threshold:
+            step(f"⚠ 警告: 正典条目 {canon_total} < {canon_threshold}，"
+                 f"信息密度不足，将在评估中体现")
+            if canon_total < canon_threshold // 2:
+                step("正典严重不足，后续迭代将使用更大 token 预算重试…")
 
         # 6. 生成文风指纹
         step("生成文风指纹 voice.md Part 2 ...")
@@ -203,7 +216,21 @@ def run_drafting(state: dict) -> dict:
             # 评估
             eval_result = evaluate_chapter(ch)
             score = parse_score(eval_result, "overall_score")
-            step(f"第 {ch} 章评分: {score}")
+
+            # ★ P2-11 子项 B: slop_penalty 参与决策
+            from evaluation.evaluate import get_last_slop_penalty
+            slop_penalty = get_last_slop_penalty(ch)
+            slop_threshold = cfg.slop_penalty_threshold if cfg.loaded else 3.0
+            slop_fail = slop_penalty > slop_threshold
+
+            step(f"第 {ch} 章评分: {score}  (slop_penalty: {slop_penalty})")
+
+            if slop_fail and score >= threshold:
+                step(f"⚠ LLM 评分达标 ({score}) 但 slop_penalty 过高 "
+                     f"({slop_penalty} > {slop_threshold})，触发反套话重写…")
+                if ch_file.exists():
+                    ch_file.unlink()
+                continue
 
             if score >= threshold:
                 commit_hash = git_add_commit(
@@ -215,6 +242,65 @@ def run_drafting(state: dict) -> dict:
                 save_state(state)
                 drafted = True
                 step(f"起草 第 {ch}/{total} 章 完成 ✓ (评分 {score}, {word_count} 字)")
+
+                # Voice fingerprint 检查（每章起草后）
+                try:
+                    from voice_fingerprint import analyze_chapter_zh, extract_vocabulary_wells_from_voice
+                    ch_path = CHAPTERS_DIR / f"ch_{ch:02d}.md"
+                    vocab_wells = extract_vocabulary_wells_from_voice()
+                    metrics = analyze_chapter_zh(ch_path, vocab_wells=vocab_wells)
+                    # 简单检查
+                    dialogue_ratio = metrics.get("dialogue_ratio", 0)
+                    em_dash_per_1k = metrics.get("em_dash_per_1k", 0)
+                    abstract_per_1k = metrics.get("abstract_per_1k", 0)
+                    transition_per_1k = metrics.get("transition_per_1k", 0)
+
+                    warnings = []
+                    if dialogue_ratio == 0:
+                        warnings.append("无对话")
+                    if dialogue_ratio > 0.6:
+                        warnings.append(f"对话过多 ({dialogue_ratio:.1%})")
+                    if em_dash_per_1k > 5:
+                        warnings.append(f"破折号密度过高 ({em_dash_per_1k:.1f}/千字)")
+                    if abstract_per_1k > 30:
+                        warnings.append(f"抽象名词密度过高 ({abstract_per_1k:.1f}/千字)")
+                    if transition_per_1k > 15:
+                        warnings.append(f"过渡词密度过高 ({transition_per_1k:.1f}/千字)")
+
+                    if warnings:
+                        step(f"⚠ 文风指纹警告 (第 {ch} 章): {', '.join(warnings)}")
+                    else:
+                        step(f"文风指纹: ✓ (对话 {dialogue_ratio:.0%}, "
+                             f"破折号 {em_dash_per_1k:.1f}/千字)")
+                except Exception as e:
+                    step(f"文风指纹跳过: {e}")
+
+                # ★ P2-11 子项 C: 结构反模式审计
+                try:
+                    from evaluation.antipatterns import run_structural_audit
+                    chapter_text = ch_file.read_text(encoding="utf-8")
+                    audit = run_structural_audit(chapter_text)
+                    antipattern_max = cfg.antipattern_max_warnings if cfg.loaded else 4
+                    if audit["warning_count"] > 0:
+                        if audit["warning_count"] >= antipattern_max:
+                            step(f"⚠ 结构反模式过多 ({audit['warning_count']} 项 ≥ {antipattern_max})，"
+                                 f"触发重写…")
+                            for w in audit["warnings"]:
+                                step(f"  — {w}")
+                            if ch_file.exists():
+                                ch_file.unlink()
+                            # 重置 drafted 标志，下一轮 attempt 会重新起草
+                            drafted = False
+                            continue
+                        else:
+                            step(f"⚠ 结构反模式警告 ({audit['warning_count']} 项):")
+                            for w in audit["warnings"]:
+                                step(f"  — {w}")
+                    else:
+                        step("结构反模式: ✓")
+                except Exception as e:
+                    step(f"结构反模式审计跳过: {e}")
+
                 break
             else:
                 step(f"评分 {score} < {threshold}，丢弃重试")
@@ -326,9 +412,43 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     from revision.adversarial_edit import run_adversarial_edit
     from revision.apply_cuts import run_apply_cuts
     from revision.reader_panel import run_reader_panel
-    from revision.gen_brief import generate_brief
+    from revision.gen_brief import generate_brief, build_auto_brief
     from revision.gen_revision import revise_chapter
     from evaluation.evaluate import evaluate_chapter, evaluate_full
+
+    def _elo_target_weaks(skip_chapters: set = None, max_targets: int = 3) -> list:
+        """解析 Elo 锦标赛结果，返回底部章节编号列表。
+
+        读取 EDIT_LOGS_DIR/tournament_results.json，按 Elo 升序取底部章节，
+        排除已在 skip_chapters 中的章节，最多返回 max_targets 个。
+        """
+        if skip_chapters is None:
+            skip_chapters = set()
+
+        tournament_path = EDIT_LOGS_DIR / "tournament_results.json"
+        if not tournament_path.exists():
+            return []
+
+        try:
+            data = json.loads(tournament_path.read_text(encoding="utf-8"))
+            ranking = data.get("ranking", [])
+        except Exception:
+            return []
+
+        # 按 Elo 升序（最弱在前）
+        sorted_asc = sorted(ranking, key=lambda x: x.get("elo", 1000))
+        targets = []
+        for item in sorted_asc:
+            ch_num = item.get("chapter", "")
+            # 提取数字
+            if isinstance(ch_num, str):
+                ch_str = ch_num.replace("ch_", "").lstrip("0") or "0"
+                ch_num = int(ch_str) if ch_str.isdigit() else 0
+            if ch_num and ch_num not in skip_chapters:
+                targets.append(ch_num)
+            if len(targets) >= max_targets:
+                break
+        return targets
 
     for cycle in range(start_cycle, max_cycles + 1):
         banner(f"修订 循环 {cycle}/{max_cycles}", "-")
@@ -419,6 +539,100 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                            word_count, "discard",
                            f"循环 {cycle}: {question} 倒退 {pre_score}->{post_score}")
 
+        # Step 5.5: Elo 锦标赛 + 底部章节修订
+        step("运行 Elo 章节锦标赛 ...")
+        try:
+            from revision.compare_chapters import run_compare_chapters
+            run_compare_chapters(max_tokens=max_tokens)
+            step("Elo 锦标赛 完成 ✓")
+        except Exception as e:
+            step(f"Elo 锦标赛跳过: {e}")
+
+        # 获取已修订章节集合（共识驱动修订过的）
+        revised_in_cycle = {item["chapter"] for item in consensus_items}
+
+        # 解析 Elo 底部章节
+        elo_targets = _elo_target_weaks(skip_chapters=revised_in_cycle, max_targets=3)
+        if elo_targets:
+            step(f"Elo 底部章节: {elo_targets}")
+
+        for ch_num in elo_targets:
+            ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
+            if not ch_file.exists():
+                continue
+
+            banner(f"  Elo 驱动修订 第 {ch_num} 章 [底部排名]", ".")
+
+            # 修订前评估
+            try:
+                pre_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
+                pre_score = parse_score(pre_eval, "overall_score")
+            except Exception:
+                pre_score = 0
+
+            step(f"第 {ch_num} 章 Elo 修订前评分: {pre_score}")
+
+            # 生成修订摘要（--auto 模式，三源交叉引用）
+            brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_elo_cycle{cycle}.md"
+            try:
+                ch, brief_text = build_auto_brief()
+                brief_file.write_text(brief_text, encoding="utf-8")
+                if not brief_text.strip():
+                    raise ValueError("空摘要")
+            except Exception:
+                brief_content = (
+                    f"# 修订摘要: 第 {ch_num} 章 (Elo 驱动)\n\n"
+                    f"## 来源: Elo 锦标赛 循环 {cycle}\n\n"
+                    f"Elo 排名显示本章为全书最弱章节之一。"
+                    f"请大幅提升文字品质、节奏和情感效果。\n"
+                )
+                brief_file.write_text(brief_content, encoding="utf-8")
+
+            # 执行修订
+            step(
+                f"按摘要修订第 {ch_num} 章 "
+                f"(retries=2, 总超时=1200s) ..."
+            )
+            try:
+                revise_chapter(ch_num, brief_file, max_tokens=max_tokens,
+                               retries=2, max_total_time=1200)
+            except Exception as e:
+                step(f"Elo 修订第 {ch_num} 章失败: {e}")
+                continue
+
+            # 修订后评估
+            try:
+                post_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
+                post_score = parse_score(post_eval, "overall_score")
+            except Exception:
+                post_score = 0
+
+            word_count = (
+                len(ch_file.read_text(encoding="utf-8")
+                     .replace(" ", "").replace("\n", ""))
+            )
+
+            step(f"第 {ch_num} 章 Elo: {pre_score} -> {post_score}")
+
+            # 提交或回退
+            if post_score >= pre_score:
+                commit_hash = git_add_commit(
+                    f"Elo修订 循环{cycle}: ch{ch_num:02d} "
+                    f"{pre_score}->{post_score}"
+                )
+                log_result(commit_hash, f"elo-rev-ch{ch_num:02d}", post_score,
+                           word_count, "keep",
+                           f"Elo 循环 {cycle}: ch{ch_num:02d} "
+                           f"{pre_score}->{post_score}")
+                step(f"Elo 修订 第 {ch_num} 章 完成 ✓ ({pre_score} -> {post_score})")
+            else:
+                step(f"Elo 修订使评分下降 ({post_score} < {pre_score})，回退")
+                git_reset_hard("HEAD")
+                log_result("reverted", f"elo-rev-ch{ch_num:02d}", post_score,
+                           word_count, "discard",
+                           f"Elo 循环 {cycle}: ch{ch_num:02d} "
+                           f"倒退 {pre_score}->{post_score}")
+
         # Step 6: 全文评估（max_total_time=600 = 10分钟）
         step("运行全文评估 (总超时=600s) ...")
         full_eval = evaluate_full(max_total_time=600)
@@ -449,13 +663,252 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
         prev_score = novel_score
 
     # =========================================================
-    # Phase 3b: 深度审阅循环
+    # Phase 3b: 审阅修订闭环
     # =========================================================
-    try:
+
+    def _parse_review_weak_chapters() -> list:
+        """解析深度审阅 JSON，提取被指出的弱章节编号列表。
+
+        从 EDIT_LOGS_DIR/review_round*.json 中读取审阅报告，
+        在负面上下文（问题/弱点/严重/MAJOR 等关键词 ±200 字窗口）中
+        匹配章节引用，按引用频次降序返回最多5个弱章节编号。
+        若无明确章节引用，返回中段 1/3~2/3 章节作为兜底。
+        """
+        import re
+        review_jsons = sorted(EDIT_LOGS_DIR.glob("review_round*.json"))
+        if not review_jsons:
+            return []
+
+        chapter_hits: dict[int, int] = {}
+        negative_keywords = [
+            "问题", "弱点", "严重", "必须", "MAJOR", "薄弱", "不足", "缺乏",
+            "需改进", "需重写", "拖沓", "断裂", "不连贯", "最差", "最低",
+            "weak", "flaw", "poor", "worst", "problem", "fail", "thin",
+        ]
+
+        for rj in review_jsons:
+            try:
+                data = json.loads(rj.read_text(encoding="utf-8"))
+                raw = data.get("raw_review", "")
+            except Exception:
+                continue
+
+            for ch_match in re.finditer(
+                r'(?:第|Ch\.?|Chapter\s?)\s*(\d+)\s*(?:章|节|段)',
+                raw, re.IGNORECASE,
+            ):
+                ch_num = int(ch_match.group(1))
+                start = max(0, ch_match.start() - 200)
+                context = raw[start:ch_match.start() + 200]
+                if any(kw in context for kw in negative_keywords):
+                    chapter_hits[ch_num] = chapter_hits.get(ch_num, 0) + 1
+
+        if not chapter_hits:
+            # 兜底: 无明确章节引用时，取全文中段 1/3~2/3 章节
+            chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
+            total = len(chapter_files)
+            if total >= 6:
+                mid_start = total // 3
+                mid_end = 2 * total // 3
+                fallback = list(range(mid_start + 1, mid_end + 1))
+                return fallback[:5]
+            return []
+
+        # 按引用频次降序，取前5
+        sorted_chs = sorted(chapter_hits.items(), key=lambda x: -x[1])
+        return [ch for ch, _ in sorted_chs[:5]]
+
+    def _run_review_revision_loop(
+        state: dict,
+        max_tokens: int,
+        max_revision_rounds: int = 3,
+        retries: int = 2,
+        max_total_time: int = 1200,
+    ) -> None:
+        """Phase 3b 审阅修订闭环。
+
+        审阅 → 解析弱章节 → auto brief → 修订 → 评估 → commit/回退
+        → apply_cuts → 循环至质量通过或达到上限。
+        """
         from revision.review import run_review_loop
-        run_review_loop(state, max_tokens=max_tokens, retries=2, max_total_time=1200)
+        from revision.gen_brief import build_auto_brief
+
+        for rnd in range(1, max_revision_rounds + 1):
+            banner(f"审阅修订 轮次 {rnd}/{max_revision_rounds}", "=")
+
+            # --- Step A: 深度审阅 ---
+            step("提交手稿给裁判模型深度审阅 ...")
+            try:
+                run_review_loop(state=None, max_tokens=max_tokens, max_rounds=1,
+                                retries=retries, max_total_time=max_total_time)
+            except Exception as e:
+                step(f"深度审阅失败: {e}")
+                break
+
+            # --- Step B: 质量检查 ---
+            review_jsons = sorted(EDIT_LOGS_DIR.glob("review_round*.json"))
+            if not review_jsons:
+                step("无审阅 JSON，跳过修订")
+                break
+
+            latest_review = json.loads(review_jsons[-1].read_text(encoding="utf-8"))
+            stars = latest_review.get("stars", 0)
+            major_items = latest_review.get("major_items", 0)
+
+            step(f"审阅结果: ★{'★' * int(stars)}, {major_items} 严重问题")
+
+            if stars >= 4.5 and major_items == 0:
+                step("★★★★½ 且无严重问题 — 质量通过，无需修订")
+                break
+
+            # --- Step C: 解析弱章节 ---
+            weak_chapters = _parse_review_weak_chapters()
+            if not weak_chapters:
+                step("审阅未指出具体弱章节 — 跳过修订")
+                break
+
+            step(f"弱章节: {weak_chapters}")
+
+            # --- Step D: 逐章修订 ---
+            any_improved = False
+            for idx_ch, ch_num in enumerate(weak_chapters):
+                ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
+                if not ch_file.exists():
+                    step(f"第 {ch_num} 章不存在，跳过")
+                    continue
+
+                banner(
+                    f"  修订 第 {ch_num} 章 [{idx_ch + 1}/{len(weak_chapters)}]",
+                    ".",
+                )
+
+                # D1. 修订前评估
+                try:
+                    pre_eval = evaluate_chapter(
+                        ch_num, retries=retries, max_total_time=600,
+                    )
+                    pre_score = parse_score(pre_eval, "overall_score")
+                except Exception:
+                    pre_score = 0
+
+                step(f"第 {ch_num} 章 修订前评分: {pre_score}")
+
+                # D2. 生成修订摘要（--auto 模式，三源交叉引用）
+                brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_review_rnd{rnd}.md"
+                try:
+                    ch, brief_text = build_auto_brief()
+                    if ch is None:
+                        ch = ch_num
+                    brief_file.write_text(brief_text, encoding="utf-8")
+                    if not brief_text.strip():
+                        raise ValueError("空摘要")
+                except Exception:
+                    brief_content = (
+                        f"# 修订摘要: 第 {ch_num} 章\n\n"
+                        f"## 来源: 深度审阅 轮次 {rnd}\n\n"
+                        f"审阅指出本章需要改进。"
+                        f"请基于最新评估和审阅意见进行修订。\n"
+                    )
+                    brief_file.write_text(brief_content, encoding="utf-8")
+
+                # D3. 执行修订
+                step(
+                    f"按摘要修订第 {ch_num} 章 "
+                    f"(retries={retries}, 总超时={max_total_time}s) ..."
+                )
+                try:
+                    revise_chapter(
+                        ch_num, brief_file, max_tokens=max_tokens,
+                        retries=retries, max_total_time=max_total_time,
+                    )
+                except Exception as e:
+                    step(f"修订第 {ch_num} 章失败: {e}")
+                    continue
+
+                # D4. 修订后评估
+                try:
+                    post_eval = evaluate_chapter(
+                        ch_num, retries=retries, max_total_time=600,
+                    )
+                    post_score = parse_score(post_eval, "overall_score")
+                except Exception:
+                    post_score = 0
+
+                word_count = (
+                    len(ch_file.read_text(encoding="utf-8")
+                         .replace(" ", "").replace("\n", ""))
+                )
+
+                step(f"第 {ch_num} 章: {pre_score} -> {post_score}")
+
+                # D5. 提交或回退
+                if post_score >= pre_score:
+                    commit_hash = git_add_commit(
+                        f"审阅修订 轮次{rnd}: ch{ch_num:02d} "
+                        f"{pre_score}->{post_score}",
+                    )
+                    log_result(
+                        commit_hash, f"review-rev-ch{ch_num:02d}", post_score,
+                        word_count, "keep",
+                        f"审阅修订 轮次{rnd}: ch{ch_num:02d} "
+                        f"{pre_score}->{post_score}",
+                    )
+                    any_improved = True
+                    step(f"修订 第 {ch_num} 章 完成 ✓ ({pre_score} -> {post_score})")
+                else:
+                    step(
+                        f"修订使评分下降 ({post_score} < {pre_score})，回退"
+                    )
+                    git_reset_hard("HEAD")
+                    log_result(
+                        "reverted", f"review-rev-ch{ch_num:02d}", post_score,
+                        word_count, "discard",
+                        f"审阅修订 轮次{rnd}: ch{ch_num:02d} "
+                        f"倒退 {pre_score}->{post_score}",
+                    )
+
+                # D6. 应用裁剪
+                try:
+                    run_apply_cuts(
+                        str(ch_num), ["OVER-EXPLAIN", "REDUNDANT"], min_fat=15,
+                    )
+                except Exception as e:
+                    step(f"apply_cuts 第 {ch_num} 章跳过: {e}")
+
+            # --- Step E: 提交本轮修订 ---
+            if any_improved:
+                commit_hash = git_add_commit(
+                    f"审阅修订 轮次{rnd} 完成: 修订 {len(weak_chapters)} 章",
+                )
+                log_result(
+                    commit_hash, f"review-revision-round-{rnd}", 0,
+                    count_words_in_chapters(), "cycle",
+                    f"审阅修订 轮次{rnd}: 修订 {len(weak_chapters)} 章",
+                )
+
+            state["review_revision_round"] = rnd
+            save_state(state)
+
+        # 最终全文评估
+        step("审阅修订后全文评估 ...")
+        try:
+            full_eval = evaluate_full(max_total_time=600)
+            novel_score = parse_score(full_eval, "novel_score")
+            if novel_score < 0:
+                novel_score = parse_score(full_eval, "overall_score")
+            step(f"最终小说评分: {novel_score}")
+            state["novel_score"] = novel_score
+        except Exception as e:
+            step(f"全文评估失败: {e}")
+
+        banner("审阅修订闭环 完成")
+
+    # 执行审阅修订闭环
+    try:
+        _run_review_revision_loop(state, max_tokens, max_revision_rounds=3,
+                                   retries=2, max_total_time=1200)
     except Exception as e:
-        step(f"深度审阅跳过: {e}")
+        step(f"审阅修订闭环跳过: {e}")
 
     state["phase"] = "export"
     state["current_focus"] = "export"

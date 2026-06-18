@@ -51,7 +51,7 @@ def generate_canon(max_tokens: int = 16000) -> None:
 按时间顺序列出已明确陈述的历史事件。
 
 ## 四、规则硬事实
-列出力量/魔法/科技体系的硬规则。
+列出核心规则/特殊体系的硬规则（根据题材可能是能力体系、社会制度、科技设定等）。
 
 ## 五、矛盾标注
 如果发现任何矛盾或冲突的事实，标注在此处以供后续解决。
@@ -67,6 +67,48 @@ def generate_canon(max_tokens: int = 16000) -> None:
     canon_path = OUTPUT_DIR / "canon.md"
     canon_path.write_text(result, encoding="utf-8")
     step(f"正典已保存: {canon_path}")
+
+
+def count_canon_entries(canon_path=None) -> dict:
+    """
+    统计 canon.md 中各节事实条目数。
+    条目 = 以「—」开头的行（排除空行和标题行）。
+    返回: {"total": int, "world": int, "character": int, "timeline": int, "rules": int}
+    体裁无关 — 纯文本计数，适用于任何类型的小说。
+    """
+    from pathlib import Path as _Path
+    if canon_path is None:
+        canon_path = OUTPUT_DIR / "canon.md"
+    if isinstance(canon_path, str):
+        canon_path = _Path(canon_path)
+    if not canon_path.exists():
+        return {"total": 0, "world": 0, "character": 0, "timeline": 0, "rules": 0}
+
+    text = canon_path.read_text(encoding="utf-8")
+    sections = {"一、世界观": 0, "二、角色": 0, "三、时间线": 0, "四、规则": 0}
+    current_section = None
+
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        # 检测节标题 — 匹配 "## 一、世界观硬事实" 等
+        for key in sections:
+            if key in line and line.startswith("##"):
+                current_section = key
+                break
+        # 统计条目
+        if current_section and line.startswith("—"):
+            sections[current_section] += 1
+
+    total = sum(sections.values())
+    return {
+        "total": total,
+        "world": sections["一、世界观"],
+        "character": sections["二、角色"],
+        "timeline": sections["三、时间线"],
+        "rules": sections["四、规则"],
+    }
 
 
 if __name__ == "__main__":

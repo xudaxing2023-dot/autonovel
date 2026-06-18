@@ -286,8 +286,98 @@ def call_judge(
     retries: int = 3,
     max_total_time: int = None,
 ) -> str:
-    """裁判模型调用（默认低温度，偏判断力）。"""
+    """裁判模型调用（默认低温度，偏判断力）。
+
+    如果配置了独立的 judge_model_name / judge_api_base_url，
+    则使用独立模型进行判断，避免 Writer/Judge 同一模型的自评偏差。
+    """
+    cfg = config
+    cfg.load()
+    judge_model = cfg.judge_model_name
+    judge_base = cfg.judge_api_base_url
+    judge_key = cfg.judge_api_key
+
+    # 如果配置了独立判断模型，使用独立调用
+    if judge_model or judge_base or judge_key:
+        return _call_with_judge_config(
+            prompt, system=system, max_tokens=max_tokens, temperature=temperature,
+            retries=retries, max_total_time=max_total_time,
+            judge_model=judge_model or cfg.model_name,
+            judge_base=judge_base or cfg.api_base_url,
+            judge_key=judge_key or cfg.api_key,
+        )
+
+    # 否则退回共用模式（保持向后兼容）
     return call_llm(
         prompt, system=system, max_tokens=max_tokens, temperature=temperature,
         retries=retries, max_total_time=max_total_time,
     )
+
+
+def _call_with_judge_config(
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: int = 4096,
+    temperature: float = 0.3,
+    retries: int = 3,
+    max_total_time: int = None,
+    judge_model: str = "",
+    judge_base: str = "",
+    judge_key: str = "",
+) -> str:
+    """使用独立的 Judge 配置调用 API（内部函数，不对外暴露）。"""
+    import time as _time
+    url = judge_base.rstrip("/") + "/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {judge_key}",
+        "Content-Type": "application/json",
+    }
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+    payload = {
+        "model": judge_model,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
+
+    limiter = get_rate_limiter()
+    last_error = None
+    t_start = _time.time()
+
+    for attempt in range(1, retries + 1):
+        if max_total_time is not None:
+            elapsed_total = _time.time() - t_start
+            if elapsed_total > max_total_time:
+                raise RuntimeError(
+                    f"Judge API 调用总超时: 累计 {elapsed_total:.0f}s 超过 "
+                    f"{max_total_time}s 限制"
+                )
+        limiter.wait()
+        try:
+            resp = httpx.post(url, headers=headers, json=payload, timeout=600)
+            if resp.status_code == 200:
+                data = resp.json()
+                return data["choices"][0]["message"]["content"]
+            elif resp.status_code == 429:
+                _time.sleep(10 * attempt)
+                last_error = RuntimeError(f"HTTP 429: {resp.text[:300]}")
+                continue
+            else:
+                print(f"  [Judge API] 调用失败 — HTTP {resp.status_code}: {resp.text[:200]}", file=sys.stderr)
+                last_error = RuntimeError(f"HTTP {resp.status_code}")
+                if attempt < retries:
+                    _time.sleep(5 * attempt)
+                continue
+        except httpx.TimeoutException:
+            last_error = RuntimeError("请求超时")
+            continue
+        except Exception as e:
+            last_error = e
+            if attempt < retries:
+                _time.sleep(5 * attempt)
+            continue
+
+    raise RuntimeError(f"Judge API 调用失败（{retries} 次重试后）: {last_error}")

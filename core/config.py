@@ -105,6 +105,23 @@ class Config:
         """小说类型，从梗概自动识别。"""
         return self._data.get("genre", "玄幻")
 
+    # ——— 判断模型独立配置（实现 Writer/Judge 分离，避免自我恭维偏差） ———
+
+    @property
+    def judge_model_name(self) -> str:
+        """判断模型名称。留空则默认使用写作模型。"""
+        return self._data.get("judge_model_name", "")
+
+    @property
+    def judge_api_base_url(self) -> str:
+        """判断模型 API 端点。留空则默认使用写作 API。"""
+        return self._data.get("judge_api_base_url", "")
+
+    @property
+    def judge_api_key(self) -> str:
+        """判断模型 API Key。留空则默认使用写作 API Key。"""
+        return self._data.get("judge_api_key", "")
+
     # ——— 阈值（根据模型能力自动调整） ———
 
     @property
@@ -131,6 +148,23 @@ class Config:
     @property
     def max_tokens_per_call(self) -> int:
         return self._data.get("max_tokens_per_call", 16000)
+
+    # ——— P2-11: slop/反模式/canon 门槛 ———
+
+    @property
+    def canon_min_entries(self) -> int:
+        """正典最低条目数门槛。不足时发出警告，严重不足 (< 50%) 触发重生成。"""
+        return self._data.get("canon_min_entries", 400)
+
+    @property
+    def slop_penalty_threshold(self) -> float:
+        """slop_penalty 超过此值触发强制重写（即使 LLM 评分达标）。体裁无关。"""
+        return self._data.get("slop_penalty_threshold", 3.0)
+
+    @property
+    def antipattern_max_warnings(self) -> int:
+        """每章最多容忍的结构反模式警告数。超过则触发强制重写。"""
+        return self._data.get("antipattern_max_warnings", 4)
 
     # ——— 模型能力等级 ———
 
