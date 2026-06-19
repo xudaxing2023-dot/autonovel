@@ -13,7 +13,7 @@ def build_chapter_prompt(
     characters_text: str,
     chapter_outline: str,
     next_chapter_preview: str,
-    prev_chapter_tail: str,
+    prev_context: str,
     canon_text: str = "",
     novel_title: str = "",
     protagonist_name: str = "",
@@ -33,16 +33,16 @@ def build_chapter_prompt(
 【下一章预告（保持连续——本章结尾应自然衔接到下章）】
 {next_chapter_preview}
 
-【上一章结尾（从此处继续）】
-{prev_chapter_tail}
+【前文回顾——保持情节、对话、情感连续性】
+{prev_context}
 
-【世界观设定（参考）】
-{world_text[:5000]}
+【世界观设定】
+{world_text}
 
-【角色注册表（参考说话模式和行为特征）】
-{characters_text[:5000]}
+【角色注册表】
+{characters_text}
 
-{('【正典（已确立的硬事实——不可违反）】' + canon_text[:3000]) if canon_text else ''}
+{('【正典（已确立的硬事实——不可违反）】' + canon_text) if canon_text else ''}
 
 【写作指令】
 
@@ -90,5 +90,8 @@ def build_chapter_prompt(
 
 17. 【禁止过度解释】：如果场景已经展示了什么，叙述者不要再复述一遍。
     相信场景的力量。
+
+18. 【跨章一致性】: 复读前文中角色正在进行的动作、未完成的对话、
+    持有的物品、当前的情绪状态。不要重置或遗忘。
 
 现在，从第一句话到最后一句话，写出完整的章节。"""

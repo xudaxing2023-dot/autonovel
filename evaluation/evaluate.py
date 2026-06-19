@@ -271,6 +271,70 @@ def slop_score_zh(text: str) -> dict:
     }
 
 
+def _resolve_outline_path(chapter_num: int | None = None) -> tuple:
+    """卷感知大纲路径解析。
+
+    为评估函数提供正确的大纲文件路径：
+    — chapter_num 有值 → 优先 outline_volume{N}.md → 回退 outline.md
+    — chapter_num 为 None → 优先 outline.md → 回退合并所有 outline_volume*.md
+
+    Returns:
+        (path, label): path 为 None 表示无任何大纲文件或需手动合并；label 供日志使用。
+    """
+    if chapter_num is not None:
+        cfg = config
+        cfg.load()
+        ch_per_vol = max(cfg.chapters_per_volume, 1)
+        vol_num = (chapter_num - 1) // ch_per_vol + 1
+
+        vol_path = OUTPUT_DIR / f"outline_volume{vol_num}.md"
+        if vol_path.exists():
+            return (vol_path, f"outline_volume{vol_num}.md（第 {vol_num} 卷章级大纲）")
+
+        # 回退到合并版
+        fallback = OUTPUT_DIR / "outline.md"
+        if fallback.exists():
+            return (fallback, "outline.md（回退：卷级大纲未找到）")
+
+        return (None, "")
+
+    # 全局评估：优先合并版
+    merged = OUTPUT_DIR / "outline.md"
+    if merged.exists():
+        return (merged, "outline.md（合并版）")
+
+    # 回退：手动合并所有卷级大纲
+    vol_files = sorted(OUTPUT_DIR.glob("outline_volume*.md"))
+    if vol_files:
+        return (None, f"outline_volume*.md × {len(vol_files)}（回退：合并版未找到）")
+
+    return (None, "")
+
+
+def _load_outline(chapter_num: int | None = None) -> str:
+    """加载大纲文本（卷感知）。
+
+    Args:
+        chapter_num: 章节编号。有值时优先加载对应卷的大纲；None 时加载全局大纲。
+
+    Returns:
+        大纲文本字符串。无任何大纲文件时返回空字符串。
+    """
+    path, _label = _resolve_outline_path(chapter_num)
+    if path is not None:
+        return path.read_text(encoding="utf-8")
+
+    # 回退合并模式：拼接所有 outline_volume*.md
+    vol_files = sorted(OUTPUT_DIR.glob("outline_volume*.md"))
+    if vol_files:
+        parts = []
+        for vf in vol_files:
+            parts.append(vf.read_text(encoding="utf-8"))
+        return "\n\n".join(parts)
+
+    return ""
+
+
 # ============================================================================
 # 评估入口
 # ============================================================================
@@ -287,13 +351,12 @@ def evaluate_foundation(
 
     world_path = OUTPUT_DIR / "world.md"
     chars_path = OUTPUT_DIR / "characters.md"
-    outline_path = OUTPUT_DIR / "outline.md"
     canon_path = OUTPUT_DIR / "canon.md"
     mystery_path = OUTPUT_DIR / "MYSTERY.md"
 
     world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
     chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
-    outline = outline_path.read_text(encoding="utf-8") if outline_path.exists() else ""
+    outline = _load_outline()  # 卷感知：优先 outline.md（合并版），回退合并所有 outline_volume*.md
     canon = canon_path.read_text(encoding="utf-8") if canon_path.exists() else ""
     mystery = mystery_path.read_text(encoding="utf-8") if mystery_path.exists() else ""
 
@@ -346,8 +409,7 @@ def evaluate_chapter(
           f"slop_penalty={mech['slop_penalty']}", file=sys.stderr)
 
     # LLM 裁判
-    outline_path = OUTPUT_DIR / "outline.md"
-    outline = outline_path.read_text(encoding="utf-8") if outline_path.exists() else ""
+    outline = _load_outline(chapter_num=ch_num)  # 卷感知：优先 outline_volume{N}.md
     voice_path = OUTPUT_DIR / "voice.md"
     voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
     canon_path = OUTPUT_DIR / "canon.md"
@@ -390,8 +452,7 @@ def evaluate_full(
         f.read_text(encoding="utf-8") for f in chapter_files
     )
 
-    outline_path = OUTPUT_DIR / "outline.md"
-    outline = outline_path.read_text(encoding="utf-8") if outline_path.exists() else ""
+    outline = _load_outline()  # 卷感知：优先 outline.md（合并版），回退合并所有 outline_volume*.md
     voice_path = OUTPUT_DIR / "voice.md"
     voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
 

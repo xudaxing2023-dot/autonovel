@@ -6,8 +6,10 @@ novel_app.py — 中文长篇小说自动生成器 交互式启动入口
   1. API 提供商选择 (NVIDIA / 硅基流动 / DeepSeek / 自定义)
   2. API Key
   3. 模型名称
+  3.5. 分阶段模型配置（方案 D 新增——可选，Phase 1/2/3 各自独立）
   4. 故事来源（手动输入 / AI 种子生成 → 挑选）
   5. 总章节数
+  5.5. 分卷设置（方案 D 新增——总卷数 + 每卷章数，默认 1 卷含全部章节）
   6. 生成模式 (从头开始 / 继续上次)
   7. 判断模型（可选，留空则共用写作模型）
 
@@ -304,6 +306,54 @@ def _collect_api_config() -> dict:
     return temp_config
 
 
+# ——— 分阶段模型配置采集（方案 D 步骤 3.5） ———
+
+def _collect_phase_configs() -> dict:
+    """采集 Phase 1/2/3 各自的模型配置（可选——留空则共用写作模型）。
+
+    返回 dict 的键名与 core/config.py _SECRET_KEYS 一致：
+      p1_api_key, p1_api_base_url, p1_model_name,
+      p2_api_key, p2_api_base_url, p2_model_name,
+      p3_api_key, p3_api_base_url, p3_model_name.
+    空值项不会被写入 .env，自动走 config 回退链。
+    不采集 P2_CTX（高级选项，用户可手动编辑 .env）。
+    """
+    _section("3.5. 分阶段模型配置（可选——留空全部字段则共用上述写作模型）:")
+
+    print("   Phase 1 (基础构建): world/characters/outline/canon/voice 生成。")
+    print("   Phase 2 (章节起草): 需要大上下文窗口（建议用 1M 上下文模型）。")
+    print("   Phase 3 (修订评估): 对抗编辑/读者评审/全文评估。")
+    print("   P1 和 P3 建议用免费模型；P2 建议用有大上下文的模型。")
+    print()
+
+    # --- Phase 1 ---
+    print("   --- Phase 1: 基础构建 ---")
+    p1_model = input("   [可选] 模型名称: ").strip()
+    p1_key   = input("   [可选] API Key:   ").strip()
+    p1_url   = input("   [可选] API 端点:  ").strip()
+    print()
+
+    # --- Phase 2 ---
+    print("   --- Phase 2: 章节起草 ---")
+    p2_model = input("   [可选] 模型名称: ").strip()
+    p2_key   = input("   [可选] API Key:   ").strip()
+    p2_url   = input("   [可选] API 端点:  ").strip()
+    print()
+
+    # --- Phase 3 ---
+    print("   --- Phase 3: 修订评估 ---")
+    p3_model = input("   [可选] 模型名称: ").strip()
+    p3_key   = input("   [可选] API Key:   ").strip()
+    p3_url   = input("   [可选] API 端点:  ").strip()
+    print()
+
+    return {
+        "p1_model_name": p1_model, "p1_api_key": p1_key, "p1_api_base_url": p1_url,
+        "p2_model_name": p2_model, "p2_api_key": p2_key, "p2_api_base_url": p2_url,
+        "p3_model_name": p3_model, "p3_api_key": p3_key, "p3_api_base_url": p3_url,
+    }
+
+
 # ——— 故事梗概采集（步骤 4） ———
 
 def _input_story_manually() -> str:
@@ -419,15 +469,57 @@ def _collect_story() -> str:
 # ——— 剩余配置采集（步骤 5–7） ———
 
 def _collect_remaining(temp_config: dict, story: str) -> dict:
-    """采集章节数、生成模式、判断模型，构建最终配置。"""
-    # 5. 总章节数
+    """采集章节数、卷数、生成模式、判断模型，构建最终配置。"""
+    # 4. 总章节数（不变）
     _section("4. 小说总章节数（建议 12–30，默认 24）：")
     ch_input = input("   > ").strip()
     total_chapters = int(ch_input) if ch_input.isdigit() and int(ch_input) > 0 else 24
     print(f"   → 总章节数: {total_chapters}")
     print()
 
-    # 6. 生成模式
+    # ★ 步骤 4.5: 分卷设置（方案 D 新增）★
+    _section("4.5. 分卷设置:")
+    print("   方案 D 始终启用分层大纲。将小说分为若干卷，每卷固定章数。")
+    print("   单卷时（默认），一卷包含全部章节，功能等价于原版扁平大纲。")
+    print()
+    vol_input = input("   总卷数（默认: 1，最少 1）: ").strip()
+    total_volumes = int(vol_input) if vol_input.isdigit() and int(vol_input) >= 1 else 1
+
+    print(f"   → 总卷数: {total_volumes}")
+    # 默认每卷章数 = 总章节数 / 总卷数（整除，用户可覆盖）
+    default_chpv = total_chapters // total_volumes
+    chpv_input = input(
+        f"   每卷章节数（默认: {default_chpv}，总计 {total_chapters} 章）: "
+    ).strip()
+    chapters_per_volume = (
+        int(chpv_input) if chpv_input.isdigit() and int(chpv_input) > 0
+        else default_chpv
+    )
+    print(f"   → 每卷章数: {chapters_per_volume}")
+
+    # 一致性校验
+    expected_ch = total_volumes * chapters_per_volume
+    if expected_ch != total_chapters:
+        print()
+        print(
+            f"   ⚠ 注意: {total_volumes} 卷 × {chapters_per_volume} 章/卷"
+            f" = {expected_ch} 章"
+        )
+        print(f"     与当前总章节数 {total_chapters} 不一致。")
+        use_expected = input(
+            f"     是否将总章节数改为 {expected_ch}？[Y/n]: "
+        ).strip().lower()
+        if use_expected != "n":
+            total_chapters = expected_ch
+            print(f"     → 总章节数已更新为: {total_chapters}")
+        else:
+            print(
+                f"     → 保持总章节数: {total_chapters}"
+                f"（卷间章节数可能不均）"
+            )
+    print()
+
+    # 5. 生成模式（不变——仅 _section 标题编号微调）
     _section("5. 生成模式：")
     print("   [1] 从头开始生成（完整流水线）")
     print("   [2] 继续上次生成（从 state.json 恢复）")
@@ -480,6 +572,9 @@ def _collect_remaining(temp_config: dict, story: str) -> dict:
         **temp_config,
         "story_summary": story,
         "total_chapters": total_chapters,
+        # ★ 方案 D 新增
+        "total_volumes": total_volumes,
+        "chapters_per_volume": chapters_per_volume,
         "mode": mode,
         "started_at": datetime.now().isoformat(),
         "judge_model_name": judge_model_name,
@@ -514,10 +609,16 @@ def collect_input() -> dict:
     else:
         temp_config = _collect_api_config()
 
+    # Part 1.5: 分阶段模型配置（方案 D 新增——全部可选）
+    phase_configs = _collect_phase_configs()
+    for k, v in phase_configs.items():
+        if v:
+            temp_config[k] = v
+
     # Part 2: 故事梗概
     story = _collect_story()
 
-    # Part 3: 剩余配置
+    # Part 3: 剩余配置（含卷数）
     config_data = _collect_remaining(temp_config, story)
 
     return config_data
@@ -533,9 +634,23 @@ def confirm_and_start(config_data: dict):
     print("=" * 65)
     print(f"  故事梗概:      {config_data['story_summary'][:60].replace(chr(10), ' ')}...")
     print(f"  总章节数:      {config_data['total_chapters']} 章")
+
+    # ★ 方案 D: 分卷信息（始终显示，方案 D 默认启用分层大纲）
+    total_vol = config_data.get("total_volumes", 1)
+    chpv = config_data.get("chapters_per_volume", 0)
+    print(f"  分卷:          {total_vol} 卷 × {chpv} 章/卷")
+
     print(f"  提供商:        {config_data['provider']}")
     print(f"  API 端点:      {config_data['api_base_url']}")
     print(f"  模型:          {config_data['model_name']}")
+
+    # ★ 方案 D: Phase 独立模型（仅当有独立配置时显示）
+    for phase_label, prefix in [("P1 模型", "p1"), ("P2 模型", "p2"), ("P3 模型", "p3")]:
+        model_key = f"{prefix}_model_name"
+        phase_model = config_data.get(model_key, "")
+        if phase_model:
+            print(f"  {phase_label}:      [独立] {phase_model}")
+
     judge_display = config_data.get('judge_model_name', '')
     if judge_display:
         print(f"  判断模型:      [独立] {judge_display}")
@@ -551,7 +666,7 @@ def confirm_and_start(config_data: dict):
         print("  已取消。")
         sys.exit(0)
 
-    # 保存最终配置
+    # 保存最终配置（Phase 敏感键自动写入 .env，卷级非敏感键写入 config.json）
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     config.save(config_data)
 

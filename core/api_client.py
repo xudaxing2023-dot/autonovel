@@ -12,6 +12,7 @@ core/api_client.py — 通用 OpenAI Chat Completions 兼容 API 客户端
 - 自动 system role 兼容 (不支持则合并到 user message)
 - 统一超时、重试、错误处理
 - 所有生成脚本通过此模块调用 LLM，消除重复代码
+- Phase 分离模型配置（方案 D）：各 Phase 可使用独立 API Key/Base URL/Model
 """
 
 import json
@@ -80,58 +81,54 @@ _SYSTEM_ROLE_BLACKLIST = [
 _SYSTEM_ROLE_FAILED_FOR_ENDPOINT: set = set()  # 运行时检测到不支持则缓存
 
 
-def call_llm(
+def _build_messages(
     prompt: str,
-    system: Optional[str] = None,
+    system: Optional[str],
+    api_base: str,
+    model: str,
+) -> list:
+    """构建 messages 列表，处理 system role 兼容性。
+
+    如果端点已知不支持 system role，则将 system prompt 合并到 user message 前缀。
+    运行时新检测到的不支持端点由 _call_llm_internal 的 400/422 处理逻辑覆盖。
+    """
+    messages: list = []
+    endpoint_key = f"{api_base}|{model}"
+
+    if system and endpoint_key not in _SYSTEM_ROLE_FAILED_FOR_ENDPOINT:
+        messages.append({"role": "system", "content": system})
+    elif system:
+        prompt = f"[系统指令]\n{system}\n\n---\n\n{prompt}"
+
+    messages.append({"role": "user", "content": prompt})
+    return messages
+
+
+def _call_llm_internal(
+    api_key: str,
+    api_base: str,
+    model: str,
+    prompt: str,
+    system: Optional[str],
+    messages: list,
     max_tokens: int = 16000,
     temperature: float = 0.8,
     timeout: int = 600,
     retries: int = 3,
     max_total_time: int = None,
 ) -> str:
+    """HTTP 引擎——封装 HTTP 调用、速率限制、重试、错误处理。
+
+    从原 call_llm 提取的核心逻辑，参数化 api_key/api_base/model，
+    使得 Phase 路由成为可能。
     """
-    调用 OpenAI Chat Completions 兼容 API。
-
-    Args:
-        prompt: 用户消息内容。
-        system: 系统提示（可选）。如果 API 不支持 system role 则自动合并到 prompt 前。
-        max_tokens: 最大生成 token 数。
-        temperature: 采样温度。
-        timeout: 请求超时（秒）。
-        retries: 失败重试次数。
-        max_total_time: 整个调用（含重试）的最长总耗时（秒）。None = 不限制。
-
-    Returns:
-        LLM 生成的文本内容。
-
-    Raises:
-        RuntimeError: 所有重试均失败，或超过 max_total_time 限制。
-    """
-    cfg = config
-    cfg.load()
-
-    api_base = cfg.api_base_url.rstrip("/")
-    api_key = cfg.api_key
-    model = cfg.model_name
-
     if not api_key:
         raise RuntimeError(
             "API Key 未配置。请运行 novel_app.bat 进行配置，"
             "或确保 .env 文件中有有效的 AUTONOVEL_API_KEY。"
         )
 
-    # 构建 messages
-    messages = []
     endpoint_key = f"{api_base}|{model}"
-
-    if system and endpoint_key not in _SYSTEM_ROLE_FAILED_FOR_ENDPOINT:
-        messages.append({"role": "system", "content": system})
-    elif system:
-        # 该端点已知不支持 system role，合并到 user message
-        prompt = f"[系统指令]\n{system}\n\n---\n\n{prompt}"
-
-    messages.append({"role": "user", "content": prompt})
-
     url = f"{api_base}/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -259,6 +256,40 @@ def call_llm(
     raise RuntimeError(f"API 调用失败（{retries} 次重试后）: {last_error}")
 
 
+def call_llm(
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: int = 16000,
+    temperature: float = 0.8,
+    timeout: int = 600,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
+    """调用 OpenAI Chat Completions 兼容 API。（行为不变）"""
+    cfg = config
+    cfg.load()
+
+    api_base = cfg.api_base_url.rstrip("/")
+    api_key = cfg.api_key
+    model = cfg.model_name
+
+    messages = _build_messages(prompt, system, api_base, model)
+
+    return _call_llm_internal(
+        api_key=api_key,
+        api_base=api_base,
+        model=model,
+        prompt=prompt,
+        system=system,
+        messages=messages,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        timeout=timeout,
+        retries=retries,
+        max_total_time=max_total_time,
+    )
+
+
 # ============================================================================
 # 便捷函数
 # ============================================================================
@@ -325,59 +356,153 @@ def _call_with_judge_config(
     judge_base: str = "",
     judge_key: str = "",
 ) -> str:
-    """使用独立的 Judge 配置调用 API（内部函数，不对外暴露）。"""
-    import time as _time
-    url = judge_base.rstrip("/") + "/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {judge_key}",
-        "Content-Type": "application/json",
-    }
-    messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": prompt})
-    payload = {
-        "model": judge_model,
-        "messages": messages,
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-    }
+    """使用独立的 Judge 配置调用 API（内部函数）。"""
+    api_base = judge_base.rstrip("/")
+    model = judge_model
 
-    limiter = get_rate_limiter()
-    last_error = None
-    t_start = _time.time()
+    messages = _build_messages(prompt, system, api_base, model)
 
-    for attempt in range(1, retries + 1):
-        if max_total_time is not None:
-            elapsed_total = _time.time() - t_start
-            if elapsed_total > max_total_time:
-                raise RuntimeError(
-                    f"Judge API 调用总超时: 累计 {elapsed_total:.0f}s 超过 "
-                    f"{max_total_time}s 限制"
-                )
-        limiter.wait()
-        try:
-            resp = httpx.post(url, headers=headers, json=payload, timeout=600)
-            if resp.status_code == 200:
-                data = resp.json()
-                return data["choices"][0]["message"]["content"]
-            elif resp.status_code == 429:
-                _time.sleep(10 * attempt)
-                last_error = RuntimeError(f"HTTP 429: {resp.text[:300]}")
-                continue
-            else:
-                print(f"  [Judge API] 调用失败 — HTTP {resp.status_code}: {resp.text[:200]}", file=sys.stderr)
-                last_error = RuntimeError(f"HTTP {resp.status_code}")
-                if attempt < retries:
-                    _time.sleep(5 * attempt)
-                continue
-        except httpx.TimeoutException:
-            last_error = RuntimeError("请求超时")
-            continue
-        except Exception as e:
-            last_error = e
-            if attempt < retries:
-                _time.sleep(5 * attempt)
-            continue
+    return _call_llm_internal(
+        api_key=judge_key,
+        api_base=api_base,
+        model=model,
+        prompt=prompt,
+        system=system,
+        messages=messages,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        timeout=600,
+        retries=retries,
+        max_total_time=max_total_time,
+    )
 
-    raise RuntimeError(f"Judge API 调用失败（{retries} 次重试后）: {last_error}")
+
+# ============================================================================
+# Phase 路由层（方案 D）
+# ============================================================================
+
+def _call_with_phase_config(
+    phase: str,
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: int = 16000,
+    temperature: float = 0.8,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
+    """按 Phase 选择 API 配置并调用 LLM。
+
+    Args:
+        phase: "p1" | "p2" | "p2_ctx" | "p3"
+        其他参数同 call_llm。
+
+    回退链由 config 的 Phase 属性自动处理 — 本函数直接 getattr 即可：
+        p1:     p1_*     → 共用_*
+        p2:     p2_*     → p1_*      → 共用_*
+        p2_ctx: p2_ctx_* → p2_*      → p1_*      → 共用_*
+        p3:     p3_*     → p1_*      → 共用_*
+    """
+    cfg = config
+    cfg.load()
+
+    api_key = getattr(cfg, f"{phase}_api_key")
+    api_base = getattr(cfg, f"{phase}_api_base_url").rstrip("/")
+    model = getattr(cfg, f"{phase}_model_name")
+
+    messages = _build_messages(prompt, system, api_base, model)
+
+    return _call_llm_internal(
+        api_key=api_key,
+        api_base=api_base,
+        model=model,
+        prompt=prompt,
+        system=system,
+        messages=messages,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        timeout=600,
+        retries=retries,
+        max_total_time=max_total_time,
+    )
+
+
+# ============================================================================
+# Phase 特定调用函数（方案 D）
+# — 回退链由 config 的 Phase 属性自动处理
+# — P2/P3 未配置时自动 → P1 → 共用
+# ============================================================================
+
+def call_p1_writer(
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: int = 16000,
+    temperature: float = 0.8,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
+    """Phase 1 写作调用 — 使用 AUTONOVEL_P1_* 配置。
+
+    用于: world / characters / outline / canon / voice 生成。
+    回退链: p1_* → 共用_*
+    """
+    return _call_with_phase_config(
+        "p1", prompt, system=system, max_tokens=max_tokens,
+        temperature=temperature, retries=retries, max_total_time=max_total_time,
+    )
+
+
+def call_p2_writer(
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: int = 16000,
+    temperature: float = 0.8,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
+    """Phase 2 写作调用 — 使用 AUTONOVEL_P2_* 配置。
+
+    用于: 章节起草（需要大上下文窗口）。
+    回退链: p2_* → p1_* → 共用_*
+    """
+    return _call_with_phase_config(
+        "p2", prompt, system=system, max_tokens=max_tokens,
+        temperature=temperature, retries=retries, max_total_time=max_total_time,
+    )
+
+
+def call_p2_ctx_writer(
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: int = 16000,
+    temperature: float = 0.8,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
+    """Phase 2 大上下文写作调用 — 使用 AUTONOVEL_P2_CTX_* 配置。
+
+    用于: canon 增量追加等大上下文任务。
+    回退链: p2_ctx_* → p2_* → p1_* → 共用_*
+    """
+    return _call_with_phase_config(
+        "p2_ctx", prompt, system=system, max_tokens=max_tokens,
+        temperature=temperature, retries=retries, max_total_time=max_total_time,
+    )
+
+
+def call_p3_judge(
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: int = 4096,
+    temperature: float = 0.3,
+    retries: int = 3,
+    max_total_time: int = None,
+) -> str:
+    """Phase 3 裁判调用 — 使用 AUTONOVEL_P3_* 配置。
+
+    用于: 对抗编辑、读者评审、全文评估等修订阶段裁判任务。
+    回退链: p3_* → p1_* → 共用_*
+    """
+    return _call_with_phase_config(
+        "p3", prompt, system=system, max_tokens=max_tokens,
+        temperature=temperature, retries=retries, max_total_time=max_total_time,
+    )

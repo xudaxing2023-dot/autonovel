@@ -80,6 +80,13 @@ def default_state() -> dict:
         "novel_score": 0.0,
         "revision_cycle": 0,
         "debts": [],
+        # === 方案 D 新增 ===
+        "total_volumes": 0,
+        "chapters_per_volume": 0,
+        "current_volume": 1,
+        "volumes_outlined": 0,
+        "canon_entry_count": 0,
+        "canon_last_updated_ch": 0,
     }
 
 

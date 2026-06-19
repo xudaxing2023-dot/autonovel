@@ -32,7 +32,7 @@ CONFIG_FILE = OUTPUT_DIR / "config.json"
 STATE_FILE = OUTPUT_DIR / "state.json"
 RESULTS_FILE = OUTPUT_DIR / "results.tsv"
 
-# .env → 内部键名映射
+# .env → 内部键名映射（敏感信息：API Key / 端点 / 模型名）
 _SECRET_KEYS = {
     "api_key":              "AUTONOVEL_API_KEY",
     "api_base_url":         "AUTONOVEL_API_BASE_URL",
@@ -41,6 +41,19 @@ _SECRET_KEYS = {
     "judge_api_key":        "AUTONOVEL_JUDGE_API_KEY",
     "judge_api_base_url":   "AUTONOVEL_JUDGE_API_BASE_URL",
     "judge_model_name":     "AUTONOVEL_JUDGE_MODEL_NAME",
+    # === 方案 D: Phase 分离模型配置 ===
+    "p1_api_key":           "AUTONOVEL_P1_API_KEY",
+    "p1_api_base_url":      "AUTONOVEL_P1_API_BASE_URL",
+    "p1_model_name":        "AUTONOVEL_P1_MODEL_NAME",
+    "p2_api_key":           "AUTONOVEL_P2_API_KEY",
+    "p2_api_base_url":      "AUTONOVEL_P2_API_BASE_URL",
+    "p2_model_name":        "AUTONOVEL_P2_MODEL_NAME",
+    "p2_ctx_api_key":       "AUTONOVEL_P2_CTX_API_KEY",
+    "p2_ctx_api_base_url":  "AUTONOVEL_P2_CTX_API_BASE_URL",
+    "p2_ctx_model_name":    "AUTONOVEL_P2_CTX_MODEL_NAME",
+    "p3_api_key":           "AUTONOVEL_P3_API_KEY",
+    "p3_api_base_url":      "AUTONOVEL_P3_API_BASE_URL",
+    "p3_model_name":        "AUTONOVEL_P3_MODEL_NAME",
 }
 
 
@@ -189,6 +202,23 @@ class Config:
     def total_chapters(self) -> int:
         return self._data.get("total_chapters", 24)
 
+    # ============================================================
+    # 卷级配置（方案 D）
+    # ============================================================
+
+    @property
+    def total_volumes(self) -> int:
+        """总卷数。默认 1（方案 D 始终启用分层大纲，单卷时一卷含全部章节）。"""
+        return self._data.get("total_volumes", 1)
+
+    @property
+    def chapters_per_volume(self) -> int:
+        """每卷章节数。未配置时自动 = total_chapters // total_volumes，最小 1。"""
+        val = self._data.get("chapters_per_volume", 0)
+        if val > 0:
+            return val
+        return max(1, self.total_chapters // max(1, self.total_volumes))
+
     @property
     def mode(self) -> str:
         """生成模式: 'from_scratch' | 'resume'"""
@@ -211,6 +241,85 @@ class Config:
     @property
     def judge_api_key(self) -> str:
         return self._data.get("judge_api_key", "")
+
+    # ============================================================
+    # Phase 分离模型配置（方案 D）
+    # — 每个 Phase 可指定独立的 API Key / Base URL / Model Name
+    # — 回退链:
+    #   P1:     p1_*     → 共用_*
+    #   P2:     p2_*     → p1_*      → 共用_*
+    #   P2_CTX: p2_ctx_* → p2_*      → p1_*      → 共用_*
+    #   P3:     p3_*     → p1_*      → 共用_*
+    # — 用户通常只需配置 P1；P2/P3 留空自动复用 Phase 1
+    # ============================================================
+
+    # --- Phase 1: 基础构建 (world/characters/outline/canon/voice) ---
+
+    @property
+    def p1_api_key(self) -> str:
+        return self._data.get("p1_api_key") or self.api_key
+
+    @property
+    def p1_api_base_url(self) -> str:
+        return self._data.get("p1_api_base_url") or self.api_base_url
+
+    @property
+    def p1_model_name(self) -> str:
+        return self._data.get("p1_model_name") or self.model_name
+
+    # --- Phase 2: 章节起草 ---
+    # 回退链: p2_* → p1_* → 共用_*
+
+    @property
+    def p2_api_key(self) -> str:
+        return self._data.get("p2_api_key") or self._data.get("p1_api_key") or self.api_key
+
+    @property
+    def p2_api_base_url(self) -> str:
+        return self._data.get("p2_api_base_url") or self._data.get("p1_api_base_url") or self.api_base_url
+
+    @property
+    def p2_model_name(self) -> str:
+        return self._data.get("p2_model_name") or self._data.get("p1_model_name") or self.model_name
+
+    # --- Phase 2 上下文模型（可选: canon 增量追加等大上下文任务）---
+    # 回退链: p2_ctx_* → p2_* → p1_* → 共用_*
+
+    @property
+    def p2_ctx_api_key(self) -> str:
+        return (self._data.get("p2_ctx_api_key")
+                or self._data.get("p2_api_key")
+                or self._data.get("p1_api_key")
+                or self.api_key)
+
+    @property
+    def p2_ctx_api_base_url(self) -> str:
+        return (self._data.get("p2_ctx_api_base_url")
+                or self._data.get("p2_api_base_url")
+                or self._data.get("p1_api_base_url")
+                or self.api_base_url)
+
+    @property
+    def p2_ctx_model_name(self) -> str:
+        return (self._data.get("p2_ctx_model_name")
+                or self._data.get("p2_model_name")
+                or self._data.get("p1_model_name")
+                or self.model_name)
+
+    # --- Phase 3: 修订评估 (对抗编辑/读者评审/全文评估) ---
+    # 回退链: p3_* → p1_* → 共用_*
+
+    @property
+    def p3_api_key(self) -> str:
+        return self._data.get("p3_api_key") or self._data.get("p1_api_key") or self.api_key
+
+    @property
+    def p3_api_base_url(self) -> str:
+        return self._data.get("p3_api_base_url") or self._data.get("p1_api_base_url") or self.api_base_url
+
+    @property
+    def p3_model_name(self) -> str:
+        return self._data.get("p3_model_name") or self._data.get("p1_model_name") or self.model_name
 
     # ——— 阈值 —————————————————————
 

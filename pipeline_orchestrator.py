@@ -12,6 +12,7 @@ pipeline_orchestrator.py — 主流水线编排器
 
 import argparse
 import json
+import random
 import re
 import sys
 import time
@@ -92,7 +93,16 @@ def run_foundation(state: dict) -> dict:
         from foundation.gen_characters import generate_characters
         generate_characters(max_tokens=max_tokens)
 
-        # 3. 生成大纲 (Part 1)
+        # ★ 方案 D Step 7: 2.5. 生成卷级总纲（output/outline_volume.md）
+        # 必须在 generate_outline() 之前，因为 generate_outline_for_volume()
+        # 依赖 outline_volume.md 获取每卷的结构化约束
+        step("生成卷级总纲 outline_volume.md ...")
+        from foundation.gen_outline_volume import generate_volume_outline
+        generate_volume_outline(max_tokens=max_tokens)
+
+        # 3. 生成大纲 (Part 1) — 逐卷章级大纲 + 合并 outline.md
+        # generate_outline() 内部调用 generate_outline_for_volume()
+        # 自动读取 outline_volume.md 获取卷级约束
         step("生成大纲 outline.md (Part 1) ...")
         from foundation.gen_outline import generate_outline
         generate_outline(max_tokens=max_tokens)
@@ -301,6 +311,23 @@ def run_drafting(state: dict) -> dict:
                 except Exception as e:
                     step(f"结构反模式审计跳过: {e}")
 
+                # ★ 方案 D Step 7: 增量 canon 追加
+                # 每章起草通过后，从章节文本提取新设定追加到 canon.md
+                try:
+                    from foundation.update_canon import update_canon_from_chapter
+                    ch_text = ch_file.read_text(encoding="utf-8")
+                    new_count = update_canon_from_chapter(ch, ch_text)
+                    if new_count > 0:
+                        step(f"正典更新: +{new_count} 条新事实（第 {ch} 章）")
+                        # 更新状态追踪
+                        state["canon_entry_count"] = (
+                            state.get("canon_entry_count", 0) + new_count
+                        )
+                        state["canon_last_updated_ch"] = ch
+                        save_state(state)
+                except Exception as e:
+                    step(f"正典更新跳过: {e}")
+
                 break
             else:
                 step(f"评分 {score} < {threshold}，丢弃重试")
@@ -330,7 +357,9 @@ def run_drafting(state: dict) -> dict:
     save_state(state)
 
     total_words = count_words_in_chapters()
-    banner(f"草拟完成 — {total} 章, {total_words} 字")
+    canon_total = state.get("canon_entry_count", 0)
+    banner(f"草拟完成 — {total} 章, {total_words} 字, "
+           f"正典条目 {canon_total} (最后更新: 第 {state.get('canon_last_updated_ch', 0)} 章)")
     return state
 
 
@@ -408,6 +437,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     cfg.load()
     plateau_delta = cfg.get("plateau_delta", PLATEAU_DELTA) if cfg.loaded else PLATEAU_DELTA
     max_tokens = cfg.max_tokens_per_call if cfg.loaded else 16000
+    total = get_total_chapters(state)
 
     from revision.adversarial_edit import run_adversarial_edit
     from revision.apply_cuts import run_apply_cuts
@@ -415,40 +445,6 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     from revision.gen_brief import generate_brief, build_auto_brief
     from revision.gen_revision import revise_chapter
     from evaluation.evaluate import evaluate_chapter, evaluate_full
-
-    def _elo_target_weaks(skip_chapters: set = None, max_targets: int = 3) -> list:
-        """解析 Elo 锦标赛结果，返回底部章节编号列表。
-
-        读取 EDIT_LOGS_DIR/tournament_results.json，按 Elo 升序取底部章节，
-        排除已在 skip_chapters 中的章节，最多返回 max_targets 个。
-        """
-        if skip_chapters is None:
-            skip_chapters = set()
-
-        tournament_path = EDIT_LOGS_DIR / "tournament_results.json"
-        if not tournament_path.exists():
-            return []
-
-        try:
-            data = json.loads(tournament_path.read_text(encoding="utf-8"))
-            ranking = data.get("ranking", [])
-        except Exception:
-            return []
-
-        # 按 Elo 升序（最弱在前）
-        sorted_asc = sorted(ranking, key=lambda x: x.get("elo", 1000))
-        targets = []
-        for item in sorted_asc:
-            ch_num = item.get("chapter", "")
-            # 提取数字
-            if isinstance(ch_num, str):
-                ch_str = ch_num.replace("ch_", "").lstrip("0") or "0"
-                ch_num = int(ch_str) if ch_str.isdigit() else 0
-            if ch_num and ch_num not in skip_chapters:
-                targets.append(ch_num)
-            if len(targets) >= max_targets:
-                break
-        return targets
 
     for cycle in range(start_cycle, max_cycles + 1):
         banner(f"修订 循环 {cycle}/{max_cycles}", "-")
@@ -539,29 +535,192 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                            word_count, "discard",
                            f"循环 {cycle}: {question} 倒退 {pre_score}->{post_score}")
 
-        # Step 5.5: Elo 锦标赛 + 底部章节修订
-        step("运行 Elo 章节锦标赛 ...")
-        try:
-            from revision.compare_chapters import run_compare_chapters
-            run_compare_chapters(max_tokens=max_tokens)
-            step("Elo 锦标赛 完成 ✓")
-        except Exception as e:
-            step(f"Elo 锦标赛跳过: {e}")
+        # ★ 方案 D Step 8: 采样评估 + 跨卷一致性审阅（替代 Elo 锦标赛）
+        # ——— 嵌套函数：采样评估 ———
+        def _sample_evaluate_volumes(
+            total_ch: int,
+            ch_per_vol: int,
+            total_vol: int,
+            threshold: float,
+            sample_size: int = 5,
+        ) -> list:
+            """每卷随机采样章节做全文评估，返回评分低于阈值的弱章列表。
 
-        # 获取已修订章节集合（共识驱动修订过的）
+            从每卷中随机选至多 sample_size 章，调用 evaluate_chapter()（原函数），
+            收集所有评分 < threshold 的章节，按评分升序返回至多 10 章。
+            """
+            weak_chapters: list[tuple[int, float]] = []
+
+            for vol in range(1, total_vol + 1):
+                start_ch = (vol - 1) * ch_per_vol + 1
+                end_ch = min(vol * ch_per_vol, total_ch)
+                population = list(range(start_ch, end_ch + 1))
+                sample = random.sample(
+                    population,
+                    min(sample_size, len(population)),
+                )
+
+                for ch in sample:
+                    try:
+                        eval_result = evaluate_chapter(ch, retries=2, max_total_time=600)
+                        score = parse_score(eval_result, "overall_score")
+                        step(f"  采样评估 第 {ch} 章 (卷 {vol}): {score}")
+                        if score < threshold:
+                            weak_chapters.append((ch, score))
+                    except Exception as e:
+                        step(f"  采样评估 第 {ch} 章 跳过: {e}")
+
+            # 按评分升序，取前 10
+            weak_chapters.sort(key=lambda x: x[1])
+            return [ch for ch, _ in weak_chapters[:10]]
+
+        # ——— 嵌套函数：跨卷一致性审阅 ———
+        def _cross_volume_consistency_review(
+            total_ch: int,
+            ch_per_vol: int,
+            total_vol: int,
+        ) -> list[int]:
+            """用大上下文模型检查卷间连接点的连续性。
+
+            提取每卷首尾各 3000 字，拼接 canon 前 5000 字作为参考，
+            调用 call_judge() 检测角色状态/伏笔/设定的断裂点。
+            返回疑似断裂的章节编号列表（去重）。
+            """
+            # 提取每卷边界文本
+            segments: list[str] = []
+            for vol in range(1, total_vol + 1):
+                last_ch = vol * ch_per_vol
+                first_ch_next = last_ch + 1
+
+                # 卷 vol 终章尾部
+                last_path = CHAPTERS_DIR / f"ch_{last_ch:02d}.md"
+                if last_path.exists():
+                    text = last_path.read_text(encoding="utf-8")
+                    tail = text[-3000:] if len(text) > 3000 else text
+                    segments.append(
+                        f"【卷 {vol} 终章（第 {last_ch} 章）尾 3000 字】\n{tail}"
+                    )
+
+                # 卷 vol+1 首章头部（若存在）
+                if first_ch_next <= total_ch:
+                    next_path = CHAPTERS_DIR / f"ch_{first_ch_next:02d}.md"
+                    if next_path.exists():
+                        text = next_path.read_text(encoding="utf-8")
+                        head = text[:3000] if len(text) > 3000 else text
+                        segments.append(
+                            f"【卷 {vol + 1} 首章（第 {first_ch_next} 章）头 3000 字】\n{head}"
+                        )
+
+            if len(segments) < 2:
+                step("跨卷一致性审阅: 章节不足，跳过")
+                return []
+
+            # 保护：大规模卷数时截断 segments
+            MAX_SEGMENTS = 10
+            if len(segments) > MAX_SEGMENTS:
+                step(f"跨卷审阅: 卷数过多 ({total_vol})，仅检查后 {MAX_SEGMENTS // 2} 个边界")
+                segments = segments[-MAX_SEGMENTS:]
+
+            # 加载 canon 参考
+            canon_text = ""
+            canon_path = OUTPUT_DIR / "canon.md"
+            if canon_path.exists():
+                full = canon_path.read_text(encoding="utf-8")
+                canon_text = full[:5000] if len(full) > 5000 else full
+
+            # 构建 prompt
+            prompt_parts = [
+                "请检查以下卷间连接点的连续性：",
+                "",
+                "\n\n".join(segments),
+                "",
+            ]
+            if canon_text:
+                prompt_parts.extend([
+                    "【正典参考】",
+                    canon_text,
+                    "",
+                ])
+            prompt_parts.extend([
+                "请检查：",
+                "1. 角色状态是否一致（位置、持有物品、当前目标、情绪状态）",
+                "2. 伏笔线索是否断裂（前卷末埋设 → 后卷首是否承接）",
+                "3. 世界观设定是否漂移",
+                "",
+                "输出格式：",
+                "断裂章节: [章节编号列表，用逗号分隔]",
+                "如无断裂: 「无」",
+            ])
+            prompt = "\n".join(prompt_parts)
+
+            try:
+                result = call_judge(prompt, max_tokens=1000)
+            except Exception as e:
+                step(f"跨卷一致性审阅调用失败: {e}")
+                return []
+
+            # 解析章节编号
+            if "无" in result and "断裂" not in result:
+                step("跨卷一致性审阅: ✓ 未检测到断裂")
+                return []
+
+            chs = re.findall(r'\d+', result)
+            broken = sorted(set(int(c) for c in chs if 1 <= int(c) <= total_ch))
+            if broken:
+                step(f"跨卷一致性审阅: ⚠ 疑似断裂章节: {broken}")
+            else:
+                step("跨卷一致性审阅: ✓ 未检测到断裂")
+            return broken
+
+        # ——— 执行采样评估 ———
+        step("采样评估 — 每卷随机 5 章 ...")
+        total_vol = cfg.total_volumes if cfg.loaded else 1
+        ch_per_vol = cfg.chapters_per_volume if cfg.loaded else (
+            total // max(1, total_vol)
+        )
+        sample_weaks = _sample_evaluate_volumes(
+            total, ch_per_vol, total_vol, threshold,
+        )
+        if sample_weaks:
+            step(f"采样弱章: {sample_weaks}")
+
+        # ——— 执行跨卷一致性审阅（每两轮一次）———
+        cross_broken: list[int] = []
+        if total_vol > 1 and cycle % 2 == 0:
+            step("跨卷一致性审阅 — 检查卷边界连续性 ...")
+            cross_broken = _cross_volume_consistency_review(
+                total, ch_per_vol, total_vol,
+            )
+
+        # ——— 合并修订队列：共识已修订 ∪ 采样弱章 ∪ 跨卷断裂章 ———
         revised_in_cycle = {item["chapter"] for item in consensus_items}
+        combined_targets: dict[int, str] = {}
+        for ch_num in sample_weaks:
+            if ch_num not in revised_in_cycle:
+                combined_targets.setdefault(ch_num, "采样弱章")
+        for ch_num in cross_broken:
+            combined_targets.setdefault(ch_num, "跨卷断裂")
 
-        # 解析 Elo 底部章节
-        elo_targets = _elo_target_weaks(skip_chapters=revised_in_cycle, max_targets=3)
-        if elo_targets:
-            step(f"Elo 底部章节: {elo_targets}")
+        if combined_targets:
+            step(f"合并修订队列: {len(combined_targets)} 章 — "
+                 f"{list(combined_targets.keys())}")
+        else:
+            step("无额外修订目标")
 
-        for ch_num in elo_targets:
+        # ——— 逐章修订合并队列（最多 10 章）———
+        for idx_ch, (ch_num, reason) in enumerate(
+            sorted(combined_targets.items())[:10]
+        ):
             ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
             if not ch_file.exists():
+                step(f"第 {ch_num} 章不存在，跳过")
                 continue
 
-            banner(f"  Elo 驱动修订 第 {ch_num} 章 [底部排名]", ".")
+            banner(
+                f"  修订 第 {ch_num} 章 ({reason}) "
+                f"[{idx_ch + 1}/{min(len(combined_targets), 10)}]",
+                ".",
+            )
 
             # 修订前评估
             try:
@@ -570,21 +729,23 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             except Exception:
                 pre_score = 0
 
-            step(f"第 {ch_num} 章 Elo 修订前评分: {pre_score}")
+            step(f"第 {ch_num} 章 修订前评分: {pre_score}")
 
             # 生成修订摘要（--auto 模式，三源交叉引用）
-            brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_elo_cycle{cycle}.md"
+            brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_sample_cycle{cycle}.md"
             try:
                 ch, brief_text = build_auto_brief()
+                if ch is None:
+                    ch = ch_num
                 brief_file.write_text(brief_text, encoding="utf-8")
                 if not brief_text.strip():
                     raise ValueError("空摘要")
             except Exception:
                 brief_content = (
-                    f"# 修订摘要: 第 {ch_num} 章 (Elo 驱动)\n\n"
-                    f"## 来源: Elo 锦标赛 循环 {cycle}\n\n"
-                    f"Elo 排名显示本章为全书最弱章节之一。"
-                    f"请大幅提升文字品质、节奏和情感效果。\n"
+                    f"# 修订摘要: 第 {ch_num} 章\n\n"
+                    f"## 来源: {reason}（循环 {cycle}）\n\n"
+                    f"本章被识别为需要改进的目标。"
+                    f"原因: {reason}。请基于评估意见和审阅反馈提升品质。\n"
                 )
                 brief_file.write_text(brief_content, encoding="utf-8")
 
@@ -594,10 +755,12 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                 f"(retries=2, 总超时=1200s) ..."
             )
             try:
-                revise_chapter(ch_num, brief_file, max_tokens=max_tokens,
-                               retries=2, max_total_time=1200)
+                revise_chapter(
+                    ch_num, brief_file, max_tokens=max_tokens,
+                    retries=2, max_total_time=1200,
+                )
             except Exception as e:
-                step(f"Elo 修订第 {ch_num} 章失败: {e}")
+                step(f"修订第 {ch_num} 章失败: {e}")
                 continue
 
             # 修订后评估
@@ -612,26 +775,31 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                      .replace(" ", "").replace("\n", ""))
             )
 
-            step(f"第 {ch_num} 章 Elo: {pre_score} -> {post_score}")
+            step(f"第 {ch_num} 章: {pre_score} -> {post_score}")
 
             # 提交或回退
             if post_score >= pre_score:
                 commit_hash = git_add_commit(
-                    f"Elo修订 循环{cycle}: ch{ch_num:02d} "
-                    f"{pre_score}->{post_score}"
+                    f"修订 循环{cycle}: ch{ch_num:02d} "
+                    f"({reason}) {pre_score}->{post_score}"
                 )
-                log_result(commit_hash, f"elo-rev-ch{ch_num:02d}", post_score,
-                           word_count, "keep",
-                           f"Elo 循环 {cycle}: ch{ch_num:02d} "
-                           f"{pre_score}->{post_score}")
-                step(f"Elo 修订 第 {ch_num} 章 完成 ✓ ({pre_score} -> {post_score})")
+                log_result(
+                    commit_hash, f"rev-ch{ch_num:02d}", post_score,
+                    word_count, "keep",
+                    f"循环 {cycle}: {reason} 改进 {pre_score}->{post_score}",
+                )
+                step(
+                    f"修订 第 {ch_num} 章 完成 ✓ "
+                    f"({pre_score} -> {post_score})"
+                )
             else:
-                step(f"Elo 修订使评分下降 ({post_score} < {pre_score})，回退")
+                step(f"修订使评分下降 ({post_score} < {pre_score})，回退")
                 git_reset_hard("HEAD")
-                log_result("reverted", f"elo-rev-ch{ch_num:02d}", post_score,
-                           word_count, "discard",
-                           f"Elo 循环 {cycle}: ch{ch_num:02d} "
-                           f"倒退 {pre_score}->{post_score}")
+                log_result(
+                    "reverted", f"rev-ch{ch_num:02d}", post_score,
+                    word_count, "discard",
+                    f"循环 {cycle}: {reason} 倒退 {pre_score}->{post_score}",
+                )
 
         # Step 6: 全文评估（max_total_time=600 = 10分钟）
         step("运行全文评估 (总超时=600s) ...")
