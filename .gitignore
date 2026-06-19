@@ -10,6 +10,7 @@ output/manuscript.md
 output/arc_summary.md
 output/config.json
 output/phase4_report.json
+output/story_summary.txt
 output/_test_backup.txt
 
 # === 缓存 ===

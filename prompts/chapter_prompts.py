@@ -5,8 +5,6 @@ prompts/chapter_prompts.py — 章节起草 Prompt (通用中文)
 重构为通用中文小说章节起草——从 voice.md / world.md / characters.md / outline.md 获取上下文。
 """
 
-from core.config import config
-
 
 def build_chapter_prompt(
     chapter_num: int,
@@ -21,10 +19,6 @@ def build_chapter_prompt(
     protagonist_name: str = "",
 ) -> str:
     """构建章节起草 prompt。"""
-
-    cfg = config
-    cfg.load()
-    word_target = cfg.chapter_word_target if cfg.loaded else 2500
 
     return f"""请撰写第 {chapter_num} 章。
 
@@ -52,7 +46,7 @@ def build_chapter_prompt(
 
 【写作指令】
 
-1. 写出【完整】的章节。目标约 {word_target} 字。不要截断或概括。
+1. 写出【完整】的章节。目标约 3000–3500 字。不要截断或概括。
 
 2. 第三人称有限视角（通常锁定一位 POV 角色{f'：{protagonist_name}' if protagonist_name else ''}），过去时态。
 

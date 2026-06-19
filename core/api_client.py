@@ -117,7 +117,7 @@ def call_llm(
     if not api_key:
         raise RuntimeError(
             "API Key 未配置。请运行 novel_app.bat 进行配置，"
-            "或确保 output/config.json 中有有效的 api_key。"
+            "或确保 .env 文件中有有效的 AUTONOVEL_API_KEY。"
         )
 
     # 构建 messages

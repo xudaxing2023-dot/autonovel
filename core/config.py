@@ -1,7 +1,7 @@
 """
 core/config.py — 全局配置加载模块
 
-从 output/config.json 加载用户配置，提供全局可访问的配置单例。
+从 .env 加载敏感信息（API Key 等），从 output/config.json 加载项目状态。
 所有生成脚本均可导入此模块获取 API 参数、故事梗概等。
 """
 
@@ -10,7 +10,14 @@ import os
 from pathlib import Path
 from typing import Optional
 
-# 项目根目录 (e:/my novel/)
+# python-dotenv (已在 pyproject.toml 中声明)
+try:
+    from dotenv import load_dotenv, set_key
+    _HAS_DOTENV = True
+except ImportError:
+    _HAS_DOTENV = False
+
+# 项目根目录
 ROOT_DIR = Path(__file__).parent.parent
 OUTPUT_DIR = ROOT_DIR / "output"
 TEMPLATES_DIR = ROOT_DIR / "templates"
@@ -20,35 +27,118 @@ EDIT_LOGS_DIR = OUTPUT_DIR / "edit_logs"
 EVAL_LOGS_DIR = OUTPUT_DIR / "eval_logs"
 BACKUPS_DIR = OUTPUT_DIR / "backups"
 
+ENV_FILE = ROOT_DIR / ".env"
 CONFIG_FILE = OUTPUT_DIR / "config.json"
 STATE_FILE = OUTPUT_DIR / "state.json"
 RESULTS_FILE = OUTPUT_DIR / "results.tsv"
 
+# .env → 内部键名映射
+_SECRET_KEYS = {
+    "api_key":              "AUTONOVEL_API_KEY",
+    "api_base_url":         "AUTONOVEL_API_BASE_URL",
+    "model_name":           "AUTONOVEL_MODEL_NAME",
+    "api_interval_seconds": "AUTONOVEL_API_INTERVAL_SECONDS",
+    "judge_api_key":        "AUTONOVEL_JUDGE_API_KEY",
+    "judge_api_base_url":   "AUTONOVEL_JUDGE_API_BASE_URL",
+    "judge_model_name":     "AUTONOVEL_JUDGE_MODEL_NAME",
+}
+
 
 class Config:
-    """全局配置单例，从 output/config.json 加载。"""
+    """全局配置单例，从 .env + output/config.json 加载。"""
 
     def __init__(self):
         self._data: dict = {}
         self._loaded = False
 
+    # ——— 加载 —————————————————————
+
     def load(self) -> dict:
-        """加载配置文件。若不存在则返回空字典。"""
+        """加载配置。优先 .env（敏感信息），再合并 config.json（状态）。"""
         if self._loaded:
             return self._data
-        if CONFIG_FILE.exists():
-            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-                self._data = json.load(f)
-            self._loaded = True
+
+        # 1) 从 .env 加载敏感信息
+        self._load_env()
+
+        # 2) 从 config.json 合并非敏感状态
+        self._load_config_json()
+
+        self._loaded = True
         return self._data
 
+    def _load_env(self) -> None:
+        """从 .env 文件加载敏感配置。"""
+        if _HAS_DOTENV and ENV_FILE.exists():
+            load_dotenv(ENV_FILE, override=True)
+
+        for internal_key, env_key in _SECRET_KEYS.items():
+            value = os.getenv(env_key, "")
+            if value:
+                if internal_key == "api_interval_seconds":
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        value = 4.0
+                self._data[internal_key] = value
+
+    def _load_config_json(self) -> None:
+        """从 config.json 合并非敏感状态（不会覆盖 .env 已加载的键）。"""
+        if not CONFIG_FILE.exists():
+            return
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                json_data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return
+
+        for key, value in json_data.items():
+            # config.json 中的敏感键忽略（以 .env 为准）
+            if key in _SECRET_KEYS:
+                continue
+            self._data[key] = value
+
+    # ——— 保存 —————————————————————
+
     def save(self, data: dict) -> None:
-        """保存配置到文件。"""
+        """保存配置：敏感信息写入 .env，状态写入 config.json。"""
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         self._data = data
-        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        # 写入 .env（仅敏感键）
+        self._save_env(data)
+
+        # 写入 config.json（仅非敏感键）
+        self._save_config_json(data)
+
         self._loaded = True
+
+    def _save_env(self, data: dict) -> None:
+        """将敏感键写入 .env 文件。"""
+        if not _HAS_DOTENV:
+            return
+
+        # 确保 .env 文件存在
+        if not ENV_FILE.exists():
+            ENV_FILE.touch()
+
+        for internal_key, env_key in _SECRET_KEYS.items():
+            value = data.get(internal_key, "")
+            if value:
+                set_key(str(ENV_FILE), env_key, str(value))
+
+    def _save_config_json(self, data: dict) -> None:
+        """将非敏感键写入 config.json。"""
+        non_secret = {}
+        for key, value in data.items():
+            if key not in _SECRET_KEYS:
+                non_secret[key] = value
+
+        if non_secret:
+            with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                json.dump(non_secret, f, indent=2, ensure_ascii=False)
+
+    # ——— 通用 —————————————————————
 
     @property
     def loaded(self) -> bool:
@@ -57,7 +147,7 @@ class Config:
     def get(self, key: str, default=None):
         return self._data.get(key, default)
 
-    # ——— 便捷属性 ———
+    # ——— 便捷属性 —————————————————————
 
     @property
     def api_base_url(self) -> str:
@@ -73,12 +163,17 @@ class Config:
 
     @property
     def api_interval_seconds(self) -> float:
-        return self._data.get("api_interval_seconds", 4.0)
+        val = self._data.get("api_interval_seconds", 4.0)
+        if isinstance(val, str):
+            try:
+                return float(val)
+            except ValueError:
+                return 4.0
+        return float(val)
 
     @property
     def story_summary(self) -> str:
         """用户输入的故事梗概。"""
-        # 优先从 config.json 读取，其次从 story_summary.txt
         summary = self._data.get("story_summary", "")
         if not summary:
             story_file = OUTPUT_DIR / "story_summary.txt"
@@ -88,7 +183,6 @@ class Config:
 
     @property
     def novel_title(self) -> str:
-        """小说标题，从梗概中提取或由 gen_outline 阶段生成。"""
         return self._data.get("novel_title", "")
 
     @property
@@ -102,27 +196,23 @@ class Config:
 
     @property
     def genre(self) -> str:
-        """小说类型，从梗概自动识别。"""
         return self._data.get("genre", "玄幻")
 
-    # ——— 判断模型独立配置（实现 Writer/Judge 分离，避免自我恭维偏差） ———
+    # ——— 判断模型独立配置 —————————————————————
 
     @property
     def judge_model_name(self) -> str:
-        """判断模型名称。留空则默认使用写作模型。"""
         return self._data.get("judge_model_name", "")
 
     @property
     def judge_api_base_url(self) -> str:
-        """判断模型 API 端点。留空则默认使用写作 API。"""
         return self._data.get("judge_api_base_url", "")
 
     @property
     def judge_api_key(self) -> str:
-        """判断模型 API Key。留空则默认使用写作 API Key。"""
         return self._data.get("judge_api_key", "")
 
-    # ——— 阈值（根据模型能力自动调整） ———
+    # ——— 阈值 —————————————————————
 
     @property
     def foundation_threshold(self) -> float:
@@ -142,45 +232,43 @@ class Config:
 
     @property
     def chapter_word_target(self) -> int:
-        """中文每章字数目标。"""
-        return self._data.get("chapter_word_target", 2500)
+        """中文每章字数目标（中值，实际区间 3000–3500 字）。"""
+        return self._data.get("chapter_word_target", 3250)
 
     @property
     def max_tokens_per_call(self) -> int:
         return self._data.get("max_tokens_per_call", 16000)
 
-    # ——— P2-11: slop/反模式/canon 门槛 ———
+    # ——— P2-11: slop/反模式/canon 门槛 —————————————————————
 
     @property
     def canon_min_entries(self) -> int:
-        """正典最低条目数门槛。不足时发出警告，严重不足 (< 50%) 触发重生成。"""
         return self._data.get("canon_min_entries", 400)
 
     @property
     def slop_penalty_threshold(self) -> float:
-        """slop_penalty 超过此值触发强制重写（即使 LLM 评分达标）。体裁无关。"""
         return self._data.get("slop_penalty_threshold", 3.0)
 
     @property
     def antipattern_max_warnings(self) -> int:
-        """每章最多容忍的结构反模式警告数。超过则触发强制重写。"""
         return self._data.get("antipattern_max_warnings", 4)
 
-    # ——— 模型能力等级 ———
+    # ——— 模型能力等级 —————————————————————
 
     @property
     def model_tier(self) -> str:
-        """
-        根据模型名称推断能力等级：'high' / 'medium' / 'low'
-        影响重试次数和评分阈值。
-        """
         return self._data.get("model_tier", self._guess_model_tier())
 
     def _guess_model_tier(self) -> str:
         model = self.model_name.lower()
-        if any(k in model for k in ["deepseek-v3", "deepseek-v4", "deepseek-chat", "deepseek-r1", "llama-3.3-70b", "llama-3.1-405b", "qwen2.5-72b"]):
+        high_models = [
+            "deepseek-v3", "deepseek-v4", "deepseek-chat", "deepseek-r1",
+            "llama-3.3-70b", "llama-3.1-405b", "qwen2.5-72b",
+        ]
+        medium_models = ["qwen2.5-32b", "llama-3.1-70b", "llama-3-70b"]
+        if any(k in model for k in high_models):
             return "high"
-        if any(k in model for k in ["qwen2.5-32b", "llama-3.1-70b", "llama-3-70b"]):
+        if any(k in model for k in medium_models):
             return "medium"
         return "low"
 
@@ -191,7 +279,7 @@ class Config:
             "high": {
                 "foundation_threshold": 7.5, "chapter_threshold": 6.0,
                 "max_foundation_iters": 20, "max_chapter_attempts": 5,
-                "chapter_word_target": 2500, "max_tokens_per_call": 16000,
+                "chapter_word_target": 3250, "max_tokens_per_call": 16000,
                 "min_revision_cycles": 3, "max_revision_cycles": 6,
                 "plateau_delta": 0.3,
             },

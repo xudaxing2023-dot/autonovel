@@ -20,11 +20,12 @@ def build_outline_prompt(
     cfg = config
     cfg.load()
     total_ch = cfg.total_chapters if cfg.loaded else 24
+    word_target = cfg.chapter_word_target if cfg.loaded else 3250
 
     story = seed_text or cfg.story_summary
 
     return f"""请为这部长篇小说构建一份完整的章节大纲。
-目标：{total_ch} 章，总计约 {total_ch * 2500} 字（每章约 2500 字）。
+目标：{total_ch} 章，总计约 {total_ch * word_target} 字（每章约 3000–3500 字）。
 
 【故事梗概】
 {story}

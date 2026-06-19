@@ -5,8 +5,6 @@ prompts/revision_prompts.py — 章节修订 Prompt (通用中文)
 重构为通用中文修订——根据修订摘要 (brief) 重写章节。
 """
 
-from core.config import config
-
 
 def build_revision_prompt(
     ch_num: int,
@@ -19,10 +17,6 @@ def build_revision_prompt(
     next_chapter_head: str = "",
 ) -> str:
     """构建章节修订 prompt。"""
-
-    cfg = config
-    cfg.load()
-    word_target = cfg.chapter_word_target if cfg.loaded else 2500
 
     return f"""请根据以下修订摘要重写第 {ch_num} 章。
 
@@ -59,7 +53,7 @@ def build_revision_prompt(
 — 对话应该像说话，不是写作
 — 段落长度有意变化
 
-重写完整的章节。目标约 {word_target} 字。"""
+重写完整的章节。目标约 3000–3500 字。"""
 
 
 REVISION_SYSTEM_PROMPT = """你是一位正在根据修订摘要重写小说章节的作者。
