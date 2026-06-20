@@ -4,7 +4,7 @@
   "iteration": 0,
   "foundation_score": 0.0,
   "lore_score": 0.0,
-  "chapters_drafted": 0,
+  "chapters_drafted": 1,
   "chapters_total": 0,
   "novel_score": 0.0,
   "revision_cycle": 0,
@@ -13,6 +13,6 @@
   "chapters_per_volume": 0,
   "current_volume": 1,
   "volumes_outlined": 0,
-  "canon_entry_count": 163,
-  "canon_last_updated_ch": 0
+  "canon_entry_count": 168,
+  "canon_last_updated_ch": 1
 }
