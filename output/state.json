@@ -6,8 +6,8 @@
   "lore_score": 0.0,
   "chapters_drafted": 3,
   "chapters_total": 0,
-  "novel_score": 6.5,
-  "revision_cycle": 1,
+  "novel_score": 7.5,
+  "revision_cycle": 0,
   "debts": [],
   "total_volumes": 0,
   "chapters_per_volume": 0,
@@ -15,5 +15,5 @@
   "volumes_outlined": 0,
   "canon_entry_count": 215,
   "canon_last_updated_ch": 1,
-  "review_revision_round": 2
+  "review_revision_round": 3
 }
