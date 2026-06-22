@@ -1,5 +1,5 @@
 {
-  "phase": "revision",
+  "phase": "export",
   "current_focus": "export",
   "iteration": 0,
   "foundation_score": 0.0,
@@ -7,7 +7,7 @@
   "chapters_drafted": 3,
   "chapters_total": 0,
   "novel_score": 8.0,
-  "revision_cycle": 0,
+  "revision_cycle": 1,
   "debts": [],
   "total_volumes": 0,
   "chapters_per_volume": 0,
