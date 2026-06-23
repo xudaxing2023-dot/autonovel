@@ -1,11 +1,11 @@
 {
-  "phase": "revision",
-  "current_focus": "full_novel",
-  "iteration": 1,
-  "foundation_score": 8.0,
-  "lore_score": 8.0,
-  "chapters_drafted": 2,
-  "chapters_total": 2,
+  "phase": "foundation",
+  "current_focus": "planning",
+  "iteration": 0,
+  "foundation_score": 0.0,
+  "lore_score": 0.0,
+  "chapters_drafted": 0,
+  "chapters_total": 0,
   "novel_score": 0.0,
   "revision_cycle": 0,
   "debts": [],
@@ -13,6 +13,6 @@
   "chapters_per_volume": 0,
   "current_volume": 1,
   "volumes_outlined": 0,
-  "canon_entry_count": 14,
-  "canon_last_updated_ch": 2
+  "canon_entry_count": 0,
+  "canon_last_updated_ch": 0
 }
