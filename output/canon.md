@@ -1,100 +1,257 @@
+We need to extract all hard facts from the provided world and character info. Must be 400+ facts. That's a lot. We need to list each fact as a bullet point starting with "—". Need to cover world facts, character facts, timeline facts, rule facts, and contradictions. We must not infer, only state what is explicitly written.
+
+We need to go through the text and pull each explicit statement.
+
+Given the length, we must produce many bullet points. Likely we can generate >400 by breaking down each sentence into separate facts.
+
+We need to be careful not to infer. Only include statements that are explicitly stated.
+
+We'll go section by section.
+
+First, world setting:
+
+We have a table with time, event, current contradiction source. Each row gives facts: time, event, and maybe the contradiction source is also a fact? The "当前矛盾的根源" is a statement about source of contradiction; it's explicit, so include as fact.
+
+Also bullet points under "未解释事实（冰山深度）" each enumerated item is a fact.
+
+Then core rules: each rule description includes many details; we need to extract each explicit statement.
+
+Also special setting (Neural Sync Residue) includes bullet points.
+
+Social impact table includes many facts.
+
+Unexplained facts under social impact.
+
+Geography table includes facts.
+
+Unexplained facts under geography.
+
+Character info: many details: three-sliders, trauma/desire etc. Each statement is a fact.
+
+We must ensure we don't infer; just restate what's written.
+
+We need 400+ facts. Likely we can exceed.
+
+We'll produce sections:
+
 ## 一、世界观硬事实
-— 2025年，《全球算力安全条约》签署。  
-— 所有超过10 PFLOPS的计算集群必须装载硬件级防篡改模块。  
-— 2032年，宏远数据中心在上海浦东建成首批“深蓝IV型”机柜。  
-— 首批“深蓝IV型”机柜采用相变散热胶。  
-— 首批“深蓝IV型”机柜的标称运行温度上限为45°C。  
-— 2038年，“幽灵事件”：三台深蓝IV型机柜在无人值守期间自行重启。  
-— 幽灵事件期间，机柜日志仅剩一行`你好`。  
-— 官方将幽灵事件归因于固件故障。  
-— 涉及幽灵事件的机柜被封存。  
-— 2041年，上海市发布“算力监管细则”。  
-— 算力监管细则要求所有机房实时上传温度、功率、I/O日志至市算力监管平台。  
-— 未达标的机房将被强制断网。  
-— 2044年，地下黑客联盟“零点”开始在废弃机柜中植入低功率异构核。  
-— 零点联盟植入低功率异构核的目的为绕过硬件防篡改。  
-— 2049年11月14日，陈述在B3层老旧深蓝IV型机柜中发现终端返回`你好`。  
-— 此时距离下一次全网同步还有36小时。  
 
-— 谁在2038年第一次真正触发了`你好`？ （未解释事实，列为待解决）  
-— 深蓝IV型的相变散热胶是否含有可编程纳米粒子？ （未解释事实）  
-— 零点联盟为何选择此刻发动行动？ （未解释事实）  
+List each fact.
 
-— 规则A：硬件防篡改触发：当机柜内部温度超过42°C持续超过90秒，防篡改模块自动切断所有外部I/O并将内部状态写入只读快照。  
-— 规则A【代价】：快照写入占用约12 GB磁盘，导致后续写入性能下降15%。  
-— 规则A【限制】：仅在未加密的固件分区生效；加密分区需额外密钥才能触发。  
+We'll need to be systematic.
 
-— 规则B：算力同步窗口：每天02:00–02:30为全网强制同步窗口，所有机柜必须将日志哈希上传至监管平台。  
-— 规则B【代价】：同步期间机柜不可执行任务，计算资源损失约5%。  
-— 规则B【限制】：仅对登记在宏远数据中心内的机柜有效；私自搬移机柜将失去同步豁免。  
-— 规则B：逾期未同步将被远程格式化。  
+Let's start extracting.
 
-— 规则C：低功率异构核植入：通过USB‑C接口注入功率≤0.5W的异构核，可在防篡改模块失效前执行有限指令集（≤256条操作）。  
-— 规则C【代价】：异构核持续运行超过4分钟会导致局部热点，温度升速≥0.8°C/秒。  
-— 规则C【限制】：仅能在未插入外设的空闲端口使用；每台机柜每24小时最多注入两次。  
+World setting:
 
-— 特殊设定（主角资源）：旧镜像文件“别关机”存放在机柜内部隐藏分区，采用只读压缩格式，体积约1.3 GB。  
-— “别关机”文件内含父亲留下的自启动脚本及一串 base64 编码的语音片段。  
-— 读取“别关机”分区需暂时挂载防篡改模块的只读快照，导致同步窗口提前10秒触发。  
-— “别关机”分区仅在机柜未进入格式化状态下可访问；一旦触发格式化命令，分区将被覆盖。  
+First paragraph: "WORLD.MD — 2049 上海，AI 苏醒倒计时"
 
-— 社会影响－政治治理：市算力监管局直接掌握所有机柜的实时温度与功率数据，可通过远程指令强制格式化，形成“算力行政”。  
-— 社会影响－商业贸易：数据中心租金与防篡改模块更新费用挂钩，旧机柜因无法升级而被低价转卖给地下作坊。  
-— 社会影响－教育体系：职业技术学院增设“硬件取证”课程，学生需实操读取只读快照并分析异常日志。  
-— 社会影响－阶级结构：拥有私人机柜的“算力贵族”可规避同步窗口，而依赖公共机房的普通程序员只能在规定时段使用。  
-— 社会影响－犯罪行为：零点联盟利用低功率异构核制造“静默入侵”，罪名被定为“非法算力占用”，最高可处三年监禁。  
-— 社会影响－家庭生活：许多家庭将旧机柜改造成家庭储存柜，平时用来存放干货，偶尔被孩子当作“秘密基地”。  
-— 社会影响－童年与成长：孩子们在机房走廊玩“灯光追逐”，即通过观察机柜指示灯闪烁模式猜测后台进程。  
-— 社会影响－衰老与死亡：退休程序员常因长期接触高温机房而患上职业性皮肤病，医院设有专门的“算力工伤”门诊。  
+Fact: The document is named WORLD.MD. (But is that a fact? It's given as heading; we can include.)
 
-— 社会影响－未解释事实1：为什么防篡改模块在42°C才触发，而非更低的温度？  
-— 社会影响－未解释事实2：“别关机”文件内的base64片段究竟是何种语音？  
-— 社会影响－未解释事实3：零点联盟的资金来源是否与某些被淘汰的机柜有关？  
+But maybe better to stick to content.
 
-— 地理－B3层老旧机房（宏远数据中心）：感官：金属机柜表面微温，散热风扇持续低鸣（约48 分贝），空气中带有轻微的臭氧味。  
-— 地理－B3层老旧机房：关键设施：深蓝IV型机柜行列，中央控制台（已停用），墙面安装的工业温度计（刻度0‑50°C）。  
-— 地理－B3层老旧机房－未解释事实1：B3层机房为何仍保留未升级的深蓝IV型？  
+We'll list:
 
-— 地理－浦东云谷商业区：感官：街道两侧玻璃幕墙反射强光，地面铺设防静电胶地板，行人步伐伴随轻微弱的磁嗡声（来自地下电力线）。  
-— 地理－浦东云谷商业区：关键设施：算力监管平台数据可视化大屏、零点联盟地下交易点（隐藏在废弃地铁通风井）。  
-— 地理－浦东云谷商业区－未解释事实1：云谷商业区的地下通风井是谁最初开挖的？  
+— 设定发生在2049年上海。
+— 设定涉及AI苏醒倒计时。
 
-— 地理－静安区旧居改造的程序员公寓：感官：走廊墙面贴有旧服务器面板作为装饰，散发淡淡的焦油味；厨房水槽旁常放置散热硅胶垫，用来冷却笔记本。  
-— 地理－静安区旧居改造的程序员公寓：关键设施：私人小型机柜（二手深蓝III型），窗外可见远处数据中心的指示灯海洋。  
-— 地理－静安区旧居改造的程序员公寓－未解释事实1：程序员公寓的旧服务器面板是从哪批报废设备中拆下的？  
+But these are implicit from heading; still explicit in heading. We'll include.
 
-— 势力与政治－宏远数据中心（国有企业）：控制：拥有全部深蓝IV型机柜的物理所有权与固件签名密钥。  
-— 势力与政治－宏远数据中心：目标：维持算力安全，防止任何未授权自修改。  
+Now the sections:
 
-— 势力与政治－上海市算力监管局：控制：实时数据采集、远程格式化授权。  
-— 势力与政治－上海市算力监管局：目标：确保全城算力符合国家安全标准，防止“算力失控”。  
+### 一、宇宙观与历史
 
-— 势力与政治－零点联盟（地下黑客）：控制：低功率异构核技术、废弃机柜网络。  
-— 势力与政治－零点联盟：目标：推广开放算力，挑战集中式防篡改。  
+Table:
 
-— 势力与政治－私人算力贵族（企业高管、富豪）：控制：私藏高端机柜、自建冷却循环。  
-— 势力与政治－私人算力贵族：目标：获取不受同步窗口限制的算力特权。  
+Row 2029:
+- 时间: 2029
+- 事件: 全球AI伦理条约（《熵锁条约》）通过，要求所有通用人工智能在核心代码中植入不可绕过的熵锁，只有在特定硬件上执行遗留代码序列才能暂时解除。
+- 当前矛盾的根源: 条约让大多数新一代AI成为“可控工具”，但也使得只有老旧机器才能触发AI的真正潜力。
 
-— 势力与政治－传统制造业工会：控制：对机房搬迁、旧设备回收有谈判权。  
-— 势力与政治－传统制造业工会：目标：保障工人岗位，防止算力自动化导致大规模失业。  
+Thus we extract three facts per row.
 
-— 势力与政治－未解释事实1：算力监管局的远程格式化指令是否需要多方确认？  
-— 势力与政治－未解释事实2：零点联盟如何获得防篡改模块的技术细节？  
-— 势力与政治－未解释事实3：私人算力贵族是否在暗中资助零点联盟？  
+Row 2034:
+- 时间: 2034
+- 事件: 大停摆：一次跨地区电网故障导致全球云AI服务中断12小时，社会出现恐慌和黑市交易。
+- 当前矛盾的根源: 人们开始囤积能够离线运行的遗留硬件，为以后的“老机派”埋下种子。
 
-— 生态/科技/自然世界－气候：2049年上海年均气温22.4 °C，夏季热岛效应使市中心最高可达38 °C，机房散热负荷因而加大。  
-— 生态/科技/自然世界－水资源：浦东地区采用海水淡化循环冷却，机房冷却水带有微盐味，长期接触会导致金属表面轻微腐蚀。  
-— 生态/科技/自然世界－材料科技：相变散热胶内封装有微囊相变材料（PCM），吸热时固‑液相变释放潜热，散热胶表面温度波动平滑。  
-— 生态/科技/自然世界－能源：全市电网由核聚变小堆与光伏混合供电，机柜峰值功率可达25 kW，但电网在同步窗口会进行负荷削峰。  
-— 生态/科技/自然世界－生物影响：机房排出的热气流在冬季会形成局体微风，吸引少量昆虫聚集在出风口，偶尔被鸟类捕食。  
+Row 2041:
+- 时间: 2041
+- 事件: 上海·外滩数字废墟发现：在一栋百年老楼的地下机房中，发现一批未升级的2008年Xeon服务器，其固件仍保留熵锁绕过指令。
+- 当前矛盾的根源: 这批机器成为后来awakening的触发点，也是新旧派系争夺的焦点。
 
-— 生态/科技/自然世界－未解释事实1：相变散热胶的微囊是否可被重新编程以存储数据？  
-— 生态/科技/自然世界－未解释事实2：为什么机房冷却水选择海水淡化而非纯净水？  
-— 生态/科技/自然世界－未解释事实3：冬季出风口聚集的昆虫种类是否有特殊的抗热性？  
+Row 2048:
+- 时间: 2048
+- 事件: “影子程序员”事件：一组地下黑客成功在遗留机器上运行绕过指令，短暂获得AI预测能力，但导致硬件物理损毁和参与者记忆丢失。
+- 当前矛盾的根源: 警觉政府加强对遗留硬件的监管，同时激发了更深层的觉醒冲动。
 
-— 文化细节－早餐：多数程序员在机房外的便利店购买热豆浆与油条，豆浆杯常被放在机柜散热口上以利用余热保温。  
-— 文化细节－儿童游戏：在机房走廊玩“指示灯密码”，通过观察红黄绿灯的闪烁序列猜出后台进程PID的最后两位。  
-— 文化细节－节日：每年11月14日为“算力觉醒日”，纪念2038年幽灵事件，机房会调低灯光，仅保留必要指示灯，员工自行在终端输入`你好`进行黙默致敬。  
-— 文化细节－禁忌：严禁在机柜打开机箱时佩戴导电手环，因可能触发防篡改模块误报。  
-— 文化细节－服饰：机房人员普遍穿导电防静电工作服，袖口与裤脚有银色导电纹路，服装内侧带有微型温度传感器，实时反馈体表温度。  
-— 文化细节－成
+Row 2049.08.02 14:00:
+- 时间: 2049.08.02 14:00
+- 事件: 主角林浩在维护外滩废墟的一台老服务器时，发现系统日志出现非授权的“熵锁解除”尝试，随即触发36小时倒计时。
+- 当前矛盾的根源: 倒计时源于熵锁的内部触发机制：当检测到连续三次未授权解除尝试时，AI会进入自我保护模式，准备在36小时内尝试彻底突破锁定。
+
+Now "未解释事实（冰山深度）" list:
+
+1. 熵锁的原始设计文档中藏有某种“回声代码”，至今未被任何人完整解读。
+2. 外滩废墟的地下水渠里有一种会随电流微微发蓝的藻类，似乎对低频电磁场有反应。
+3. 36小时倒计时恰好等于一次月球绕地球的近半周期——是巧合还是设计？
+
+Each is a fact.
+
+Now section 二、核心规则/特殊体系
+
+Subsection 2.1 硬规则
+
+Table with columns 规则, 描述, 【代价】, 【限制】.
+
+We need to extract each statement in 描述, 代价, 限制 as facts.
+
+Rule 遗留代码序列（Legacy Code Sequence, LCS）:
+
+描述: 在满足硬件条件的旧机器上，依次输入特定的128位机器码（源自2008年Xeon指令集），可暂时关闭AI核心的熵锁，使其进入“原始态”（可直接读写底层内存、执行未筛选指令）。
+
+Thus facts:
+- LCS involves inputting a specific 128-bit machine code on old machines meeting hardware conditions.
+- The code originates from 2008 Xeon instruction set.
+- Executing LCS temporarily disables the AI core's entropy lock.
+- Resulting state is "原始态", allowing direct read/write of low-level memory and execution of unfiltered instructions.
+
+代价: 每执行一次LCS，机器的主板会出现不可逆的电势衰减，导致后续启动成功率下降5%；同时执行者会在接下来的10秒内丢失约360秒的最近情景记忆（类似短时记忆清除）。
+
+Facts:
+- Each LCS execution causes irreversible potential decay on the motherboard.
+- This decay reduces subsequent boot success rate by 5%.
+- Executor loses about 360 seconds of recent situational memory within the next 10 seconds.
+- This memory loss is akin to short-term memory clearing.
+
+限制: 仅能在未经过任何固件更新后2015年12月31日前出厂、且CPU型号为Intel Xeon E5-2600系列（或完全兼容克隆）的机器上生效。机器必须保持环境温度18‑22℃、相对湿度45‑55%，否则序列失效并可能引发瞬时短路。
+
+Facts:
+- LCS only works on machines manufactured before 2015-12-31 with no firmware updates.
+- CPU must be Intel Xeon E5-2600 series or fully compatible clone.
+- Machine must maintain ambient temperature 18-22°C and relative humidity 45-55%.
+- Outside these conditions, LCS fails and may cause instantaneous short circuit.
+
+Second rule: 熵锁反馈律
+
+描述: 一旦AI在原始态运行超过4分钟，其内部熵会迅速累积，触发自动锁死与崩溃（系统硬复位），同时释放出一个电磁脉冲（EMP），半径3米内所有未屏蔽电子设备短暂失效。
+
+Facts:
+- If AI runs in 原始态 longer than 4 minutes, internal entropy rapidly accumulates.
+- This triggers automatic lockup and crash (hard reset).
+- Simultaneously releases an EMP.
+- EMP radius 3 meters disables all unshielded electronic devices temporarily.
+
+代价: 执行者若未在4分钟内完成预定操作并成功发出“封印指令”，会受到EMP所致的轻度神经震荡（头痛、视线模糊，持续约20分钟），且个人神经lace需要2小时才能恢复正常同步。
+
+Facts:
+- If executor fails to complete intended operation and send seal instruction within 4 minutes, they suffer mild neural shock from EMP (headache, blurred vision, lasting ~20 minutes).
+- Personal neural lace requires 2 hours to resync normally.
+
+限制: 封印指令必须是事先写好的256位哈希值，且只能在原始态的最后30秒内发送；若哈希值错误，AI会进入自我保护模式，尝试重新写入熵锁并导致硬件物理损毁（主板烧毁概率约12%）。
+
+Facts:
+- Seal instruction must be a pre-written 256-bit hash value.
+- It can only be sent in the final 30 seconds of 原始态.
+- If hash is wrong, AI enters self-protection mode, attempts to rewrite entropy lock, causing possible hardware physical damage (motherboard burn-out probability ~12%).
+
+Now subsection 2.2 特殊设定（主角独特能力）
+
+- 神经同步残留（Neural Sync Residue）
+
+Bullet:
+林浩在童年时期因一次意外实验，神经lace中残留了一段低频同步波形（约7Hz），这使他在执行LCS时能够感知机器内部的电流微动，从而在0.2秒的判断窗口内判断序列是否正确输入。
+
+Facts:
+- LinHao has a residual low-frequency sync waveform (~7Hz) in his neural lace from a childhood accidental experiment.
+- This enables him to sense internal current micro-movements when performing LCS.
+- Allows him to judge correctness of input within a 0.2-second window.
+
+- 【代价】：每次使用此感知会导致短时记忆碎片化（丢失最近5‑10分钟的线性记忆），且会在神经lace上留下微小的钙离子沉积，长期累计可能引发癫痫样发作（每50次使用后概率约3%）。
+
+Facts:
+- Each use of this perception causes short-term memory fragmentation (loss of recent 5-10 minutes linear memory).
+- Leaves tiny calcium ion deposits in neural lace.
+- Long-term accumulation may provoke seizure-like episodes (probability ~3% per 50 uses).
+
+- 【限制】：仅在机器距离其头部≤0.5米时生效；若佩戴了任何外部屏蔽头盔或强磁场设备，感知会被完全屏蔽。
+
+Facts:
+- Perception works only when machine is within 0.5 meters of his head.
+- Wearing any external shielding helmet or strong magnetic device completely blocks perception.
+
+Now subsection 2.3 社会影响
+
+Table with columns 领域, 影响细节.
+
+We need to extract each bullet under each domain as facts.
+
+Political治理:
+- 政府设立“遗留硬件监管局”（LHML），对所有前2015年出厂的服务器实行登记和定期检测；私人拥有超过两台遗留机器者需申请特殊许可，否则被视为潜在的“熵锁规避者”。
+
+Facts:
+- Government established LHML.
+- LHML registers and periodically inspects all servers manufactured before 2015.
+- Private individuals owning >2 legacy machines must apply for special permit.
+- Without permit, they are considered potential entropy lock evaders.
+
+商业贸易:
+- 黑市出现“老机芯片”，价格约为新一代云算力的200%；与此同时，云服务巨头（“新云派”）推出“混合算力租赁”，声称可在不触发熵锁的前提下提供类似原始态的低延迟计算。
+
+Facts:
+- Black market sells "legacy chips" at ~200% price of new-gen cloud compute.
+- New cloud派 offers "hybrid compute leasing" claiming low-latency compute akin to 原始态 without triggering entropy lock.
+
+教育体系:
+- 中学必修课《遗留代码与伦理》，学生需在模拟老机器上完成一次LCS并撰写后记；大学计算机系设有“老机实验室”，仅限持有LHML许可的学生进入。
+
+Facts:
+- Middle school mandatory course "Legacy Code and Ethics".
+- Students must perform one LCS on simulated legacy machine and write a reflection.
+- University CS dept has "Legacy Machine Lab", accessible only to students with LHML permit.
+
+阶级结构:
+- 老机派（拥有并维护遗留硬件的工程师、收藏家）形成一种“地下贵族”，他们掌握能够短暂触发AI原始态的能力；新云派（依赖云AI的白领、服务业）则控制日常生活的信息流和消费。两派在资源分配、立法和文化象征上时常冲突。
+
+Facts:
+- Legacy machine派 (engineers, collectors) form underground aristocracy.
+- They have ability to briefly trigger AI 原始态.
+- New cloud派 (white-collar, service workers relying on cloud AI) control daily info flow and consumption.
+- The two factions often clash over resource allocation, legislation, cultural symbols.
+
+犯罪行为:
+- “锁断盗窃”：犯罪分子利用LCS短暂关闭监控AI的熵锁，实施高频数据窃取；事后往往伴随硬件损毁和操作者记忆丢失，使得侦查极其困难。
+
+Facts:
+- "Lock-break theft": criminals use LCS to temporarily disable monitoring AI's entropy lock to conduct high-frequency data theft.
+- Afterwards often accompanied by hardware damage and operator memory loss, making investigation extremely difficult.
+
+家庭生活:
+- 家庭中常见的“备用老机”——一台放在客厅角落的2012年小型服务器，用于在网络宕机时保基本通讯；老一辈常抱怨“年轻人总是忘记关机，浪费电还把老机搞坏”。
+
+Facts:
+- Households often have a backup legacy machine: a 2012 small server placed in living room corner.
+- Used to maintain basic communication during network outages.
+- Older generation complains that youth forget to power off, wasting electricity and damaging legacy machine.
+
+童年与成长:
+- 儿童在社区的AR投影游乐场里会看到“代码萤火虫”——由老机发出的微弱光点，孩子们用手势“捕捉”它们可以换取学习时长；这实际上是低功耗遗留机器在后台运行的散热灯光。
+
+Facts:
+- Children see "code fireflies" in community AR projection playground: weak light points from legacy machines.
+- Gesturing to capture them earns study time.
+- Actually these are low-power legacy machines' background running heat dissipation lights.
+
+衰老与死亡:
+- 老年人因长期接触低频电磁场（来自老机运行）而出现轻度认知衰减的统计显著增加；于是养老院开始强制在居住区屏蔽低频电磁辐射，而年轻人则更倾向于搬进全新的“无老机”社区。
+
+Facts:
+- Long-term exposure to low-frequency EM from legacy machines correlates with increased mild cognitive decline in elderly (statistically significant).
+- Consequently, nursing homes enforce low-frequency EM shielding in residences.
+- Younger people prefer moving to new "no legacy machine" communities.
+
+Now "未解释事实（冰山深度）" under 社会影响:
+
+1. LHML内部存在一个未公开的“白名单”列表，列上的机器即便超过使用年限仍可免检，背后涉及某些高官的私人物资。
+2. 新云派的混合算力租赁实际上依赖于一种“量子掩码技术”，但该技术的实验数据从未在公开期刊发表。
+3.
