@@ -436,6 +436,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     cfg = config
     cfg.load()
     plateau_delta = cfg.get("plateau_delta", PLATEAU_DELTA) if cfg.loaded else PLATEAU_DELTA
+    threshold = cfg.chapter_threshold if cfg.loaded else CHAPTER_THRESHOLD
     max_tokens = cfg.max_tokens_per_call if cfg.loaded else 16000
     total = get_total_chapters(state)
 

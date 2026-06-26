@@ -746,12 +746,12 @@ def build_auto_brief() -> tuple[int, str]:
     """
     full_eval_path = latest_full_eval()
     if full_eval_path is None:
-        sys.exit("错误: eval_logs/ 中未找到 *_full.json")
+        raise FileNotFoundError("eval_logs/ 中未找到 *_full.json — 请先执行 evaluate_full 或采样评估")
 
     full_eval = load_json(full_eval_path)
     ch = full_eval.get("weakest_chapter")
     if ch is None:
-        sys.exit("错误: 全文评估中未包含 'weakest_chapter' 字段")
+        raise KeyError("全文评估中未包含 'weakest_chapter' 字段 — 评估结果可能不完整")
 
     step(f"自动识别最弱章节: 第 {ch} 章")
     step(f"  来源: {full_eval_path.name}")
