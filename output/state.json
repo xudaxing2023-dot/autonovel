@@ -1,12 +1,12 @@
 {
   "phase": "revision",
-  "current_focus": "chapter_drafting",
+  "current_focus": "export",
   "iteration": 1,
   "foundation_score": 8.0,
   "lore_score": 8.0,
   "chapters_drafted": 4,
   "chapters_total": 4,
-  "novel_score": 6.8,
+  "novel_score": 7.0,
   "revision_cycle": 1,
   "debts": [],
   "total_volumes": 2,
@@ -15,5 +15,5 @@
   "volumes_outlined": 0,
   "canon_entry_count": 0,
   "canon_last_updated_ch": 0,
-  "review_revision_round": 2
+  "review_revision_round": 3
 }
