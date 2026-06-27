@@ -1,0 +1,5 @@
+commit	phase	score	word_count	status	description
+0325dd1	foundation	7.5	0	keep	迭代 1: 评分提升 0.0 -> 7.5
+de0c8f8	ch01	7.5	6131	keep	第 1 章 (尝试 1)
+6b641a8	ch02	6.2	5774	keep	第 2 章 (尝试 1)
+6b9fa8b	revision-cycle-1	6.5	11905	cycle	循环 1: novel_score 0.0->6.5

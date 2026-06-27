@@ -55,9 +55,8 @@ efc8f53	foundation	9.0	0	keep	迭代 1: 评分提升 0.0 -> 9.0
 439d971	revision-cycle-1	8.0	3278	cycle	循环 1: novel_score 0.0->8.0
 f680f05	revision-cycle-2	8.0	3278	cycle	循环 2: novel_score 8.0->8.0
 4d831a9	export	8.0	3278	export	最终导出
-reverted	review-rev-ch03	-1.0	4822	discard	审阅修订 轮次3: ch03 倒退 6.8->-1.0
-4d29dcd	review-rev-ch04	7.0	8959	keep	审阅修订 轮次3: ch04 7.0->7.0
-554b018	review-rev-ch01	7.2	2946	keep	审阅修订 轮次3: ch01 0->7.2
-1ceb090	review-revision-round-3	0	22551	cycle	审阅修订 轮次3: 修订 4 章
-bb8c7be	export	6.5	22551	export	最终导出
-f5b4b73	export	6.5	22551	export	最终导出
+reverted	review-rev-ch01	6.5	3930	discard	审阅修订 轮次1: ch01 倒退 6.8->6.5
+4f14d0e	review-rev-ch01	7.0	5746	keep	审阅修订 轮次2: ch01 6.5->7.0
+ba4680b	review-revision-round-2	0	5746	cycle	审阅修订 轮次2: 修订 2 章
+bffd186	review-rev-ch01	7.2	5730	keep	审阅修订 轮次3: ch01 7.2->7.2
+b0e4f71	review-revision-round-3	0	5730	cycle	审阅修订 轮次3: 修订 2 章
