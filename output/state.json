@@ -6,13 +6,14 @@
   "lore_score": 7.0,
   "chapters_drafted": 3,
   "chapters_total": 3,
-  "novel_score": 6.5,
-  "revision_cycle": 3,
+  "novel_score": 6.2,
+  "revision_cycle": 4,
   "debts": [],
   "total_volumes": 0,
   "chapters_per_volume": 0,
   "current_volume": 1,
   "volumes_outlined": 0,
   "canon_entry_count": 79,
-  "canon_last_updated_ch": 3
+  "canon_last_updated_ch": 3,
+  "review_revision_round": 1
 }
