@@ -1,0 +1,142 @@
+======================================================================
+  Stage 4 E2E-1 Auto Diagnosis Report
+  Generated: 2026-06-28 08:06:45
+  Sources: logs/debug.log, output/results.tsv, output/state.json, output/config.json
+======================================================================
+
+--- Phase Summary ---
+  Config: 3 chapters
+  Final state: phase=complete, novel_score=6.5, foundation_score=8.0, revision_cycle=3
+  Foundation: 3 iteration(s), scores: [7.8, 7.0, 8.0]
+  Drafting: 7 voice warning(s)
+  Revision: 6 cycle(s), 6 review-revision round(s), 8 revert(s)
+  Export: 9 tsv export row(s)
+
+--- Detected Anomalies (10 total) ---
+  CRITICAL (3):
+  [CRIT] [D1-SENTINEL] eval sentinel -1.0 treated as valid score, false regression -> git_reset_hard
+     Detail: 2 discard(s) with score=-1.0 in results.tsv. 7 -1.0 occurrences in log. Sentinel -1.0 means eval API failed. Pipeline compares -1.0 vs real score -> declares regression -> triggers git_reset_hard -> loses all work.
+     Evidence: results.tsv discard: stage=foundation score=-1.0 reason=迭代 20: 未提升 (-1.0 <= 0.0)
+     Evidence: results.tsv discard: stage=review-rev-ch03 score=-1.0 reason=审阅修订 轮次3: ch03 倒退 6.8->-1.0
+     Evidence: 45 API timeout(s) detected, correlated with -1.0 sentinel
+     Root cause: API timeout -> eval returns -1.0 -> used in score comparison -> -1.0 < real score -> regression -> revert -> Foundation forever fails -> reset
+
+  [CRIT] [D2-RESET-STORM] Git reset storm: 9 full resets
+     Detail: At least 9 git_reset_hard events. Each loses all drafted chapters. Caused 287min runtime and 65-row results.tsv.
+     Evidence: results.tsv: 9 foundation segments (= git_reset_hard events)
+     Evidence: results.tsv: 3 discard rows, 65 total rows (expected ~15)
+     Root cause: API timeout -> eval -1.0 -> Foundation never passes -> iter limit -> force reset -> redo Foundation -> may hit timeout again -> cycle -> multiple resets
+
+  [CRIT] [D9-FOUNDATION-ITER20] Foundation ran 20 iterations (limit=3) before force-discard
+     Detail: Far exceeding config limit. Limit check bypassed or repeated timeouts caused no score change each iter.
+     Evidence: results.tsv: ('discarded', 'foundation', -1.0, '迭代 20: 未提升 (-1.0 <= 0.0)')
+     Evidence: Config max_foundation_iters=3, actually ran 20 iterations
+     Root cause: eval returns -1.0 every time -> score always 0.0 -> no improvement -> continue iteration -> limit check invalidated by sentinel -> runs 20 -> force discard.
+
+  HIGH (4):
+  [HIGH] [D3-FREQUENT-REVERTS] Frequent reverts: 8 score-drops + 3 discards
+     Detail: 8 reverts. 8 are genuine regressions. 
+     Evidence: [] revision score 6.5 < 7.5 -> revert
+     Evidence: [] revision score 6.5 < 6.8 -> revert
+     Evidence: [] revision score 6.0 < 7.5 -> revert
+     Evidence: [] revision score 6.2 < 6.8 -> revert
+     Evidence: [] revision score 6.8 < 7.0 -> revert
+     Evidence: [] revision score 6.8 < 7.2 -> revert
+     Evidence: [] revision score 6.5 < 7.0 -> revert
+     Evidence: [] revision score 6.2 < 7.0 -> revert
+     Evidence: results.tsv discard: review-rev-ch03 score=6.2 reason=审阅修订 轮次3: ch03 倒退 7.0->6.2
+     Root cause: Some from sentinel -1.0 misjudgment; genuine ones: revision prompts may introduce new issues or over-modify text causing score decline.
+
+  [HIGH] [D4-GHOST-CHAPTER] Ghost chapter ch04 (config=3 chapters)
+     Detail: 0 pipeline skips + 1 tsv rows for ch04. Review-revision internal chapter count != chapters_total=3.
+     Evidence: results.tsv: review-rev-ch04 score=7.0 reason=审阅修订 轮次3: ch04 7.0->7.0
+     Root cause: review_revision reads chapter count from git history / separate state instead of config.json/state.json chapters_total.
+
+  [HIGH] [D7-API-TIMEOUTS] API timeout/failure: 45 times
+     Detail: 45 API call failures. Direct trigger of -1.0 sentinel and git_reset_hard storm.
+     Evidence: [] [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+     Evidence: [] [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+     Evidence: [] [PIPELINE] 运行全文评估 (总超时=600s) ...
+     Evidence: [] [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+     Evidence: [] [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+     Evidence: [] [PIPELINE] 运行全文评估 (总超时=600s) ...
+     Evidence: [] [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+     Evidence: [] [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+     Evidence: [] [PIPELINE] 运行全文评估 (总超时=600s) ...
+     Evidence: [] [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+     Root cause: API backend instability or token overflow causing 600s timeout.
+
+  [HIGH] [D10-SCORE-STAGNATION] Novel score stagnated: revision could not sustain quality improvement
+     Detail: Trajectory: 6.5 -> 6.5 -> 6.5 -> 7.0 -> 6.2 -> 6.5 -> 6.2 -> 6.5. Final score ~6.5. 3 main cycles + 3 review-revision rounds failed to break quality ceiling.
+     Evidence: [] novel_score=6.5 (prev=0.0, words=10113)
+     Evidence: [] novel_score=6.5 (prev=6.5, words=10113)
+     Evidence: [] novel_score=6.5 (prev=6.5, words=10113)
+     Evidence: [] novel_score=7.0 (prev=None, words=None)
+     Evidence: [] novel_score=6.2 (prev=0.0, words=12998)
+     Evidence: [] novel_score=6.5 (prev=6.2, words=14108)
+     Evidence: [] novel_score=6.2 (prev=6.5, words=10312)
+     Evidence: [] novel_score=6.5 (prev=None, words=None)
+     Evidence: Score trajectory: 6.5 -> 6.5 -> 6.5 -> 7.0 -> 6.2 -> 6.5 -> 6.2 -> 6.5
+     Root cause: Revision prompts may introduce new issues; eval model scoring inconsistency; or sentinel false-reverts lost valid revision work.
+
+  MEDIUM (2):
+  [MED] [D5-PLATEAU-BOUNDARY] Plateau detection float boundary unstable
+     Detail: Max improvement equals plateau_delta=0.3. Float precision may cause boundary misjudgment.
+     Evidence: [] delta=0.0 vs threshold=0.3: delta < threshold = True, delta <= threshold = True
+     Evidence: [] delta=0.3 vs threshold=0.3: delta < threshold = False, delta <= threshold = True
+     Root cause: Float delta may be 0.2999... Use <= or epsilon tolerance.
+
+  [MED] [D8-VOICE-WARNINGS] Voice warnings on all chapters: 3/3
+     Detail: All chapters: no dialogue, excessive em-dash density (8.1-8.8/1000). Systematic deviation between voice (minimalist cold) and drafting output.
+     Evidence: [] Ch1: 无对话, 破折号密度过高 (10.4/千字)
+     Evidence: [] Ch2: 无对话, 破折号密度过高 (5.3/千字)
+     Evidence: [] Ch2: 无对话, 破折号密度过高 (6.4/千字)
+     Evidence: [] Ch3: 无对话, 破折号密度过高 (12.4/千字)
+     Evidence: [] Ch1: 无对话, 破折号密度过高 (8.8/千字)
+     Evidence: [] Ch2: 无对话, 破折号密度过高 (8.1/千字)
+     Evidence: [] Ch3: 无对话, 破折号密度过高 (8.4/千字)
+     Root cause: Voice-defined dialogue ratio expectation != actual LLM drafting output.
+
+  LOW (1):
+  [LOW] [D6-STATE-FIELDS] state.json key fields are 0 (missing/not synced)
+     Detail: Affects resume scenarios.
+     Evidence: total_volumes: state=0 config=1
+     Evidence: chapters_per_volume: state=0 config=3
+     Evidence: canon_entry_count=0 (may not have grown or was reset)
+     Root cause: write_e2e1_config writes config.json only, not synced to state.
+
+--- Root Causes (5 converged) ---
+  [P0] RC-1: eval sentinel -1.0 not filtered -> false regression -> git_reset_hard storm
+    Affected: D1-SENTINEL, D2-RESET-STORM, D9-FOUNDATION-ITER20
+    Fix: Check score == -1.0 at all comparison points: retry eval instead of declaring regression. Foundation iter: add dedicated eval retry. API timeout: add fallback score mechanism.
+
+  [P1] RC-2: Review-revision chapter count boundary check missing
+    Affected: D4-GHOST-CHAPTER
+    Fix: Add chapters_total consistency check in review-revision rounds.
+
+  [P2] RC-3: Plateau detection float boundary unstable
+    Affected: D5-PLATEAU-BOUNDARY
+    Fix: Use <= comparison or add epsilon (1e-9) tolerance.
+
+  [P2] RC-4: state.json fields not synced with config
+    Affected: D6-STATE-FIELDS
+    Fix: Sync total_volumes/chapters_per_volume to state in write_e2e1_config.
+
+  [P2] RC-5: Voice vs drafting output systematic deviation
+    Affected: D8-VOICE-WARNINGS
+    Fix: Adjust dialogue density in drafting prompt or relax em-dash limit in voice.
+
+--- Key Metrics ---
+  results.tsv:    65 rows (keep=24, discard=3, cycle=29, export=9)
+  API timeouts:   45
+  Score reverts:  8
+  Voice warnings: 7
+  Ghost chapters: 0 pipeline + 1 tsv
+  Foundation seg: 9
+  Eval -1.0:      7 log matches
+  Stages seen:    ['ch01', 'ch02', 'ch03', 'export', 'foundation', 'review-rev-ch01', 'review-rev-ch03', 'review-rev-ch04', 'review-revision-round-3', 'revision-cycle-1', 'revision-cycle-2', 'revision-cycle-3', 'revision-cycle-4', 'revision-cycle-5', 'revision-cycle-6']
+
+--- Assessment ---
+  WARNING: Systemic anomalies. Sentinel -1.0 is root cause. Re-run after P0 fix.
+
+Report ends - 2026-06-28 08:06:45

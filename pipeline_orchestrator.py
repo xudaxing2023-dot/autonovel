@@ -491,7 +491,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             # 生成修订摘要（retries=2, max_total_time=1200 = 20分钟）
             brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_cycle{cycle}_{question}.md"
             try:
-                generate_brief(ch_num, panel_data=panel_path, retries=2, max_total_time=1200)
+                generate_brief(ch_num, panel_data=panel_path, output_path=brief_file, retries=2, max_total_time=1200)
             except Exception:
                 # 创建最小摘要
                 brief_content = (

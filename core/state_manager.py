@@ -377,14 +377,47 @@ def parse_score(stdout: str, key: str = "overall_score") -> float:
                     return val / 10.0
                 return val
 
-    # 兜底：全文搜索 "X/10" 分数
-    for line in lines:
-        m = re.search(
-            r"(?:评分|Score|score).*?(\d+(?:\.\d+)?)\s*/\s*(10|十)",
-            line.strip(),
-        )
-        if m:
-            return float(m.group(1))
+    # ——— Fallback: 全文收集所有候选评分，取位置最靠后的 ———
+    # 裁判模型不使用固定的 ### overall_score 小节头，输出格式多样化。
+    # 跨模式收集所有 (end_position, value) 候选，取 end 最大者
+    # （最后出现的评分通常是整体评分而非子维度评分）。
+    candidates: list[tuple[int, float]] = []  # (end_pos, value)
+
+    fallback_patterns = [
+        # 格式 A: 综合评分：6.5/10 或 Overall Score: 6.5 或 Score: 8.2
+        (r'(?:综合评分|Overall\s+Score|final\s+score|Score)\s*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', True),
+        # 格式 B: ### 15. overall_score ... 或 ## score: 7.0 或 overall_score: 6.5
+        (r'(?:overall_score|Overall_Score|score)[^:\n]*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', False),
+        # 格式 C: 最终评分：**6.5/10**
+        (r'最终评分\s*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', True),
+        # 格式 D: **评分**: 6.5/10 或 **score**: 6.5
+        (r'\*\*(?:评分|Score|score)\*\*\s*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', False),
+        # 格式 E: X/10 分数
+        (r'(?:评分|Score|score)[^:\n]*?(\d+(?:\.\d+)?)\s*/\s*(?:10|十)', False),
+    ]
+    for pattern, search_whole in fallback_patterns:
+        flags = re.IGNORECASE if search_whole else re.IGNORECASE | re.MULTILINE
+        for m in re.finditer(pattern, stdout, flags):
+            try:
+                val = float(m.group(1))
+            except (ValueError, IndexError):
+                continue
+            if m.lastindex and m.lastindex >= 2:
+                try:
+                    denom = float(m.group(2))
+                    if denom > 0:
+                        val = val / denom * 10.0
+                except (ValueError, IndexError):
+                    pass
+            if val > 11:
+                val = val / 10.0
+            if 0 <= val <= 10:
+                candidates.append((m.end(), val))
+
+    if candidates:
+        # 取全文最后一个评分候选（end 位置最大）
+        candidates.sort(key=lambda x: x[0])
+        return candidates[-1][1]
 
     return -1.0
 

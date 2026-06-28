@@ -61,3 +61,5 @@ reverted	review-rev-ch03	-1.0	4822	discard	审阅修订 轮次3: ch03 倒退 6.8
 1ceb090	review-revision-round-3	0	22551	cycle	审阅修订 轮次3: 修订 4 章
 bb8c7be	export	6.5	22551	export	最终导出
 f5b4b73	export	6.5	22551	export	最终导出
+reverted	review-rev-ch01	6.0	4436	discard	审阅修订 轮次3: ch01 倒退 6.5->6.0
+6df2641	export	5.5	14542	export	最终导出
