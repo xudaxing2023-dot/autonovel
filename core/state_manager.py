@@ -452,6 +452,34 @@ def evaluate_chapter_stable(
     return scores[len(scores) // 2]  # 中位数
 
 
+def evaluate_foundation_stable(
+    max_tokens: int = 4096,
+    retries: int = 3,
+    max_total_time: int = None,
+    samples: int = 3,
+) -> float:
+    """稳定版 Foundation 评估：调用 N 次取中位数。
+
+    用于 Foundation 迭代间的评分比较，避免 LLM 评分波动导致
+    更优的迭代被错误丢弃。
+    """
+    from evaluation.evaluate import evaluate_foundation as _eval
+    scores: list[float] = []
+    for _ in range(samples):
+        try:
+            result = _eval(max_tokens=max_tokens, retries=retries,
+                           max_total_time=max_total_time)
+            s = parse_score(result, "overall_score")
+            if s >= 0:
+                scores.append(s)
+        except Exception:
+            pass
+    if not scores:
+        return 0.0
+    scores.sort()
+    return scores[len(scores) // 2]  # 中位数
+
+
 def parse_lore_score(stdout: str) -> float:
     """解析 lore_score。"""
     return parse_score(stdout, "lore_score")

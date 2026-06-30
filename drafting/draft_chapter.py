@@ -71,7 +71,7 @@ def extract_next_chapter_preview(chapter_num: int) -> str:
     return '\n'.join(lines)
 
 
-RECENT_CHAPTERS = 8
+RECENT_CHAPTERS = 2  # ★ 从 8 降为 2，减少上下文稀释，保留最近连续性
 
 
 def _load_recent_chapters(chapter_num: int) -> str:

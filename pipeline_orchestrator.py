@@ -34,7 +34,7 @@ from core.state_manager import (
     backup_snapshot, restore_latest,
     log_result, banner, step, parse_score, parse_lore_score,
     count_words_in_chapters, count_chapter_files, get_total_chapters,
-    evaluate_chapter_stable,
+    evaluate_chapter_stable, evaluate_foundation_stable,
 )
 
 
@@ -136,17 +136,16 @@ def run_foundation(state: dict) -> dict:
         from foundation.gen_voice import generate_voice
         generate_voice(max_tokens=max_tokens)
 
-        # 7. 评估
+        # 7. 评估（稳定版：3次中位数，降低 LLM 评分波动）
         step("评估基础构建 ...")
+        score = evaluate_foundation_stable()
         from evaluation.evaluate import evaluate_foundation
-        eval_result = evaluate_foundation()
-        score = parse_score(eval_result, "overall_score")
-        lore = parse_lore_score(eval_result)
+        lore = parse_lore_score(evaluate_foundation())
 
         step(f"基础构建评分: {score}  (lore: {lore}, 历史最佳: {best_score})")
 
-        # 8. 保留/丢弃
-        if score > best_score:
+        # 8. 保留/丢弃（0.3 分容忍区间，避免评分波动误丢弃）
+        if score >= best_score - 0.3:
             commit_hash = git_add_commit(
                 f"基础构建 迭代{i}: 评分 {score} (lore {lore})"
             )
@@ -602,8 +601,13 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_cycle{cycle}_{question}.md"
             try:
                 generate_brief(ch_num, panel_data=panel_path, output_path=brief_file, retries=2, max_total_time=1200)
+                # ★ 检测空壳摘要：panel 数据逐薄时 build_panel_brief 生成无操作内容的占位符
+                if brief_file.exists():
+                    brief_text = brief_file.read_text(encoding="utf-8")
+                    if len(brief_text) < 500 or "未给出具体修订建议" in brief_text:
+                        raise ValueError("面板摘要内容不足，回退多源摘要")
             except Exception:
-                # ★ 使用有意义的 fallback 摘要，而非 4 行占位符
+                # ★ 使用多源 fallback 摘要（eval + panel + review + cuts + voice）
                 brief_content = _build_fallback_brief(
                     ch_num,
                     f"共识修订 循环{cycle}: {question}",
