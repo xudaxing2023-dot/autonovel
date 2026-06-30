@@ -998,13 +998,37 @@ def generate_brief(
                 step(f"第 {chapter_num} 章文件不存在，跳过")
                 return None
 
-            # 优先级: eval > cuts > panel
+            # 优先级: eval > cuts (需有实际条目) > panel > auto
             if ch_eval_path:
                 step(f"第 {chapter_num} 章: 使用评估摘要 (--eval)")
                 brief_text = build_eval_brief(chapter_num)
             elif cuts_path.exists():
-                step(f"第 {chapter_num} 章: 使用对抗性编辑摘要 (--cuts)")
-                brief_text = build_cuts_brief(chapter_num)
+                # ★ 检查 cuts 是否真的有内容（而非 0 条目空壳）
+                try:
+                    cuts_data = json.loads(cuts_path.read_text(encoding="utf-8"))
+                    total_cuttable = cuts_data.get("total_cuttable_words", 0)
+                    if total_cuttable > 0:
+                        step(f"第 {chapter_num} 章: 使用对抗性编辑摘要 (--cuts)")
+                        brief_text = build_cuts_brief(chapter_num)
+                    elif panel_data and panel_data.exists():
+                        step(f"第 {chapter_num} 章: cuts 无内容，回退评审团摘要 (--panel)")
+                        brief_text = build_panel_brief(chapter_num)
+                    else:
+                        step(f"第 {chapter_num} 章: cuts 无内容，尝试自动模式")
+                        full_eval_path = latest_full_eval()
+                        if full_eval_path:
+                            ch, brief_text = build_auto_brief()
+                            if ch != chapter_num:
+                                step(f"自动模式选择了第 {ch} 章而非第 {chapter_num} 章")
+                        else:
+                            raise ValueError("无可用数据源")
+                except Exception:
+                    # cuts 解析失败，回退 panel 或 auto
+                    if panel_data and panel_data.exists():
+                        step(f"第 {chapter_num} 章: cuts 解析失败，回退评审团摘要 (--panel)")
+                        brief_text = build_panel_brief(chapter_num)
+                    else:
+                        raise
             elif panel_data and panel_data.exists():
                 step(f"第 {chapter_num} 章: 使用评审团摘要 (--panel)")
                 brief_text = build_panel_brief(chapter_num)

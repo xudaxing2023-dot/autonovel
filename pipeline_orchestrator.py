@@ -423,6 +423,115 @@ def _parse_panel_consensus(panel_path: Optional[Path]) -> list:
     return unique[:5]
 
 
+def _build_fallback_brief(ch_num: int, context: str, label: str = "修订") -> str:
+    """★ 构建有意义的 fallback 修订摘要，替代空占位符。
+
+    拼接所有可用的评估/审阅/反模式数据，给 LLM 提供实质性指导。
+    """
+    parts = [f"# 修订摘要: 第 {ch_num} 章 — {label}\n"]
+    parts.append(f"## 来源: {context}\n")
+
+    # 1) 最新的单章评估
+    try:
+        from revision.gen_brief import latest_chapter_eval, load_json
+        import json as _json
+        ch_eval_path = latest_chapter_eval(ch_num)
+        if ch_eval_path:
+            ch_eval = _json.loads(ch_eval_path.read_text(encoding="utf-8"))
+            score = ch_eval.get("overall_score", "?")
+            weakest = ch_eval.get("weakest_dimension", "")
+            parts.append(f"## 最新单章评分: {score}/10\n")
+            if weakest:
+                parts.append(f"最弱维度: **{weakest}**\n")
+            # 提取 ≤7 分的维度及其 fix
+            for dk in ["voice_adherence", "beat_coverage", "character_voice",
+                       "plants_seeded", "prose_quality", "continuity",
+                       "canon_compliance", "engagement"]:
+                dim = ch_eval.get(dk)
+                if not dim or not isinstance(dim, dict):
+                    continue
+                ds = dim.get("score", "?")
+                fix = dim.get("fix", "")
+                if ds != "?" and int(ds) <= 7 and fix:
+                    parts.append(f"- **{dk}** ({ds}/10): {fix}\n")
+            # top_3_revisions
+            for rev in ch_eval.get("top_3_revisions", [])[:3]:
+                parts.append(f"- {rev}\n")
+            # AI patterns
+            for pat in ch_eval.get("ai_patterns_detected", [])[:3]:
+                parts.append(f"- ⚠ AI模式: {pat}\n")
+    except Exception:
+        pass
+
+    # 2) 最新的全文评估
+    try:
+        from revision.gen_brief import latest_full_eval
+        full_path = latest_full_eval()
+        if full_path:
+            full_eval = _json.loads(full_path.read_text(encoding="utf-8"))
+            nscore = full_eval.get("novel_score", "?")
+            tsug = full_eval.get("top_suggestion", "")
+            parts.append(f"\n## 全文评估: {nscore}/10\n")
+            if tsug:
+                parts.append(f"首要建议: {tsug}\n")
+    except Exception:
+        pass
+
+    # 3) 读者评审团共识
+    try:
+        panel_path = EDIT_LOGS_DIR / "reader_panel.json"
+        if panel_path.exists():
+            panel = _json.loads(panel_path.read_text(encoding="utf-8"))
+            for d in panel.get("disagreements", []):
+                if d.get("chapter") == ch_num:
+                    q = d.get("question", "")
+                    flagged = d.get("flagged_by", [])
+                    parts.append(f"\n## 评审团共识: {q} ({len(flagged)}/4 读者标记)\n")
+    except Exception:
+        pass
+
+    # 4) 深度审阅
+    try:
+        review_jsons = sorted(EDIT_LOGS_DIR.glob("review_round*.json"))
+        if review_jsons:
+            latest_review = _json.loads(review_jsons[-1].read_text(encoding="utf-8"))
+            stars = latest_review.get("stars", 0)
+            major = latest_review.get("major_items", 0)
+            parts.append(f"\n## 审阅结果: {'★' * int(stars)}, {major} 严重问题\n")
+            raw = latest_review.get("raw_review", "")
+            # 提取提及本章的段落
+            import re as _re
+            ch_pat = _re.compile(rf"(?:第\s*{ch_num}\s*章|Ch\.?\s*{ch_num})")
+            for para in raw.split("\n\n"):
+                if ch_pat.search(para):
+                    snippet = para[:400] + ("…" if len(para) > 400 else "")
+                    parts.append(f"> {snippet}\n")
+    except Exception:
+        pass
+
+    # 5) 章节基本统计
+    try:
+        ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
+        if ch_file.exists():
+            text = ch_file.read_text(encoding="utf-8")
+            wc = len(text.replace(" ", "").replace("\n", ""))
+            parts.append(f"\n## 当前字数: {wc} 字\n")
+    except Exception:
+        pass
+
+    # 6) 文风规则
+    try:
+        from revision.gen_brief import extract_voice_rules
+        rules = extract_voice_rules()
+        if rules:
+            parts.append("\n## 文风规则\n")
+            parts.append("\n".join(f"- {r}" for r in rules[:10]) + "\n")
+    except Exception:
+        pass
+
+    return "\n".join(parts)
+
+
 def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     banner("PHASE 3: REVISION (修订)", "=")
 
@@ -494,13 +603,11 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             try:
                 generate_brief(ch_num, panel_data=panel_path, output_path=brief_file, retries=2, max_total_time=1200)
             except Exception:
-                # 创建最小摘要
-                brief_content = (
-                    f"# 修订摘要: 第 {ch_num} 章\n\n"
-                    f"## 问题: {question}\n\n"
-                    f"评审团共识指出本章需要修订。\n"
-                    f"焦点: 处理 {question.replace('_', ' ')} 问题。\n"
-                    f"保留现有文风、角色塑造和关键节拍。\n"
+                # ★ 使用有意义的 fallback 摘要，而非 4 行占位符
+                brief_content = _build_fallback_brief(
+                    ch_num,
+                    f"共识修订 循环{cycle}: {question}",
+                    label=f"共识修订 ({question})"
                 )
                 brief_file.write_text(brief_content, encoding="utf-8")
 
@@ -743,11 +850,11 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                 if not brief_text.strip():
                     raise ValueError("空摘要")
             except Exception:
-                brief_content = (
-                    f"# 修订摘要: 第 {ch_num} 章\n\n"
-                    f"## 来源: {reason}（循环 {cycle}）\n\n"
-                    f"本章被识别为需要改进的目标。"
-                    f"原因: {reason}。请基于评估意见和审阅反馈提升品质。\n"
+                # ★ 使用有意义的 fallback 摘要
+                brief_content = _build_fallback_brief(
+                    ch_num,
+                    f"{reason}（循环 {cycle}）",
+                    label=f"采样修订 ({reason})"
                 )
                 brief_file.write_text(brief_content, encoding="utf-8")
 
@@ -973,11 +1080,11 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                     if not brief_text.strip():
                         raise ValueError("空摘要")
                 except Exception:
-                    brief_content = (
-                        f"# 修订摘要: 第 {ch_num} 章\n\n"
-                        f"## 来源: 深度审阅 轮次 {rnd}\n\n"
-                        f"审阅指出本章需要改进。"
-                        f"请基于最新评估和审阅意见进行修订。\n"
+                    # ★ 使用有意义的 fallback 摘要，包含审阅发现和评估数据
+                    brief_content = _build_fallback_brief(
+                        ch_num,
+                        f"深度审阅 轮次 {rnd}",
+                        label=f"审阅修订 (轮次{rnd})"
                     )
                     brief_file.write_text(brief_content, encoding="utf-8")
 
