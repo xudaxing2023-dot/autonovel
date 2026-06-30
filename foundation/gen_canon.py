@@ -97,8 +97,8 @@ def count_canon_entries(canon_path=None) -> dict:
             if key in line and line.startswith("##"):
                 current_section = key
                 break
-        # 统计条目
-        if current_section and line.startswith("—"):
+        # 统计条目 — 兼容 EM DASH / HYPHEN / ASTERISK 三种 bullet
+        if current_section and line.startswith(("—", "-", "*")):
             sections[current_section] += 1
 
     total = sum(sections.values())

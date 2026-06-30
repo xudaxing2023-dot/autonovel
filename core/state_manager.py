@@ -339,7 +339,7 @@ def parse_score(stdout: str, key: str = "overall_score") -> float:
         if stripped.startswith(f"{key}:"):
             val = stripped.split(":", 1)[1].strip()
             try:
-                return float(val)
+                return round(float(val), 1)
             except ValueError:
                 continue
 
@@ -363,15 +363,15 @@ def parse_score(stdout: str, key: str = "overall_score") -> float:
                 numerator = float(m.group(1))
                 denominator = float(m.group(2))
                 if denominator > 0:
-                    return numerator / denominator * 10.0  # 转换为 10 分制
-                return numerator
+                    return round(numerator / denominator * 10.0, 1)  # 转换为 10 分制
+                return round(numerator, 1)
             # 也尝试匹配纯数字评分: **评分**: 8.5
             m2 = re.match(
                 r"\*\*.*?(?:评分|Score|score)\*\*\s*:\s*(\d+(?:\.\d+)?)",
                 stripped,
             )
             if m2:
-                val = float(m2.group(1))
+                val = round(float(m2.group(1)), 1)
                 # 如果值 > 10 可能是百分制，缩放到10分制
                 if val > 11:
                     return val / 10.0
@@ -420,6 +420,36 @@ def parse_score(stdout: str, key: str = "overall_score") -> float:
         return candidates[-1][1]
 
     return -1.0
+
+
+# ============================================================================
+# 稳定评估 — 多次调用取中位数，降低 LLM 评分波动
+# ============================================================================
+
+def evaluate_chapter_stable(
+    ch_num: int,
+    retries: int = 2,
+    max_total_time: int = 600,
+    samples: int = 3,
+) -> float:
+    """稳定版章节评估：调用 N 次取中位数，过滤 -1.0 异常值。
+
+    用于修订前后的评分比较，避免单次 LLM 评分波动导致误判回退。
+    """
+    from evaluation.evaluate import evaluate_chapter as _eval
+    scores: list[float] = []
+    for _ in range(samples):
+        try:
+            result = _eval(ch_num, retries=retries, max_total_time=max_total_time)
+            s = parse_score(result, "overall_score")
+            if s >= 0:
+                scores.append(s)
+        except Exception:
+            pass
+    if not scores:
+        return 0.0
+    scores.sort()
+    return scores[len(scores) // 2]  # 中位数
 
 
 def parse_lore_score(stdout: str) -> float:

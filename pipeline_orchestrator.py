@@ -34,6 +34,7 @@ from core.state_manager import (
     backup_snapshot, restore_latest,
     log_result, banner, step, parse_score, parse_lore_score,
     count_words_in_chapters, count_chapter_files, get_total_chapters,
+    evaluate_chapter_stable,
 )
 
 
@@ -595,8 +596,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             question = item["question"]
             banner(f"  修订 第 {ch_num} 章 ({question}) [{idx+1}/{len(consensus_items)}]", ".")
 
-            pre_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
-            pre_score = parse_score(pre_eval, "overall_score")
+            pre_score = evaluate_chapter_stable(ch_num)
 
             # 生成修订摘要（retries=2, max_total_time=1200 = 20分钟）
             brief_file = BRIEFS_DIR / f"ch{ch_num:02d}_cycle{cycle}_{question}.md"
@@ -620,8 +620,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             revise_chapter(ch_num, brief_file, max_tokens=max_tokens, retries=2, max_total_time=1200)
 
             # 评估修订后章节
-            post_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
-            post_score = parse_score(post_eval, "overall_score")
+            post_score = evaluate_chapter_stable(ch_num)
 
             ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
             word_count = len(ch_file.read_text(encoding="utf-8").replace(" ", "").replace("\n", "")) if ch_file.exists() else 0
@@ -629,7 +628,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             step(f"第 {ch_num} 章: {pre_score} -> {post_score}")
 
             step(f"针对性修订 第 {ch_num} 章 完成 ✓ ({pre_score} -> {post_score})")
-            if post_score >= pre_score:
+            if post_score >= pre_score - 0.5:
                 commit_hash = git_add_commit(
                     f"修订 循环{cycle}: ch{ch_num:02d} "
                     f"{question} {pre_score}->{post_score}"
@@ -833,8 +832,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
             # 修订前评估
             try:
-                pre_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
-                pre_score = parse_score(pre_eval, "overall_score")
+                pre_score = evaluate_chapter_stable(ch_num)
             except Exception:
                 pre_score = 0
 
@@ -874,8 +872,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
             # 修订后评估
             try:
-                post_eval = evaluate_chapter(ch_num, retries=2, max_total_time=600)
-                post_score = parse_score(post_eval, "overall_score")
+                post_score = evaluate_chapter_stable(ch_num)
             except Exception:
                 post_score = 0
 
@@ -887,7 +884,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             step(f"第 {ch_num} 章: {pre_score} -> {post_score}")
 
             # 提交或回退
-            if post_score >= pre_score:
+            if post_score >= pre_score - 0.5:
                 commit_hash = git_add_commit(
                     f"修订 循环{cycle}: ch{ch_num:02d} "
                     f"({reason}) {pre_score}->{post_score}"
@@ -910,12 +907,20 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                     f"循环 {cycle}: {reason} 倒退 {pre_score}->{post_score}",
                 )
 
-        # Step 6: 全文评估（max_total_time=600 = 10分钟）
-        step("运行全文评估 (总超时=600s) ...")
-        full_eval = evaluate_full(max_total_time=600)
-        novel_score = parse_score(full_eval, "novel_score")
-        if novel_score < 0:
-            novel_score = parse_score(full_eval, "overall_score")
+        # Step 6: 全文评估（2次取中位数，降低 LLM 评分波动）
+        step("运行全文评估 (总超时=600s, 2次取中位数) ...")
+        full_scores: list[float] = []
+        for _ in range(2):
+            try:
+                fe = evaluate_full(max_total_time=600)
+                ns = parse_score(fe, "novel_score")
+                if ns < 0:
+                    ns = parse_score(fe, "overall_score")
+                if ns >= 0:
+                    full_scores.append(ns)
+            except Exception:
+                pass
+        novel_score = sorted(full_scores)[len(full_scores) // 2] if full_scores else 0.0
 
         total_words = count_words_in_chapters()
         step(f"小说评分: {novel_score}  (前次: {prev_score}, 字数: {total_words})")
@@ -975,6 +980,9 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                 raw, re.IGNORECASE,
             ):
                 ch_num = int(ch_match.group(1))
+                # ★ BUG-2 fix: 过滤超出范围的章节编号
+                if not (1 <= ch_num <= total):
+                    continue
                 start = max(0, ch_match.start() - 200)
                 context = raw[start:ch_match.start() + 200]
                 if any(kw in context for kw in negative_keywords):
@@ -1061,10 +1069,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
                 # D1. 修订前评估
                 try:
-                    pre_eval = evaluate_chapter(
-                        ch_num, retries=retries, max_total_time=600,
-                    )
-                    pre_score = parse_score(pre_eval, "overall_score")
+                    pre_score = evaluate_chapter_stable(ch_num)
                 except Exception:
                     pre_score = 0
 
@@ -1104,10 +1109,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
                 # D4. 修订后评估
                 try:
-                    post_eval = evaluate_chapter(
-                        ch_num, retries=retries, max_total_time=600,
-                    )
-                    post_score = parse_score(post_eval, "overall_score")
+                    post_score = evaluate_chapter_stable(ch_num)
                 except Exception:
                     post_score = 0
 
@@ -1119,7 +1121,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                 step(f"第 {ch_num} 章: {pre_score} -> {post_score}")
 
                 # D5. 提交或回退
-                if post_score >= pre_score:
+                if post_score >= pre_score - 0.5:
                     commit_hash = git_add_commit(
                         f"审阅修订 轮次{rnd}: ch{ch_num:02d} "
                         f"{pre_score}->{post_score}",

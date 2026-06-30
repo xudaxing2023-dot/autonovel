@@ -345,6 +345,11 @@ class Config:
         return self._data.get("chapter_word_target", 3250)
 
     @property
+    def max_revision_cycles(self) -> int:
+        """修订最大循环数（可从 config.json 覆盖，默认 6）。"""
+        return self._data.get("max_revision_cycles", 6)
+
+    @property
     def max_tokens_per_call(self) -> int:
         return self._data.get("max_tokens_per_call", 16000)
 
