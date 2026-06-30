@@ -324,7 +324,10 @@ def main():
         _patch_pipeline_logging()  # monkey-patch step/banner，双写所有日志
 
         t_pipeline = time.time()
-        _, err = safe_call("E2E1.run_pipeline(from_scratch)", run_pipeline, "from_scratch")
+        # ★ P2 fix: 显式传递 max_cycles=MAX_REV_CYCLES，确保 config 中的阈值生效
+        _, err = safe_call("E2E1.run_pipeline(from_scratch)",
+                           run_pipeline, "from_scratch",
+                           max_cycles=MAX_REV_CYCLES)
 
         _restore_pipeline_logging()  # 恢复原始函数
 

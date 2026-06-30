@@ -154,6 +154,7 @@ def run_foundation(state: dict) -> dict:
             best_score = score
             state["foundation_score"] = score
             state["lore_score"] = lore
+            state["canon_entry_count"] = canon_total  # ★ P1 fix: 记录 Foundation 生成的 canon 条目数
             save_state(state)
         else:
             step(f"评分未提升 ({score} <= {best_score})，丢弃")
@@ -1170,6 +1171,11 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
         state = default_state()
         # 应用模型等级默认值
         cfg.apply_model_tier_defaults()
+        # ★ P7 fix: 将 config 中的卷/章配置传播到 state
+        # default_state() 中这些字段为 0，需要从 config 同步
+        state["total_volumes"] = cfg.total_volumes
+        state["chapters_per_volume"] = cfg.chapters_per_volume
+        state["chapters_total"] = cfg.total_chapters
         save_state(state)
     else:
         # 恢复模式
@@ -1201,7 +1207,14 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
 
     start_time = datetime.now()
 
-    revision_cycles = max_cycles if max_cycles else MAX_REVISION_CYCLES
+    # ★ P2 fix: 三级回退链 — 显式传参 → config → 硬编码常量
+    cfg = config
+    cfg.load()
+    revision_cycles = (
+        max_cycles
+        or (cfg.max_revision_cycles if cfg.loaded else None)
+        or MAX_REVISION_CYCLES
+    )
 
     for phase in phases:
         try:
