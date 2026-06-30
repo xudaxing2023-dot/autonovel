@@ -1535,3 +1535,1145 @@ NameError: name 'threshold' is not defined
   迭代上限: foundation_iters=3, ch_attempts=3, rev_cycles=3
   观察性验证: 1 项需人工判断
 ======================================================================
+======================================================================
+  Stage 4 E2E-1: 3章正常阈值 from_scratch — 全插桩执行
+  配置: total_chapters=3, total_volumes=1
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: max_foundation_iters=3, max_chapter_attempts=3, max_revision_cycles=3
+  故事梗概: 2049年上海，程序员在维护老旧服务器时发现AI觉醒迹象，36小时倒计时。悬疑科幻风格，节奏紧凑。
+  日志文件: e:\2026代码文件夹\my novel\logs\debug.log
+  需求验证: 双写文件✅ 每行flush✅ 崩溃捕获✅ logs/自动创建✅
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #1] 18:41:22.153  初始化: 清理 output + 写入正常阈值配置 + 创建初始 state
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 18:41:22.183  output/ 已清理
+  [INSTR ✅] 18:41:22.190  config.json 已写入: total_chapters=3, foundation_threshold=7.5, chapter_threshold=6.0, plateau_delta=0.3
+  [INSTR ✅] 18:41:22.190  初始 state 已写入
+  [INSTR LOG] 18:41:22.192  SNAP [初始]: phase=foundation drafted=0/3 cycle=0 score=0.0
+  [INSTR LOG] 18:41:22.192         config: total_ch=3 total_vol=1 ch_per_vol=3 f_threshold=7.5 ch_threshold=6.0 max_rev=3
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #2] 18:41:22.192  ═══ 启动全流水线 from_scratch ═══
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 18:41:22.192  调用 run_pipeline('from_scratch') — 将自动执行 Phase 1→2→3→4
+  [INSTR LOG] 18:41:22.192  预期 API 调用: Foundation(~7-21) + Drafting(~9-27) + Revision(~30-45) + Export(0) = ~45-93
+  [INSTR LOG] 18:41:22.192  ⚠ 注意: 正常阈值下 Foundation/章节 可能多次重试，耗时会增加
+  [INSTR ✅] 18:41:22.192  pipeline_orchestrator.step / banner 已挂载插桩
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #3] 18:41:22.192  ▶ E2E1.run_pipeline(from_scratch)
+──────────────────────────────────────────────────────────────────────
+
+  [PIPELINE BANNER] 从头开始生成 — 故事梗概已就绪
+
+  [PIPELINE BANNER] [ZH] 中文长篇小说自动生成 — 阶段: foundation → drafting → revision → export
+
+  [PIPELINE BANNER] PHASE 1: FOUNDATION (基础构建)
+
+  [PIPELINE BANNER] 基础构建 迭代 1/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 515 (世界观245 + 角色199 + 时间线22 + 规则49)
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 7.5  (lore: 7.5, 历史最佳: 0.0)
+  [PIPELINE] 基础构建评分 7.5 >= 7.5 — 通过！
+
+  [PIPELINE BANNER] 基础构建完成 — 评分 7.5, 计划 3 章
+
+  [PIPELINE BANNER] PHASE 2: DRAFTING (草拟)
+
+  [PIPELINE BANNER] 起草 第 1/3 章
+  [PIPELINE] 起草 第 1/3 章 — 尝试 1/3
+  [PIPELINE] 生成 4155 字
+  [PIPELINE] 第 1 章评分: 7.0  (slop_penalty: 2.83)
+  [PIPELINE] 起草 第 1/3 章 完成 ✓ (评分 7.0, 4155 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 1 章): 无对话, 破折号密度过高 (18.1/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (1 项):
+  [PIPELINE]   — 分隔符过多: 3 个
+  [PIPELINE] 正典更新: +32 条新事实（第 1 章）
+
+  [PIPELINE BANNER] 起草 第 2/3 章
+  [PIPELINE] 起草 第 2/3 章 — 尝试 1/3
+  [PIPELINE] 生成 4476 字
+  [PIPELINE] 第 2 章评分: -1.0  (slop_penalty: 2.52)
+  [PIPELINE] 评分 -1.0 < 6.0，丢弃重试
+  [PIPELINE] 起草 第 2/3 章 — 尝试 2/3
+  [PIPELINE] 生成 5746 字
+  [PIPELINE] 第 2 章评分: -1.0  (slop_penalty: 0.41)
+  [PIPELINE] 评分 -1.0 < 6.0，丢弃重试
+  [PIPELINE] 起草 第 2/3 章 — 尝试 3/3
+  [PIPELINE] 生成 4998 字
+  [PIPELINE] 第 2 章评分: 6.5  (slop_penalty: 0.3)
+  [PIPELINE] 起草 第 2/3 章 完成 ✓ (评分 6.5, 4998 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 2 章): 无对话, 破折号密度过高 (9.2/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (2 项):
+  [PIPELINE]   — 三连罗列: 3 处
+  [PIPELINE]   — 分隔符过多: 10 个
+  [PIPELINE] 正典更新: +31 条新事实（第 2 章）
+
+  [PIPELINE BANNER] 起草 第 3/3 章
+  [PIPELINE] 起草 第 3/3 章 — 尝试 1/3
+  [PIPELINE] 生成 7496 字
+  [PIPELINE] 第 3 章评分: 6.5  (slop_penalty: 0.3)
+  [PIPELINE] 起草 第 3/3 章 完成 ✓ (评分 6.5, 7496 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 3 章): 无对话, 破折号密度过高 (9.9/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (2 项):
+  [PIPELINE]   — 三连罗列: 2 处
+  [PIPELINE]   — 分隔符过多: 18 个
+  [PIPELINE] 正典更新: +41 条新事实（第 3 章）
+
+  [PIPELINE BANNER] 草拟完成 — 3 章, 16649 字, 正典条目 104 (最后更新: 第 3 章)
+
+  [PIPELINE BANNER] PHASE 3: REVISION (修订)
+
+  [PIPELINE BANNER] 修订 循环 1/6
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.5 -> 6.5
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (7.5 -> 6.5)
+  [PIPELINE] 修订使评分下降 (6.5 < 7.5)，回退
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: -1.0 -> 7.5
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (-1.0 -> 7.5)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 6.2 -> 7.0
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (6.2 -> 7.0)
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 7.0
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 8.0
+  [PIPELINE]   采样评估 第 3 章 (卷 1): -1.0
+  [PIPELINE] 采样弱章: [3]
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 5.5  (前次: 0.0, 字数: 16545)
+
+  [PIPELINE BANNER] 修订 循环 2/6
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: -1.0 -> 6.5
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (-1.0 -> 6.5)
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 6.5 -> 8.0
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (6.5 -> 8.0)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 6.5 -> 6.2
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (6.5 -> 6.2)
+  [PIPELINE] 修订使评分下降 (6.2 < 6.5)，回退
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 3 章 (卷 1): 6.5
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 8.0
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 8.0
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 5.5  (前次: 5.5, 字数: 16526)
+
+  [PIPELINE BANNER] 修订 循环 3/6
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.0 -> -1.0
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (7.0 -> -1.0)
+  [PIPELINE] 修订使评分下降 (-1.0 < 7.0)，回退
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 6.799999999999999 -> 6.8
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (6.799999999999999 -> 6.8)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 7.5 -> 7.0
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (7.5 -> 7.0)
+  [PIPELINE] 修订使评分下降 (7.0 < 7.5)，回退
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 8.0
+  [PIPELINE]   采样评估 第 3 章 (卷 1): 6.2
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 6.5
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 5.5  (前次: 5.5, 字数: 14772)
+  [PIPELINE] 平台期检测 (delta 0.00 < 0.3) — 停止修订
+
+  [PIPELINE BANNER] 审阅修订 轮次 1/3
+  [PIPELINE] 提交手稿给裁判模型深度审阅 ...
+======================================================================
+  Stage 4 E2E-1: 3章正常阈值 from_scratch — 全插桩执行
+  配置: total_chapters=3, total_volumes=1
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: max_foundation_iters=3, max_chapter_attempts=3, max_revision_cycles=3
+  故事梗概: 2049年上海，程序员在维护老旧服务器时发现AI觉醒迹象，36小时倒计时。悬疑科幻风格，节奏紧凑。
+  日志文件: e:\2026代码文件夹\my novel\logs\debug.log
+  需求验证: 双写文件✅ 每行flush✅ 崩溃捕获✅ logs/自动创建✅
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #1] 09:21:04.537  初始化: 清理 output + 写入正常阈值配置 + 创建初始 state
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 09:21:04.854  output/ 已清理
+  [INSTR ✅] 09:21:04.864  config.json 已写入: total_chapters=3, foundation_threshold=7.5, chapter_threshold=6.0, plateau_delta=0.3
+  [INSTR ✅] 09:21:04.864  初始 state 已写入
+  [INSTR LOG] 09:21:04.872  SNAP [初始]: phase=foundation drafted=0/3 cycle=0 score=0.0
+  [INSTR LOG] 09:21:04.872         config: total_ch=3 total_vol=1 ch_per_vol=3 f_threshold=7.5 ch_threshold=6.0 max_rev=3
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #2] 09:21:04.872  ═══ 启动全流水线 from_scratch ═══
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 09:21:04.872  调用 run_pipeline('from_scratch') — 将自动执行 Phase 1→2→3→4
+  [INSTR LOG] 09:21:04.872  预期 API 调用: Foundation(~7-21) + Drafting(~9-27) + Revision(~30-45) + Export(0) = ~45-93
+  [INSTR LOG] 09:21:04.872  ⚠ 注意: 正常阈值下 Foundation/章节 可能多次重试，耗时会增加
+  [INSTR ✅] 09:21:04.872  pipeline_orchestrator.step / banner 已挂载插桩
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #3] 09:21:04.872  ▶ E2E1.run_pipeline(from_scratch)
+──────────────────────────────────────────────────────────────────────
+
+  [PIPELINE BANNER] 从头开始生成 — 故事梗概已就绪
+
+  [PIPELINE BANNER] [ZH] 中文长篇小说自动生成 — 阶段: foundation → drafting → revision → export
+
+  [PIPELINE BANNER] PHASE 1: FOUNDATION (基础构建)
+
+  [PIPELINE BANNER] 基础构建 迭代 1/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 762 (世界观409 + 角色284 + 时间线27 + 规则42)
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 6.0  (lore: 6.0, 历史最佳: 0.0)
+
+  [PIPELINE BANNER] 基础构建 迭代 2/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 681 (世界观174 + 角色135 + 时间线25 + 规则347)
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 6.5  (lore: 6.5, 历史最佳: 6.0)
+
+  [PIPELINE BANNER] 基础构建 迭代 3/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 498 (世界观228 + 角色152 + 时间线31 + 规则87)
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 7.0  (lore: 7.0, 历史最佳: 6.5)
+  [PIPELINE] 警告: 达到最大迭代次数 (3)，当前最佳评分 7.0
+
+  [PIPELINE BANNER] 基础构建完成 — 评分 7.0, 计划 3 章
+
+  [PIPELINE BANNER] PHASE 2: DRAFTING (草拟)
+
+  [PIPELINE BANNER] 起草 第 1/3 章
+  [PIPELINE] 起草 第 1/3 章 — 尝试 1/3
+  [PIPELINE] 生成 3547 字
+  [PIPELINE] 第 1 章评分: 7.199999999999999  (slop_penalty: 1.68)
+  [PIPELINE] 起草 第 1/3 章 完成 ✓ (评分 7.199999999999999, 3547 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 1 章): 无对话, 破折号密度过高 (10.7/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (2 项):
+  [PIPELINE]   — 三连罗列: 3 处
+  [PIPELINE]   — 比喻密度过高: 5.36/千字
+  [PIPELINE] 正典更新: +52 条新事实（第 1 章）
+
+  [PIPELINE BANNER] 起草 第 2/3 章
+  [PIPELINE] 起草 第 2/3 章 — 尝试 1/3
+  [PIPELINE] 生成 2873 字
+  [PIPELINE] 第 2 章评分: 7.199999999999999  (slop_penalty: 0.0)
+  [PIPELINE] 起草 第 2/3 章 完成 ✓ (评分 7.199999999999999, 2873 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 2 章): 无对话
+  [PIPELINE] 结构反模式: ✓
+  [PIPELINE] 正典更新: +32 条新事实（第 2 章）
+
+  [PIPELINE BANNER] 起草 第 3/3 章
+  [PIPELINE] 起草 第 3/3 章 — 尝试 1/3
+  [PIPELINE] 生成 4747 字
+  [PIPELINE] 第 3 章评分: 6.799999999999999  (slop_penalty: 1.55)
+  [PIPELINE] 起草 第 3/3 章 完成 ✓ (评分 6.799999999999999, 4747 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 3 章): 无对话, 破折号密度过高 (12.2/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (1 项):
+  [PIPELINE]   — 三连罗列: 2 处
+  [PIPELINE] 正典更新: +16 条新事实（第 3 章）
+
+  [PIPELINE BANNER] 草拟完成 — 3 章, 11167 字, 正典条目 100 (最后更新: 第 3 章)
+
+  [PIPELINE BANNER] PHASE 3: REVISION (修订)
+
+  [PIPELINE BANNER] 修订 循环 1/6
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+
+======================================================================
+  Stage 4 E2E-1 中断恢复 — 从 phase=revision 继续
+  启动时间: 2026-06-29 11:30:07
+======================================================================
+  [RESUME LOG] 11:30:07.529  当前 state: phase=revision, drafted=3/3, cycle=0, score=0.0
+  [RESUME LOG] 11:30:07.529  开始执行 run_pipeline('resume') ...
+  [RESUME LOG] 11:30:07.529  预期流程: Revision (最多 3 循环 + 审阅修订) → Export (build_outline + arc_summary + manuscript)
+======================================================================
+  Stage 4 E2E-1: 3章正常阈值 from_scratch — 全插桩执行
+  配置: total_chapters=3, total_volumes=1
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: max_foundation_iters=3, max_chapter_attempts=3, max_revision_cycles=3
+  故事梗概: 2049年上海，程序员在维护老旧服务器时发现AI觉醒迹象，36小时倒计时。悬疑科幻风格，节奏紧凑。
+  日志文件: e:\2026代码文件夹\my novel\logs\debug.log
+  需求验证: 双写文件✅ 每行flush✅ 崩溃捕获✅ logs/自动创建✅
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #1] 14:32:00.058  初始化: 清理 output + 写入正常阈值配置 + 创建初始 state
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 14:32:00.066  output/ 已清理
+  [INSTR ✅] 14:32:00.076  config.json 已写入: total_chapters=3, foundation_threshold=7.5, chapter_threshold=6.0, plateau_delta=0.3
+  [INSTR ✅] 14:32:00.077  初始 state 已写入
+  [INSTR LOG] 14:32:00.086  SNAP [初始]: phase=foundation drafted=0/3 cycle=0 score=0.0
+  [INSTR LOG] 14:32:00.086         config: total_ch=3 total_vol=1 ch_per_vol=3 f_threshold=7.5 ch_threshold=6.0 max_rev=3
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #2] 14:32:00.086  ═══ 启动全流水线 from_scratch ═══
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 14:32:00.086  调用 run_pipeline('from_scratch') — 将自动执行 Phase 1→2→3→4
+  [INSTR LOG] 14:32:00.086  预期 API 调用: Foundation(~7-21) + Drafting(~9-27) + Revision(~30-45) + Export(0) = ~45-93
+  [INSTR LOG] 14:32:00.086  ⚠ 注意: 正常阈值下 Foundation/章节 可能多次重试，耗时会增加
+  [INSTR ✅] 14:32:00.086  pipeline_orchestrator.step / banner 已挂载插桩
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #3] 14:32:00.086  ▶ E2E1.run_pipeline(from_scratch)
+──────────────────────────────────────────────────────────────────────
+
+  [PIPELINE BANNER] 从头开始生成 — 故事梗概已就绪
+
+  [PIPELINE BANNER] [ZH] 中文长篇小说自动生成 — 阶段: foundation → drafting → revision → export
+
+  [PIPELINE BANNER] PHASE 1: FOUNDATION (基础构建)
+
+  [PIPELINE BANNER] 基础构建 迭代 1/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 714 (世界观372 + 角色218 + 时间线14 + 规则110)
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 4.0  (lore: 4.0, 历史最佳: 0.0)
+
+  [PIPELINE BANNER] 基础构建 迭代 2/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 596 (世界观240 + 角色251 + 时间线52 + 规则53)
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 7.0  (lore: 7.0, 历史最佳: 4.0)
+
+  [PIPELINE BANNER] 基础构建 迭代 3/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 0 (世界观0 + 角色0 + 时间线0 + 规则0)
+  [PIPELINE] ⚠ 警告: 正典条目 0 < 400，信息密度不足，将在评估中体现
+  [PIPELINE] 正典严重不足，后续迭代将使用更大 token 预算重试…
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 7.0  (lore: 7.0, 历史最佳: 7.0)
+  [PIPELINE] 评分未提升 (7.0 <= 7.0)，丢弃
+  [PIPELINE] 警告: 达到最大迭代次数 (3)，当前最佳评分 7.0
+
+  [PIPELINE BANNER] 基础构建完成 — 评分 7.0, 计划 3 章
+
+  [PIPELINE BANNER] PHASE 2: DRAFTING (草拟)
+
+  [PIPELINE BANNER] 起草 第 1/3 章
+  [PIPELINE] 起草 第 1/3 章 — 尝试 1/3
+  [PIPELINE] 生成 1218 字
+  [PIPELINE] 第 1 章评分: 7.0  (slop_penalty: 5.07)
+  [PIPELINE] ⚠ LLM 评分达标 (7.0) 但 slop_penalty 过高 (5.07 > 3.0)，触发反套话重写…
+  [PIPELINE] 起草 第 1/3 章 — 尝试 2/3
+  [PIPELINE] 生成 2962 字
+  [PIPELINE] 第 1 章评分: -1.0  (slop_penalty: 0.02)
+  [PIPELINE] 评分 -1.0 < 6.0，丢弃重试
+  [PIPELINE] 起草 第 1/3 章 — 尝试 3/3
+  [PIPELINE] 生成 1995 字
+  [PIPELINE] 第 1 章评分: 7.5  (slop_penalty: 2.01)
+  [PIPELINE] 起草 第 1/3 章 完成 ✓ (评分 7.5, 1995 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 1 章): 无对话, 破折号密度过高 (15.0/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (1 项):
+  [PIPELINE]   — 比喻密度过高: 3.51/千字
+  [PIPELINE] 正典更新: +25 条新事实（第 1 章）
+
+  [PIPELINE BANNER] 起草 第 2/3 章
+  [PIPELINE] 起草 第 2/3 章 — 尝试 1/3
+  [PIPELINE] 生成 6542 字
+  [PIPELINE] 第 2 章评分: -1.0  (slop_penalty: 0.33)
+  [PIPELINE] 评分 -1.0 < 6.0，丢弃重试
+  [PIPELINE] 起草 第 2/3 章 — 尝试 2/3
+  [PIPELINE] 生成 5708 字
+  [PIPELINE] 第 2 章评分: 6.0  (slop_penalty: 0.69)
+  [PIPELINE] 起草 第 2/3 章 完成 ✓ (评分 6.0, 5708 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 2 章): 无对话, 破折号密度过高 (8.8/千字)
+  [PIPELINE] 结构反模式: ✓
+  [PIPELINE] 正典更新: +10 条新事实（第 2 章）
+
+  [PIPELINE BANNER] 起草 第 3/3 章
+  [PIPELINE] 起草 第 3/3 章 — 尝试 1/3
+  [PIPELINE] 生成 4013 字
+  [PIPELINE] 第 3 章评分: -1.0  (slop_penalty: 0.49)
+  [PIPELINE] 评分 -1.0 < 6.0，丢弃重试
+  [PIPELINE] 起草 第 3/3 章 — 尝试 2/3
+  [PIPELINE] 生成 5576 字
+  [PIPELINE] 第 3 章评分: 5.5  (slop_penalty: 0.0)
+  [PIPELINE] 评分 5.5 < 6.0，丢弃重试
+  [PIPELINE] 起草 第 3/3 章 — 尝试 3/3
+  [PIPELINE] 生成 8332 字
+  [PIPELINE] 第 3 章评分: 8.0  (slop_penalty: 0.0)
+  [PIPELINE] 起草 第 3/3 章 完成 ✓ (评分 8.0, 8332 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 3 章): 无对话
+  [PIPELINE] ⚠ 结构反模式警告 (2 项):
+  [PIPELINE]   — 三连罗列: 5 处
+  [PIPELINE]   — 段落均匀化: ratio 0.7
+  [PIPELINE] 正典更新: +25 条新事实（第 3 章）
+
+  [PIPELINE BANNER] 草拟完成 — 3 章, 16035 字, 正典条目 60 (最后更新: 第 3 章)
+
+  [PIPELINE BANNER] PHASE 3: REVISION (修订)
+
+  [PIPELINE BANNER] 修订 循环 1/6
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 6.8 -> 8.0
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (6.8 -> 8.0)
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: -1.0 -> 6.5
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (-1.0 -> 6.5)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 7.0 -> -1.0
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (7.0 -> -1.0)
+  [PIPELINE] 修订使评分下降 (-1.0 < 7.0)，回退
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 2 章 (卷 1): -1.0
+  [PIPELINE]   采样评估 第 3 章 (卷 1): -1.0
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 8.0
+  [PIPELINE] 采样弱章: [2, 3]
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 6.5  (前次: 0.0, 字数: 15580)
+
+  [PIPELINE BANNER] 修订 循环 2/6
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 8.0 -> -1.0
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (8.0 -> -1.0)
+  [PIPELINE] 修订使评分下降 (-1.0 < 8.0)，回退
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 6.5 -> 6.5
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (6.5 -> 6.5)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: -1.0 -> 6.0
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (-1.0 -> 6.0)
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 7.0
+  [PIPELINE]   采样评估 第 3 章 (卷 1): 6.0
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 6.0
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 6.5  (前次: 6.5, 字数: 17109)
+
+  [PIPELINE BANNER] 修订 循环 3/6
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 6.5 -> 7.0
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (6.5 -> 7.0)
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: -1.0 -> -1.0
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (-1.0 -> -1.0)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 6.5 -> 7.0
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (6.5 -> 7.0)
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 6.8
+  [PIPELINE]   采样评估 第 3 章 (卷 1): 8.0
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 6.0
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 6.2  (前次: 6.5, 字数: 16821)
+  [PIPELINE] 平台期检测 (delta 0.30 < 0.3) — 停止修订
+
+  [PIPELINE BANNER] 审阅修订 轮次 1/3
+  [PIPELINE] 提交手稿给裁判模型深度审阅 ...
+  [PIPELINE] 审阅结果: ★, 22 严重问题
+  [PIPELINE] 弱章节: [2, 1, 3, 5, 10]
+
+  [PIPELINE BANNER]   修订 第 2 章 [1/5]
+  [PIPELINE] 第 2 章 修订前评分: 6.2
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 6.2 -> -1.0
+  [PIPELINE] 修订使评分下降 (-1.0 < 6.2)，回退
+
+  [PIPELINE BANNER]   修订 第 1 章 [2/5]
+  [PIPELINE] 第 1 章 修订前评分: 7.0
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.0 -> 1.75
+  [PIPELINE] 修订使评分下降 (1.75 < 7.0)，回退
+
+  [PIPELINE BANNER]   修订 第 3 章 [3/5]
+  [PIPELINE] 第 3 章 修订前评分: 7.0
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 7.0 -> 6.5
+  [PIPELINE] 修订使评分下降 (6.5 < 7.0)，回退
+  [PIPELINE] 第 5 章不存在，跳过
+  [PIPELINE] 第 10 章不存在，跳过
+
+  [PIPELINE BANNER] 审阅修订 轮次 2/3
+  [PIPELINE] 提交手稿给裁判模型深度审阅 ...
+  [PIPELINE] 审阅结果: ★, 6 严重问题
+  [PIPELINE] 弱章节: [3, 2, 1]
+
+  [PIPELINE BANNER]   修订 第 3 章 [1/3]
+  [PIPELINE] 第 3 章 修订前评分: 6.2
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 6.2 -> -1.0
+  [PIPELINE] 修订使评分下降 (-1.0 < 6.2)，回退
+
+  [PIPELINE BANNER]   修订 第 2 章 [2/3]
+  [PIPELINE] 第 2 章 修订前评分: 5.8
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 5.8 -> 6.2
+  [PIPELINE] 修订 第 2 章 完成 ✓ (5.8 -> 6.2)
+
+  [PIPELINE BANNER]   修订 第 1 章 [3/3]
+  [PIPELINE] 第 1 章 修订前评分: 7.0
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.0 -> 8.0
+  [PIPELINE] 修订 第 1 章 完成 ✓ (7.0 -> 8.0)
+
+  [PIPELINE BANNER] 审阅修订 轮次 3/3
+  [PIPELINE] 提交手稿给裁判模型深度审阅 ...
+  [PIPELINE] 审阅结果: ★, 15 严重问题
+  [PIPELINE] 弱章节: [1, 2, 3, 4]
+
+  [PIPELINE BANNER]   修订 第 1 章 [1/4]
+  [PIPELINE] 第 1 章 修订前评分: 7.0
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.0 -> 7.2
+  [PIPELINE] 修订 第 1 章 完成 ✓ (7.0 -> 7.2)
+
+  [PIPELINE BANNER]   修订 第 2 章 [2/4]
+  [PIPELINE] 第 2 章 修订前评分: 6.5
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 6.5 -> 6.5
+  [PIPELINE] 修订 第 2 章 完成 ✓ (6.5 -> 6.5)
+
+  [PIPELINE BANNER]   修订 第 3 章 [3/4]
+  [PIPELINE] 第 3 章 修订前评分: 6.5
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 6.5 -> 6.5
+  [PIPELINE] 修订 第 3 章 完成 ✓ (6.5 -> 6.5)
+  [PIPELINE] 第 4 章不存在，跳过
+  [PIPELINE] 审阅修订后全文评估 ...
+  [PIPELINE] 最终小说评分: 5.5
+
+  [PIPELINE BANNER] 审阅修订闭环 完成
+
+  [PIPELINE BANNER] 修订完成 — 3 循环, 小说评分 5.5
+
+  [PIPELINE BANNER] PHASE 4: EXPORT (导出)
+  [PIPELINE] 从章节重建大纲 outline.md ...
+  [PIPELINE] 构建弧线摘要 arc_summary.md ...
+  [PIPELINE] 拼接完整手稿 manuscript.md ...
+  [PIPELINE] 手稿: 3 章, 17625 字
+
+  [PIPELINE BANNER] 导出完成 — 3 章, 17625 字
+
+  [PIPELINE BANNER] [DONE] 流水线完成！
+  [INSTR ✅] 20:05:08.482  E2E1.run_pipeline(from_scratch) — 完成, 耗时 19988.4s
+  [INSTR ✅] 20:05:08.482  全流水线完成 — 总耗时 333.1min
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #4] 20:05:08.482  ═══ 验证产出 ═══
+──────────────────────────────────────────────────────────────────────
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #5] 20:05:08.488  验证 A1: Phase 1 文件产出
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 20:05:08.489  VERIFY FILE world.md: 12544B
+  [INSTR ✅] 20:05:08.489  VERIFY FILE characters.md: 19207B
+  [INSTR ✅] 20:05:08.489  VERIFY FILE outline_volume.md: 20845B
+  [INSTR ✅] 20:05:08.489  VERIFY FILE outline.md: 2658B
+  [INSTR ✅] 20:05:08.489  VERIFY FILE canon.md: 43503B
+  [INSTR ✅] 20:05:08.489  VERIFY FILE voice.md: 7959B
+  [INSTR ✅] 20:05:08.489  A1: 全部 Foundation 文件产出 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #6] 20:05:08.489  验证 A2: Phase 2 章节文件
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 20:05:08.489  VERIFY FILE ch_01.md: 10887B
+  [INSTR LOG] 20:05:08.489    ch_01.md: 3473 字
+  [INSTR ✅] 20:05:08.490  VERIFY FILE ch_02.md: 16121B
+  [INSTR LOG] 20:05:08.490    ch_02.md: 5044 字
+  [INSTR ✅] 20:05:08.490  VERIFY FILE ch_03.md: 27840B
+  [INSTR LOG] 20:05:08.490    ch_03.md: 9108 字
+  [INSTR ✅] 20:05:08.490  A2: 全部 3 章产出 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #7] 20:05:08.490  验证 A3: Phase 4 manuscript.md
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 20:05:08.490  VERIFY FILE manuscript.md: 54974B
+  [INSTR LOG] 20:05:08.496    manuscript.md: 17664 字
+  [INSTR LOG] 20:05:08.496    manuscript.md 包含 3/3 章标题
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #8] 20:05:08.496  验证 A4: state.json 最终状态
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 20:05:08.496    state: phase=complete drafted=3/3 revision_cycle=3 novel_score=5.5 foundation_score=7.0
+  [INSTR ✅] 20:05:08.496  VERIFY A4/phase=complete: phase=complete
+  [INSTR ✅] 20:05:08.496  VERIFY A4/chapters_drafted: drafted=3
+  [INSTR ✅] 20:05:08.496  VERIFY A4/chapters_total: total=3
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #9] 20:05:08.496  验证 A5: results.tsv
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 20:05:08.496  VERIFY FILE results.tsv: 4786B
+  [INSTR LOG] 20:05:08.502    results.tsv: 74 行记录
+  [INSTR LOG] 20:05:08.502    阶段: ['ch01', 'ch02', 'ch03', 'export', 'foundation', 'phase', 'review-rev-ch01', 'review-rev-ch02', 'review-rev-ch03', 'review-rev-ch04', 'review-revision-round-2', 'review-revision-round-3', 'revision-cycle-1', 'revision-cycle-2', 'revision-cycle-3', 'revision-cycle-4', 'revision-cycle-5', 'revision-cycle-6']
+  [INSTR LOG] 20:05:08.502    ★ 质量循环覆盖: 4 条 discard 记录
+  [INSTR LOG] 20:05:08.502      discard: stage=foundation score=-1.0 reason=迭代 20: 未提升 (-1.0 <= 0.0)
+  [INSTR LOG] 20:05:08.502      discard: stage=review-rev-ch03 score=-1.0 reason=审阅修订 轮次3: ch03 倒退 6.8->-1.0
+  [INSTR LOG] 20:05:08.502      discard: stage=review-rev-ch01 score=6.0 reason=审阅修订 轮次3: ch01 倒退 6.5->6.0
+  [INSTR LOG] 20:05:08.502      discard: stage=review-rev-ch03 score=-1.0 reason=审阅修订 轮次2: ch03 倒退 6.2->-1.0
+  [INSTR LOG] 20:05:08.502    keep: 29 条记录
+  [INSTR ✅] 20:05:08.502  A6: 零崩溃 / 零未捕获异常 ✓ (执行到达此点)
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #10] 20:05:08.502  验证 B1-B6: 质量循环路径覆盖（观察性）
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 20:05:08.502  B1 Foundation 重试: 10 行 (keep=9, discard=1)
+  [INSTR ✅] 20:05:08.502  B1: Foundation 重试循环已触发 ✓
+  [INSTR LOG] 20:05:08.502  B3 canon 警告: 请检查上方 [PIPELINE] 日志中是否出现 '⚠ 警告: 正典条目'
+  [INSTR LOG] 20:05:08.502  B4 平台期: revision_cycle=3，达到 max 上限，未触发提前停止
+  [INSTR ✅] 20:05:08.502  B5: Foundation discard → git_reset_hard 链路未崩溃 ✓
+  [INSTR ✅] 20:05:08.502  B6: 修订回退: 3 条 discard → 链路未崩溃 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #11] 20:05:08.502  验证 C1-C4: 业务正确性
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 20:05:08.502  C1 增量 canon: canon_entry_count=60
+  [INSTR ✅] 20:05:08.502  C1: 增量 canon 正常 (60 条) ✓
+  [INSTR LOG] 20:05:08.502  C2 文风指纹: 请检查上方 [PIPELINE] 日志中是否出现 '文风指纹'
+  [INSTR LOG] 20:05:08.502  C3 反模式审计: 请检查上方 [PIPELINE] 日志中是否出现 '结构反模式'
+  [INSTR ✅] 20:05:08.503  C4: results.tsv 各阶段记录完整 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #12] 20:05:08.503  ═══ 验证结果汇总 ═══
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 20:05:08.503  全部结构完整性验证 (A1-A6) 通过 ✓
+  [INSTR LOG] 20:05:08.503  
+  [INSTR LOG] 20:05:08.503  观察性验证项（未触发不判失败，需人工判断）：
+  [INSTR LOG] 20:05:08.503    📋 B2: 所有章节一次通过，未触发 retry
+
+======================================================================
+  ✅ Stage 4 E2E-1 全插桩执行完成 — 结构完整性全部通过!
+  总耗时: 333.1min
+  配置: 1卷×3章=3章
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: foundation_iters=3, ch_attempts=3, rev_cycles=3
+  观察性验证: 1 项需人工判断
+======================================================================
+======================================================================
+  Stage 4 E2E-1: 3章正常阈值 from_scratch — 全插桩执行
+  配置: total_chapters=3, total_volumes=1
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: max_foundation_iters=3, max_chapter_attempts=3, max_revision_cycles=3
+  故事梗概: 2049年上海，程序员在维护老旧服务器时发现AI觉醒迹象，36小时倒计时。悬疑科幻风格，节奏紧凑。
+  日志文件: e:\2026代码文件夹\my novel\logs\debug.log
+  需求验证: 双写文件✅ 每行flush✅ 崩溃捕获✅ logs/自动创建✅
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #1] 22:48:49.328  初始化: 清理 output + 写入正常阈值配置 + 创建初始 state
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 22:48:49.352  output/ 已清理
+  [INSTR ✅] 22:48:49.361  config.json 已写入: total_chapters=3, foundation_threshold=7.5, chapter_threshold=6.0, plateau_delta=0.3
+  [INSTR ✅] 22:48:49.362  初始 state 已写入
+  [INSTR LOG] 22:48:49.368  SNAP [初始]: phase=foundation drafted=0/3 cycle=0 score=0.0
+  [INSTR LOG] 22:48:49.368         config: total_ch=3 total_vol=1 ch_per_vol=3 f_threshold=7.5 ch_threshold=6.0 max_rev=3
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #2] 22:48:49.368  ═══ 启动全流水线 from_scratch ═══
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 22:48:49.368  调用 run_pipeline('from_scratch') — 将自动执行 Phase 1→2→3→4
+  [INSTR LOG] 22:48:49.368  预期 API 调用: Foundation(~7-21) + Drafting(~9-27) + Revision(~30-45) + Export(0) = ~45-93
+  [INSTR LOG] 22:48:49.368  ⚠ 注意: 正常阈值下 Foundation/章节 可能多次重试，耗时会增加
+  [INSTR ✅] 22:48:49.368  pipeline_orchestrator.step / banner 已挂载插桩
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #3] 22:48:49.368  ▶ E2E1.run_pipeline(from_scratch)
+──────────────────────────────────────────────────────────────────────
+
+  [PIPELINE BANNER] 从头开始生成 — 故事梗概已就绪
+
+  [PIPELINE BANNER] [ZH] 中文长篇小说自动生成 — 阶段: foundation → drafting → revision → export
+  [INSTR ❌] 22:48:49.370  E2E1.run_pipeline(from_scratch) — 失败! 耗时 0.0s
+  [INSTR ❌] 22:48:49.370     异常类型: AttributeError
+  [INSTR ❌] 22:48:49.370     异常消息: 'Config' object has no attribute 'max_revision_cycles'
+
+  ============================================================
+  [INSTR TRACEBACK] E2E1.run_pipeline(from_scratch)
+  ============================================================
+Traceback (most recent call last):
+  File "e:\2026代码文件夹\my novel\_run_stage4_e2e1.py", line 132, in safe_call
+    result = fn(*args, **kwargs)
+  File "e:\2026代码文件夹\my novel\pipeline_orchestrator.py", line 1215, in run_pipeline
+    or (cfg.max_revision_cycles if cfg.loaded else None)
+        ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Config' object has no attribute 'max_revision_cycles'
+  ============================================================
+  [INSTR ❌] 22:48:49.371  run_pipeline 失败: AttributeError: 'Config' object has no attribute 'max_revision_cycles'
+
+======================================================================
+  ❌ Stage 4 E2E-1 在 [E2E1.run_pipeline(from_scratch)] 处失败
+  总耗时: 0.0min
+  配置: 1卷×3章=3章
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: foundation_iters=3, ch_attempts=3, rev_cycles=3
+======================================================================
+======================================================================
+  Stage 4 E2E-1: 3章正常阈值 from_scratch — 全插桩执行
+  配置: total_chapters=3, total_volumes=1
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: max_foundation_iters=3, max_chapter_attempts=3, max_revision_cycles=3
+  故事梗概: 2049年上海，程序员在维护老旧服务器时发现AI觉醒迹象，36小时倒计时。悬疑科幻风格，节奏紧凑。
+  日志文件: e:\2026代码文件夹\my novel\logs\debug.log
+  需求验证: 双写文件✅ 每行flush✅ 崩溃捕获✅ logs/自动创建✅
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #1] 22:49:37.757  初始化: 清理 output + 写入正常阈值配置 + 创建初始 state
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 22:49:37.759  output/ 已清理
+  [INSTR ✅] 22:49:37.765  config.json 已写入: total_chapters=3, foundation_threshold=7.5, chapter_threshold=6.0, plateau_delta=0.3
+  [INSTR ✅] 22:49:37.766  初始 state 已写入
+  [INSTR LOG] 22:49:37.768  SNAP [初始]: phase=foundation drafted=0/3 cycle=0 score=0.0
+  [INSTR LOG] 22:49:37.768         config: total_ch=3 total_vol=1 ch_per_vol=3 f_threshold=7.5 ch_threshold=6.0 max_rev=3
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #2] 22:49:37.768  ═══ 启动全流水线 from_scratch ═══
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 22:49:37.768  调用 run_pipeline('from_scratch') — 将自动执行 Phase 1→2→3→4
+  [INSTR LOG] 22:49:37.768  预期 API 调用: Foundation(~7-21) + Drafting(~9-27) + Revision(~30-45) + Export(0) = ~45-93
+  [INSTR LOG] 22:49:37.768  ⚠ 注意: 正常阈值下 Foundation/章节 可能多次重试，耗时会增加
+  [INSTR ✅] 22:49:37.768  pipeline_orchestrator.step / banner 已挂载插桩
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #3] 22:49:37.768  ▶ E2E1.run_pipeline(from_scratch)
+──────────────────────────────────────────────────────────────────────
+
+  [PIPELINE BANNER] 从头开始生成 — 故事梗概已就绪
+
+  [PIPELINE BANNER] [ZH] 中文长篇小说自动生成 — 阶段: foundation → drafting → revision → export
+
+  [PIPELINE BANNER] PHASE 1: FOUNDATION (基础构建)
+
+  [PIPELINE BANNER] 基础构建 迭代 1/3
+  [PIPELINE] 生成世界观 world.md ...
+  [PIPELINE] 生成角色 characters.md ...
+  [PIPELINE] 生成卷级总纲 outline_volume.md ...
+  [PIPELINE] 生成大纲 outline.md (Part 1) ...
+  [PIPELINE] 生成大纲 outline.md (Part 2 - 伏笔账本) ...
+  [PIPELINE] 生成正典 canon.md ...
+  [PIPELINE] 正典条目数: 0 (世界观0 + 角色0 + 时间线0 + 规则0)
+  [PIPELINE] ⚠ 警告: 正典条目 0 < 400，信息密度不足，将在评估中体现
+  [PIPELINE] 正典严重不足，后续迭代将使用更大 token 预算重试…
+  [PIPELINE] 生成文风指纹 voice.md Part 2 ...
+  [PIPELINE] 评估基础构建 ...
+  [PIPELINE] 基础构建评分: 8.0  (lore: 8.0, 历史最佳: 0.0)
+  [PIPELINE] 基础构建评分 8.0 >= 7.5 — 通过！
+
+  [PIPELINE BANNER] 基础构建完成 — 评分 8.0, 计划 3 章
+
+  [PIPELINE BANNER] PHASE 2: DRAFTING (草拟)
+
+  [PIPELINE BANNER] 起草 第 1/3 章
+  [PIPELINE] 起草 第 1/3 章 — 尝试 1/3
+  [PIPELINE] 生成 2846 字
+  [PIPELINE] 第 1 章评分: 8.2  (slop_penalty: 0.43)
+  [PIPELINE] 起草 第 1/3 章 完成 ✓ (评分 8.2, 2846 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 1 章): 无对话, 破折号密度过高 (7.7/千字)
+  [PIPELINE] 结构反模式: ✓
+  [PIPELINE] 正典更新: +1 条新事实（第 1 章）
+
+  [PIPELINE BANNER] 起草 第 2/3 章
+  [PIPELINE] 起草 第 2/3 章 — 尝试 1/3
+  [PIPELINE] 生成 5300 字
+  [PIPELINE] 第 2 章评分: 8.5  (slop_penalty: 1.61)
+  [PIPELINE] 起草 第 2/3 章 完成 ✓ (评分 8.5, 5300 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 2 章): 无对话, 破折号密度过高 (12.5/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (1 项):
+  [PIPELINE]   — 三连罗列: 2 处
+
+  [PIPELINE BANNER] 起草 第 3/3 章
+  [PIPELINE] 起草 第 3/3 章 — 尝试 1/3
+  [PIPELINE] 生成 4475 字
+  [PIPELINE] 第 3 章评分: 7.0  (slop_penalty: 1.82)
+  [PIPELINE] 起草 第 3/3 章 完成 ✓ (评分 7.0, 4475 字)
+  [PIPELINE] ⚠ 文风指纹警告 (第 3 章): 无对话, 破折号密度过高 (12.1/千字)
+  [PIPELINE] ⚠ 结构反模式警告 (2 项):
+  [PIPELINE]   — 三连罗列: 3 处
+  [PIPELINE]   — 比喻密度过高: 3.35/千字
+
+  [PIPELINE BANNER] 草拟完成 — 3 章, 12621 字, 正典条目 1 (最后更新: 第 1 章)
+
+  [PIPELINE BANNER] PHASE 3: REVISION (修订)
+
+  [PIPELINE BANNER] 修订 循环 1/3
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.199999999999999 -> 8.0
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (7.199999999999999 -> 8.0)
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 6.5 -> 6.6
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (6.5 -> 6.6)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 8.2 -> 7.5
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (8.2 -> 7.5)
+  [PIPELINE] 修订使评分下降 (7.5 < 8.2)，回退
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 7.0
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 9.0
+  [PIPELINE]   采样评估 第 3 章 (卷 1): 8.0
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 5.5  (前次: 0.0, 字数: 15217)
+
+  [PIPELINE BANNER] 修订 循环 2/3
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 8.5 -> 8.5
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (8.5 -> 8.5)
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 8.5 -> 9.0
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (8.5 -> 9.0)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 8.0 -> 8.2
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (8.0 -> 8.2)
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 8.0
+  [PIPELINE]   采样评估 第 3 章 (卷 1): 8.0
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 8.0
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 7.2  (前次: 5.5, 字数: 14331)
+
+  [PIPELINE BANNER] 修订 循环 3/3
+  [PIPELINE] 对抗性编辑全部章节 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 对抗性编辑全部章节 完成 ✓
+  [PIPELINE] 应用机械裁剪 (OVER_EXPLAIN, REDUNDANT) ...
+  [PIPELINE] 运行读者评审团 (retries=2, 总超时=600s) ...
+  [PIPELINE] 读者评审团 完成 ✓
+  [PIPELINE] 发现 3 个共识问题:
+
+  [PIPELINE BANNER]   修订 第 1 章 (共识问题) [1/3]
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.199999999999999 -> 8.0
+  [PIPELINE] 针对性修订 第 1 章 完成 ✓ (7.199999999999999 -> 8.0)
+
+  [PIPELINE BANNER]   修订 第 2 章 (共识问题) [2/3]
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 8.0 -> 9.0
+  [PIPELINE] 针对性修订 第 2 章 完成 ✓ (8.0 -> 9.0)
+
+  [PIPELINE BANNER]   修订 第 3 章 (共识问题) [3/3]
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 8.5 -> 7.3
+  [PIPELINE] 针对性修订 第 3 章 完成 ✓ (8.5 -> 7.3)
+  [PIPELINE] 修订使评分下降 (7.3 < 8.5)，回退
+  [PIPELINE] 采样评估 — 每卷随机 5 章 ...
+  [PIPELINE]   采样评估 第 1 章 (卷 1): 7.0
+  [PIPELINE]   采样评估 第 2 章 (卷 1): 8.0
+  [PIPELINE]   采样评估 第 3 章 (卷 1): 8.5
+  [PIPELINE] 无额外修订目标
+  [PIPELINE] 运行全文评估 (总超时=600s) ...
+  [PIPELINE] 小说评分: 6.0  (前次: 7.2, 字数: 13885)
+
+  [PIPELINE BANNER] 审阅修订 轮次 1/3
+  [PIPELINE] 提交手稿给裁判模型深度审阅 ...
+  [PIPELINE] 审阅结果: ★, 13 严重问题
+  [PIPELINE] 弱章节: [1, 2, 3]
+
+  [PIPELINE BANNER]   修订 第 1 章 [1/3]
+  [PIPELINE] 第 1 章 修订前评分: 7.0
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.0 -> 8.0
+  [PIPELINE] 修订 第 1 章 完成 ✓ (7.0 -> 8.0)
+
+  [PIPELINE BANNER]   修订 第 2 章 [2/3]
+  [PIPELINE] 第 2 章 修订前评分: 8.0
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 8.0 -> 7.5
+  [PIPELINE] 修订使评分下降 (7.5 < 8.0)，回退
+
+  [PIPELINE BANNER]   修订 第 3 章 [3/3]
+  [PIPELINE] 第 3 章 修订前评分: 7.6
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 7.6 -> 7.800000000000001
+  [PIPELINE] 修订 第 3 章 完成 ✓ (7.6 -> 7.800000000000001)
+
+  [PIPELINE BANNER] 审阅修订 轮次 2/3
+  [PIPELINE] 提交手稿给裁判模型深度审阅 ...
+  [PIPELINE] 审阅结果: ★, 4 严重问题
+  [PIPELINE] 弱章节: [1, 2, 3]
+
+  [PIPELINE BANNER]   修订 第 1 章 [1/3]
+  [PIPELINE] 第 1 章 修订前评分: 7.0
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 7.0 -> 8.5
+  [PIPELINE] 修订 第 1 章 完成 ✓ (7.0 -> 8.5)
+
+  [PIPELINE BANNER]   修订 第 2 章 [2/3]
+  [PIPELINE] 第 2 章 修订前评分: 8.5
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 8.5 -> 8.5
+  [PIPELINE] 修订 第 2 章 完成 ✓ (8.5 -> 8.5)
+
+  [PIPELINE BANNER]   修订 第 3 章 [3/3]
+  [PIPELINE] 第 3 章 修订前评分: 7.0
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 7.0 -> 7.5
+  [PIPELINE] 修订 第 3 章 完成 ✓ (7.0 -> 7.5)
+
+  [PIPELINE BANNER] 审阅修订 轮次 3/3
+  [PIPELINE] 提交手稿给裁判模型深度审阅 ...
+  [PIPELINE] 审阅结果: ★, 8 严重问题
+  [PIPELINE] 弱章节: [2, 3, 1]
+
+  [PIPELINE BANNER]   修订 第 2 章 [1/3]
+  [PIPELINE] 第 2 章 修订前评分: 8.0
+  [PIPELINE] 按摘要修订第 2 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 2 章: 8.0 -> 7.0
+  [PIPELINE] 修订使评分下降 (7.0 < 8.0)，回退
+
+  [PIPELINE BANNER]   修订 第 3 章 [2/3]
+  [PIPELINE] 第 3 章 修订前评分: 6.5
+  [PIPELINE] 按摘要修订第 3 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 3 章: 6.5 -> 9.0
+  [PIPELINE] 修订 第 3 章 完成 ✓ (6.5 -> 9.0)
+
+  [PIPELINE BANNER]   修订 第 1 章 [3/3]
+  [PIPELINE] 第 1 章 修订前评分: 9.0
+  [PIPELINE] 按摘要修订第 1 章 (retries=2, 总超时=1200s) ...
+  [PIPELINE] 第 1 章: 9.0 -> 8.0
+  [PIPELINE] 修订使评分下降 (8.0 < 9.0)，回退
+  [PIPELINE] 审阅修订后全文评估 ...
+  [PIPELINE] 最终小说评分: 7.0
+
+  [PIPELINE BANNER] 审阅修订闭环 完成
+
+  [PIPELINE BANNER] 修订完成 — 3 循环, 小说评分 7.0
+
+  [PIPELINE BANNER] PHASE 4: EXPORT (导出)
+  [PIPELINE] 从章节重建大纲 outline.md ...
+  [PIPELINE] 构建弧线摘要 arc_summary.md ...
+  [PIPELINE] 拼接完整手稿 manuscript.md ...
+  [PIPELINE] 手稿: 3 章, 12075 字
+
+  [PIPELINE BANNER] 导出完成 — 3 章, 12075 字
+
+  [PIPELINE BANNER] [DONE] 流水线完成！
+  [INSTR ✅] 00:34:25.676  E2E1.run_pipeline(from_scratch) — 完成, 耗时 6287.9s
+  [INSTR ✅] 00:34:25.676  全流水线完成 — 总耗时 104.8min
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #4] 00:34:25.676  ═══ 验证产出 ═══
+──────────────────────────────────────────────────────────────────────
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #5] 00:34:25.682  验证 A1: Phase 1 文件产出
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 00:34:25.682  VERIFY FILE world.md: 45293B
+  [INSTR ✅] 00:34:25.682  VERIFY FILE characters.md: 29246B
+  [INSTR ✅] 00:34:25.682  VERIFY FILE outline_volume.md: 20845B
+  [INSTR ✅] 00:34:25.682  VERIFY FILE outline.md: 4167B
+  [INSTR ✅] 00:34:25.682  VERIFY FILE canon.md: 45384B
+  [INSTR ✅] 00:34:25.683  VERIFY FILE voice.md: 10462B
+  [INSTR ✅] 00:34:25.683  A1: 全部 Foundation 文件产出 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #6] 00:34:25.683  验证 A2: Phase 2 章节文件
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 00:34:25.683  VERIFY FILE ch_01.md: 11356B
+  [INSTR LOG] 00:34:25.683    ch_01.md: 3700 字
+  [INSTR ✅] 00:34:25.683  VERIFY FILE ch_02.md: 13517B
+  [INSTR LOG] 00:34:25.683    ch_02.md: 4304 字
+  [INSTR ✅] 00:34:25.683  VERIFY FILE ch_03.md: 12877B
+  [INSTR LOG] 00:34:25.683    ch_03.md: 4071 字
+  [INSTR ✅] 00:34:25.683  A2: 全部 3 章产出 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #7] 00:34:25.683  验证 A3: Phase 4 manuscript.md
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 00:34:25.683  VERIFY FILE manuscript.md: 37876B
+  [INSTR LOG] 00:34:25.689    manuscript.md: 12114 字
+  [INSTR LOG] 00:34:25.689    manuscript.md 包含 3/3 章标题
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #8] 00:34:25.689  验证 A4: state.json 最终状态
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 00:34:25.689    state: phase=complete drafted=3/3 revision_cycle=3 novel_score=7.0 foundation_score=8.0
+  [INSTR ✅] 00:34:25.689  VERIFY A4/phase=complete: phase=complete
+  [INSTR ✅] 00:34:25.689  VERIFY A4/chapters_drafted: drafted=3
+  [INSTR ✅] 00:34:25.689  VERIFY A4/chapters_total: total=3
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #9] 00:34:25.689  验证 A5: results.tsv
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 00:34:25.689  VERIFY FILE results.tsv: 4327B
+  [INSTR LOG] 00:34:25.694    results.tsv: 67 行记录
+  [INSTR LOG] 00:34:25.694    阶段: ['ch01', 'ch02', 'ch03', 'export', 'foundation', 'review-rev-ch01', 'review-rev-ch03', 'review-rev-ch04', 'review-revision-round-3', 'revision-cycle-1', 'revision-cycle-2', 'revision-cycle-3', 'revision-cycle-4', 'revision-cycle-5', 'revision-cycle-6']
+  [INSTR LOG] 00:34:25.694    ★ 质量循环覆盖: 4 条 discard 记录
+  [INSTR LOG] 00:34:25.694      discard: stage=foundation score=-1.0 reason=迭代 20: 未提升 (-1.0 <= 0.0)
+  [INSTR LOG] 00:34:25.694      discard: stage=review-rev-ch03 score=-1.0 reason=审阅修订 轮次3: ch03 倒退 6.8->-1.0
+  [INSTR LOG] 00:34:25.694      discard: stage=review-rev-ch01 score=6.0 reason=审阅修订 轮次3: ch01 倒退 6.5->6.0
+  [INSTR LOG] 00:34:25.694      discard: stage=review-rev-ch01 score=8.0 reason=审阅修订 轮次3: ch01 倒退 9.0->8.0
+  [INSTR LOG] 00:34:25.694    keep: 24 条记录
+  [INSTR ✅] 00:34:25.694  A6: 零崩溃 / 零未捕获异常 ✓ (执行到达此点)
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #10] 00:34:25.695  验证 B1-B6: 质量循环路径覆盖（观察性）
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 00:34:25.695  B1 Foundation 重试: 10 行 (keep=9, discard=1)
+  [INSTR ✅] 00:34:25.695  B1: Foundation 重试循环已触发 ✓
+  [INSTR ✅] 00:34:25.695  B2 章节重试: 13 条记录 > 3 章 → 已触发重试 ✓
+  [INSTR LOG] 00:34:25.695  B3 canon 警告: 请检查上方 [PIPELINE] 日志中是否出现 '⚠ 警告: 正典条目'
+  [INSTR LOG] 00:34:25.695  B4 平台期: revision_cycle=3 = max=3，达到上限
+  [INSTR ✅] 00:34:25.695  B5: Foundation discard → git_reset_hard 链路未崩溃 ✓
+  [INSTR ✅] 00:34:25.695  B6: 修订回退: 3 条 discard → 链路未崩溃 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #11] 00:34:25.695  验证 C1-C4: 业务正确性
+──────────────────────────────────────────────────────────────────────
+  [INSTR LOG] 00:34:25.695  C1 增量 canon: canon_entry_count=1
+  [INSTR ✅] 00:34:25.695  C1: 增量 canon 正常 (1 条) ✓
+  [INSTR LOG] 00:34:25.695  C2 文风指纹: 请检查上方 [PIPELINE] 日志中是否出现 '文风指纹'
+  [INSTR LOG] 00:34:25.695  C3 反模式审计: 请检查上方 [PIPELINE] 日志中是否出现 '结构反模式'
+  [INSTR ✅] 00:34:25.695  C4: results.tsv 各阶段记录完整 ✓
+
+──────────────────────────────────────────────────────────────────────
+  [INSTR #12] 00:34:25.695  ═══ 验证结果汇总 ═══
+──────────────────────────────────────────────────────────────────────
+  [INSTR ✅] 00:34:25.695  全部结构完整性验证 (A1-A6) 通过 ✓
+
+======================================================================
+  ✅ Stage 4 E2E-1 全插桩执行完成 — 结构完整性全部通过!
+  总耗时: 104.8min
+  配置: 1卷×3章=3章
+  质量阈值: foundation=7.5, chapter=6.0, plateau_delta=0.3
+  迭代上限: foundation_iters=3, ch_attempts=3, rev_cycles=3
+======================================================================

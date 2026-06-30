@@ -63,3 +63,6 @@ bb8c7be	export	6.5	22551	export	最终导出
 f5b4b73	export	6.5	22551	export	最终导出
 reverted	review-rev-ch01	6.0	4436	discard	审阅修订 轮次3: ch01 倒退 6.5->6.0
 6df2641	export	5.5	14542	export	最终导出
+reverted	review-rev-ch01	8.0	3700	discard	审阅修订 轮次3: ch01 倒退 9.0->8.0
+1435f3f	review-revision-round-3	0	12075	cycle	审阅修订 轮次3: 修订 3 章
+4a35180	export	7.0	12075	export	最终导出
