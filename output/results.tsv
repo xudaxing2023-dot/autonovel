@@ -69,3 +69,6 @@ reverted	review-rev-ch01	8.0	3700	discard	审阅修订 轮次3: ch01 倒退 9.0-
 reverted	review-rev-ch01	7.3	4683	discard	审阅修订 轮次3: ch01 倒退 8.0->7.3
 effa692	review-revision-round-3	0	11767	cycle	审阅修订 轮次3: 修订 4 章
 7bae829	export	6.1	11767	export	最终导出
+reverted	rev-ch03	6.2	6872	discard	循环 3: 共识问题 倒退 8.0->6.2
+05838c1	revision-cycle-3	7.0	13988	cycle	循环 3: novel_score 6.2->7.0
+03e620c	export	7.0	13988	export	最终导出
