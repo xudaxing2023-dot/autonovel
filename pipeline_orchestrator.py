@@ -806,6 +806,36 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                 total, ch_per_vol, total_vol,
             )
 
+        # ★ 全文评估提前到合并修订之前执行，
+        #    使 build_auto_brief() 在 Cycle 1 也能找到 full_*.json
+        step("运行全文评估 (总超时=600s, 2次取中位数) ...")
+        full_scores: list[float] = []
+        for _ in range(2):
+            try:
+                fe = evaluate_full(max_total_time=600)
+                ns = parse_score(fe, "novel_score")
+                if ns < 0:
+                    ns = parse_score(fe, "overall_score")
+                if ns >= 0:
+                    full_scores.append(ns)
+            except Exception:
+                pass
+        novel_score = sorted(full_scores)[len(full_scores) // 2] if full_scores else 0.0
+
+        total_words = count_words_in_chapters()
+        step(f"小说评分: {novel_score}  (前次: {prev_score}, 字数: {total_words})")
+
+        commit_hash = git_add_commit(
+            f"修订 循环{cycle} 完成: novel_score {novel_score}"
+        )
+        log_result(commit_hash, f"revision-cycle-{cycle}", novel_score,
+                   total_words, "cycle",
+                   f"循环 {cycle}: novel_score {prev_score}->{novel_score}")
+
+        state["novel_score"] = novel_score
+        state["revision_cycle"] = cycle
+        save_state(state)
+
         # ——— 合并修订队列：共识已修订 ∪ 采样弱章 ∪ 跨卷断裂章 ———
         revised_in_cycle = {item["chapter"] for item in consensus_items}
         combined_targets: dict[int, str] = {}
@@ -912,35 +942,6 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                     word_count, "discard",
                     f"循环 {cycle}: {reason} 倒退 {pre_score}->{post_score}",
                 )
-
-        # Step 6: 全文评估（2次取中位数，降低 LLM 评分波动）
-        step("运行全文评估 (总超时=600s, 2次取中位数) ...")
-        full_scores: list[float] = []
-        for _ in range(2):
-            try:
-                fe = evaluate_full(max_total_time=600)
-                ns = parse_score(fe, "novel_score")
-                if ns < 0:
-                    ns = parse_score(fe, "overall_score")
-                if ns >= 0:
-                    full_scores.append(ns)
-            except Exception:
-                pass
-        novel_score = sorted(full_scores)[len(full_scores) // 2] if full_scores else 0.0
-
-        total_words = count_words_in_chapters()
-        step(f"小说评分: {novel_score}  (前次: {prev_score}, 字数: {total_words})")
-
-        commit_hash = git_add_commit(
-            f"修订 循环{cycle} 完成: novel_score {novel_score}"
-        )
-        log_result(commit_hash, f"revision-cycle-{cycle}", novel_score,
-                   total_words, "cycle",
-                   f"循环 {cycle}: novel_score {prev_score}->{novel_score}")
-
-        state["novel_score"] = novel_score
-        state["revision_cycle"] = cycle
-        save_state(state)
 
         # Step 7: 平台期检测
         if cycle >= MIN_REVISION_CYCLES and abs(novel_score - prev_score) < plateau_delta:

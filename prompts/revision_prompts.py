@@ -15,8 +15,16 @@ def build_revision_prompt(
     old_chapter_text: str,
     prev_chapter_tail: str = "",
     next_chapter_head: str = "",
+    outline_text: str = "",
 ) -> str:
     """构建章节修订 prompt。"""
+
+    outline_section = ""
+    if outline_text:
+        outline_section = f"""
+【本章大纲条目（必须覆盖的节奏点和伏笔，修订时不可删减）】
+{outline_text}
+"""
 
     return f"""请根据以下修订摘要重写第 {ch_num} 章。
 
@@ -27,11 +35,11 @@ def build_revision_prompt(
 {voice_text}
 
 【角色注册表】
-{characters_text[:5000]}
+{characters_text}
 
 【世界观设定】
-{world_text[:5000]}
-
+{world_text}
+{outline_section}
 【上一章结尾（保持连续性）】
 {prev_chapter_tail if prev_chapter_tail else "（第一章）"}
 
