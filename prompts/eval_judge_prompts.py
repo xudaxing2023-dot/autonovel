@@ -228,8 +228,32 @@ def build_foundation_eval_prompt(
 
 {FINAL_CHECK}
 
-请用中文输出，每个维度都包括：评分、最大弱点、具体改进方案。
-简洁、直接、不留情面但建设性。"""
+【最终输出格式】
+完成上述逐维度评审后，将结果汇总为以下纯 JSON（不含 markdown 代码块）:
+
+{{
+  "power_system_or_social_structure": {{"score": N, "weakest_moment": "最大弱点", "fix": "具体改进方案", "note": "补充说明"}},
+  "world_history_or_era_context": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "geography_and_culture": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "lore_interconnection": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "iceberg_depth": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "character_depth": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "character_distinctiveness": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "character_secrets": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "outline_completeness": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "foreshadowing_balance": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "internal_consistency": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "voice_clarity": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "canon_coverage": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "slop_in_planning_docs": "列出 AI 痕迹或「未发现」",
+  "contradictions_found": "列出矛盾或「未发现」",
+  "top_3_improvements": ["改进1", "改进2", "改进3"],
+  "overall_score": N,
+  "lore_score": N,
+  "weakest_dimension": "最弱维度名称"
+}}
+
+请直接输出 JSON，不要加 ```json``` 代码块。"""
 
 
 # ============================================================================
@@ -244,7 +268,8 @@ JUDGE_SYSTEM_PROMPT = """你是一位要求严苛的文学评估裁判，专精�
 — 引用原文：所有判断必须引用具体句子或段落作为证据。
 — 区分品味与品质：不因个人偏好扣分，但因可证伪的工艺问题扣分。
 — 用中文输出全部内容。
-— 绝不说"继续保持"或"已经很好了"这样的空话——即使得分高，也必须指出改进空间。"""
+— 绝不说"继续保持"或"已经很好了"这样的空话——即使得分高，也必须指出改进空间。
+— 最终输出必须是纯 JSON，不含 markdown 代码块标记。"""
 
 
 # ============================================================================
@@ -409,8 +434,29 @@ def build_chapter_eval_prompt(
 
 {FINAL_CHECK}
 
-请用中文输出。每个维度都包括：评分、最大弱点（引用原文）、具体改进方案。
-强制输出字段不可省略。"""
+【最终输出格式】
+完成上述逐维度评审后，将结果汇总为以下纯 JSON（不含 markdown 代码块）:
+
+{{
+  "prose_quality": {{"score": N, "weakest_moment": "引用原文最弱段落", "fix": "具体改进方案", "note": "额外说明"}},
+  "pacing": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "character_voice": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "dialogue": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "scene_craft": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "plants_seeded": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "canon_compliance": {{"score": N, "violations": ["列出违规项，无则空数组"], "note": "..."}},
+  "lore_integration": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "engagement": {{"score": N, "weakest_moment": "...", "fix": "...", "note": "..."}},
+  "three_weakest_sentences": ["引用1", "引用2", "引用3"],
+  "three_strongest_sentences": ["引用1", "引用2", "引用3"],
+  "ai_patterns_detected": ["检测到的 AI 写作模式，无则空数组"],
+  "top_3_revisions": ["可操作的修订1", "修订2", "修订3"],
+  "new_canon_entries": ["本章引入的新设定/事实，无则空数组"],
+  "overall_score": N,
+  "weakest_dimension": "最弱维度名称"
+}}
+
+请直接输出 JSON，不要加 ```json``` 代码块。"""
 
 
 # ============================================================================
@@ -547,4 +593,20 @@ def build_full_novel_eval_prompt(
 
 {FINAL_CHECK}
 
-请用中文输出。每个维度都包括：评分、最大弱点（引用具体章节/位置）、具体改进方案。"""
+【最终输出格式】
+完成上述逐维度评审后，将结果汇总为以下纯 JSON（不含 markdown 代码块）:
+
+{{
+  "arc_coherence": {{"score": N, "note": "..."}},
+  "payoff_satisfaction": {{"score": N, "note": "..."}},
+  "world_consistency": {{"score": N, "note": "..."}},
+  "voice_consistency": {{"score": N, "note": "..."}},
+  "momentum": {{"score": N, "note": "..."}},
+  "emotional_range": {{"score": N, "note": "..."}},
+  "weakest_chapter": N,
+  "top_suggestion": "如果只改一件事，最有杠杆效应的具体建议",
+  "novel_score": N,
+  "weakest_dimension": "最弱维度名称"
+}}
+
+请直接输出 JSON，不要加 ```json``` 代码块。"""

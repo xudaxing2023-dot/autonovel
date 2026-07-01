@@ -633,6 +633,8 @@ def build_cuts_brief(ch: int) -> str:
         "FAT": "赘语",
         "TELL": "说教(tell)",
         "GENERIC": "套话/通用",
+        "SLOP": "AI套话",
+        "STRUCTURAL": "结构问题",
         "OTHER": "其他",
     }
 

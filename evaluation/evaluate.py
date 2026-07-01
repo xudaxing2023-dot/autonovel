@@ -30,6 +30,77 @@ from prompts.eval_judge_prompts import (
 
 
 # ============================================================================
+# JSON 解析（三级回退）
+# ============================================================================
+
+def _parse_json_response(text: str) -> dict:
+    """从 LLM 响应中提取 JSON 对象。
+
+    三级回退策略：
+      1. 剥除 ```json ... ``` markdown 代码块 → json.loads()
+      2. 从首个 { 开始直接 json.loads()
+      3. 花括号深度匹配（处理 LLM 在 JSON 后追加额外文本的情况）
+    """
+    if not text or not text.strip():
+        return {}
+
+    text = text.strip()
+
+    # 第1层：剥除 markdown 代码块标记
+    if text.startswith("```"):
+        text = re.sub(r'^```\w*\n?', '', text)
+        text = re.sub(r'\n?```$', '', text)
+        text = text.strip()
+
+    # 第2层：从第一个 { 开始直接解析
+    start = text.find('{')
+    if start == -1:
+        start = text.find('[')
+    if start == -1:
+        return {}
+
+    try:
+        return json.loads(text[start:], strict=False)
+    except json.JSONDecodeError:
+        pass
+
+    # 第3层：花括号深度匹配
+    depth = 0
+    in_string = False
+    escape = False
+    open_char = text[start]
+    close_char = '}' if open_char == '{' else ']'
+
+    for i in range(start, len(text)):
+        c = text[i]
+        if escape:
+            escape = False
+            continue
+        if c == '\\' and in_string:
+            escape = True
+            continue
+        if c == '"' and not escape:
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if c == open_char:
+            depth += 1
+        elif c == close_char:
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[start:i + 1], strict=False)
+                except json.JSONDecodeError:
+                    break
+
+    try:
+        return json.loads(text[start:], strict=False)
+    except json.JSONDecodeError:
+        return {}
+
+
+# ============================================================================
 # 中文 AI 写作痕迹检测规则
 # ============================================================================
 
@@ -374,10 +445,12 @@ def evaluate_foundation(
     # 记录日志
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"foundation_{ts}.json"
+    parsed = _parse_json_response(result)
     log_path.write_text(json.dumps({
         "timestamp": ts,
         "phase": "foundation",
         "raw_output": result,
+        **parsed,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(result)
@@ -428,9 +501,11 @@ def evaluate_chapter(
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"chapter_{ch_num:02d}_{ts}.json"
+    parsed = _parse_json_response(result)
     log_path.write_text(json.dumps({
         "timestamp": ts, "phase": "chapter", "chapter": ch_num,
         "mechanical": mech, "raw_output": result,
+        **parsed,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(result)
@@ -468,10 +543,12 @@ def evaluate_full(
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"full_{ts}.json"
+    parsed = _parse_json_response(result)
     log_path.write_text(json.dumps({
         "timestamp": ts, "phase": "full",
         "chapter_count": len(chapter_files),
         "raw_output": result,
+        **parsed,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(result)
