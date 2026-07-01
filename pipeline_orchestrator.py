@@ -44,10 +44,10 @@ from core.state_manager import (
 
 FOUNDATION_THRESHOLD = 7.5
 CHAPTER_THRESHOLD = 6.0
-MAX_FOUNDATION_ITERS = 20
+MAX_FOUNDATION_ITERS = 10
 MAX_CHAPTER_ATTEMPTS = 5
 MIN_REVISION_CYCLES = 3
-MAX_REVISION_CYCLES = 6
+MAX_REVISION_CYCLES = 4
 PLATEAU_DELTA = 0.3
 PHASE_ORDER = ["foundation", "drafting", "revision", "export"]
 
@@ -100,6 +100,8 @@ def run_foundation(state: dict) -> dict:
         step("生成卷级总纲 outline_volume.md ...")
         from foundation.gen_outline_volume import generate_volume_outline
         generate_volume_outline(max_tokens=max_tokens)
+        # ★ 记录卷大纲完成状态，用于中断恢复
+        state["volumes_outlined"] = cfg.total_volumes if cfg.loaded else 1
 
         # 3. 生成大纲 (Part 1) — 逐卷章级大纲 + 合并 outline.md
         # generate_outline() 内部调用 generate_outline_for_volume()
@@ -995,10 +997,10 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
         if not chapter_hits:
             # 兜底: 无明确章节引用时，取全文中段 1/3~2/3 章节
             chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
-            total = len(chapter_files)
-            if total >= 6:
-                mid_start = total // 3
-                mid_end = 2 * total // 3
+            chapter_count = len(chapter_files)
+            if chapter_count >= 6:
+                mid_start = chapter_count // 3
+                mid_end = 2 * chapter_count // 3
                 fallback = list(range(mid_start + 1, mid_end + 1))
                 return fallback[:5]
             return []

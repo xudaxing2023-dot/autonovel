@@ -160,10 +160,10 @@ def extract_voice_rules() -> list[str]:
 
 
 def latest_full_eval() -> Optional[Path]:
-    """查找 eval_logs/ 下最新的 *_full.json。"""
+    """查找 eval_logs/ 下最新的 full_*.json。"""
     if not EVAL_LOGS_DIR.exists():
         return None
-    fulls = sorted(EVAL_LOGS_DIR.glob("*_full.json"))
+    fulls = sorted(EVAL_LOGS_DIR.glob("full_*.json"))
     return fulls[-1] if fulls else None
 
 
@@ -171,10 +171,8 @@ def latest_chapter_eval(ch: int) -> Optional[Path]:
     """查找 eval_logs/ 下最新的单章评估 JSON。"""
     if not EVAL_LOGS_DIR.exists():
         return None
-    # 匹配 *ch{ch:02d}.json 或 *_ch{ch}.json
-    matches = sorted(EVAL_LOGS_DIR.glob(f"*_ch{ch:02d}.json"))
-    matches += sorted(EVAL_LOGS_DIR.glob(f"*_ch{ch}.json"))
-    matches = sorted(set(matches))
+    # 匹配 chapter_{ch:02d}_*.json（evaluate.py 的实际命名规范）
+    matches = sorted(EVAL_LOGS_DIR.glob(f"chapter_{ch:02d}_*.json"))
     return matches[-1] if matches else None
 
 

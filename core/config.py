@@ -392,9 +392,9 @@ class Config:
         defaults = {
             "high": {
                 "foundation_threshold": 7.5, "chapter_threshold": 6.0,
-                "max_foundation_iters": 20, "max_chapter_attempts": 5,
+                "max_foundation_iters": 10, "max_chapter_attempts": 5,
                 "chapter_word_target": 3250, "max_tokens_per_call": 16000,
-                "min_revision_cycles": 3, "max_revision_cycles": 6,
+                "min_revision_cycles": 3, "max_revision_cycles": 4,
                 "plateau_delta": 0.3,
             },
             "medium": {

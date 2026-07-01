@@ -290,15 +290,27 @@ def log_result(
     status: str = "",
     description: str = "",
 ) -> None:
-    """追加一行到 results.tsv。"""
+    """追加一行到 results.tsv。
+
+    如果 score 为负值（parse_score 无法解析时的哨兵 -1.0），
+    将 status 自动改为 "error" 并标记 score 为 "N/A"。
+    """
     header = "commit\tphase\tscore\tword_count\tstatus\tdescription\n"
     if not RESULTS_FILE.exists():
         RESULTS_FILE.write_text(header, encoding="utf-8")
     elif RESULTS_FILE.stat().st_size == 0:
         RESULTS_FILE.write_text(header, encoding="utf-8")
 
+    # ★ 拦截 -1.0 哨兵值：评分解析失败时记录为 error 而非正常值
+    display_score = score
+    display_status = status
+    if isinstance(score, (int, float)) and score < 0:
+        display_score = "N/A"
+        display_status = "error"
+        description = f"[评分解析失败] {description}"
+
     with open(RESULTS_FILE, "a", encoding="utf-8") as f:
-        row = f"{commit}\t{phase}\t{score}\t{word_count}\t{status}\t{description}\n"
+        row = f"{commit}\t{phase}\t{display_score}\t{word_count}\t{display_status}\t{description}\n"
         f.write(row)
 
 

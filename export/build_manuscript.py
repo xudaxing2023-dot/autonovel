@@ -31,7 +31,11 @@ def build_manuscript() -> None:
         first_line = text.split("\n")[0].strip("# ").strip()
         toc_lines.append(f"{i}. {first_line}")
 
-        parts.append(f"# 第 {i} 章\n\n{text}")
+        # ★ 去重：若正文首行已经是章节标题，不再重复添加 "# 第 i 章"
+        if text.startswith("#"):
+            parts.append(text)
+        else:
+            parts.append(f"# 第 {i} 章\n\n{text}")
 
     toc = "\n".join(toc_lines) + "\n\n---\n\n"
     full_manuscript = toc + "\n\n---\n\n".join(parts) + "\n"
