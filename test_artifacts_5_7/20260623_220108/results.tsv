@@ -1,5 +1,0 @@
-commit	phase	score	word_count	status	description
-4fb8ba0	foundation	7.0	0	keep	迭代 1: 评分提升 0.0 -> 7.0
-a3e16ac	ch01	7.5	4172	keep	第 1 章 (尝试 1)
-discarded	ch02	-1.0	4818	discard	第 2 章 尝试 1
-64bb31f	revision-cycle-1	6.5	4172	cycle	循环 1: novel_score 0.0->6.5
