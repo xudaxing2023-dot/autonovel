@@ -463,7 +463,11 @@ def evaluate_chapter(
     retries: int = 3,
     max_total_time: int = None,
 ) -> str:
-    """评估单个章节。"""
+    """评估单个章节。
+
+    上下文对齐原版 evaluate_chapter(): 传入 voice + world + characters +
+    canon + chapter_outline + prev_chapter_tail + chapter_text，共 7 项。
+    """
     ch_path = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
     if not ch_path.exists():
         print(f"  [评估] 章节 {ch_num} 不存在", file=sys.stderr)
@@ -481,16 +485,37 @@ def evaluate_chapter(
           f"Transition={mech['transition_opener_ratio']}, "
           f"slop_penalty={mech['slop_penalty']}", file=sys.stderr)
 
-    # LLM 裁判
+    # ★ 对齐原版：加载评估所需的全部上下文（7 项）
     outline = _load_outline(chapter_num=ch_num)  # 卷感知：优先 outline_volume{N}.md
     voice_path = OUTPUT_DIR / "voice.md"
     voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
     canon_path = OUTPUT_DIR / "canon.md"
     canon = canon_path.read_text(encoding="utf-8") if canon_path.exists() else ""
 
+    # ★ 新增：world.md（对齐原版）
+    world_path = OUTPUT_DIR / "world.md"
+    world_text = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+
+    # ★ 新增：characters.md（对齐原版）
+    chars_path = OUTPUT_DIR / "characters.md"
+    characters_text = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+
+    # ★ 新增：前章末尾 3000 字（对齐原版 prev_chapter_tail）
+    prev_tail = ""
+    if ch_num > 1:
+        prev_path = CHAPTERS_DIR / f"ch_{ch_num - 1:02d}.md"
+        if prev_path.exists():
+            prev_full = prev_path.read_text(encoding="utf-8")
+            prev_tail = prev_full[-3000:] if len(prev_full) > 3000 else prev_full
+    else:
+        prev_tail = "（第一章，无前章）"
+
     prompt = build_chapter_eval_prompt(
         ch_num, chapter_text,
         chapter_outline=outline, voice_text=voice, canon_text=canon,
+        world_text=world_text,
+        characters_text=characters_text,
+        prev_chapter_tail=prev_tail,
     )
 
     print(f"  [评估] 调用 LLM 裁判评估第 {ch_num} 章 ...", file=sys.stderr)
@@ -502,6 +527,16 @@ def evaluate_chapter(
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"chapter_{ch_num:02d}_{ts}.json"
     parsed = _parse_json_response(result)
+
+    # ★ 对齐原版：机械 slop 扣分到 overall_score
+    if "overall_score" in parsed and isinstance(parsed.get("overall_score"), (int, float)):
+        raw_score = parsed["overall_score"]
+        slop_penalty = mech.get("slop_penalty", 0)
+        adjusted = max(0, raw_score - slop_penalty)
+        parsed["raw_judge_score"] = raw_score
+        parsed["overall_score"] = round(adjusted, 2)
+        parsed["slop_penalty_applied"] = slop_penalty
+
     log_path.write_text(json.dumps({
         "timestamp": ts, "phase": "chapter", "chapter": ch_num,
         "mechanical": mech, "raw_output": result,
@@ -531,8 +566,17 @@ def evaluate_full(
     voice_path = OUTPUT_DIR / "voice.md"
     voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
 
+    # ★ 对齐原版：全文评估需传入 world + characters
+    world_path = OUTPUT_DIR / "world.md"
+    world_text = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+
+    chars_path = OUTPUT_DIR / "characters.md"
+    characters_text = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+
     prompt = build_full_novel_eval_prompt(
         manuscript, outline_text=outline, voice_text=voice,
+        world_text=world_text,
+        characters_text=characters_text,
     )
 
     print("  [评估] 调用 LLM 裁判评估全文 ...", file=sys.stderr)

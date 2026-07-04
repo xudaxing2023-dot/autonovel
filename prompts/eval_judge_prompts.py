@@ -282,11 +282,17 @@ def build_chapter_eval_prompt(
     chapter_outline: str = "",
     voice_text: str = "",
     canon_text: str = "",
+    world_text: str = "",
+    characters_text: str = "",
+    prev_chapter_tail: str = "",
 ) -> str:
     """构建单章评估 prompt。
 
     对齐原版 CHAPTER_PROMPT (evaluate.py line 517-756)，
     升级至 9 维 + 5 个强制字段 + CROSS-CHECKS。
+
+    上下文输入对齐原版 evaluate_chapter():
+      voice + world + characters + canon + chapter_outline + prev_chapter_tail + chapter_text
 
     9 个维度：prose_quality / pacing / character_voice / dialogue /
               scene_craft / plants_seeded / canon_compliance /
@@ -297,11 +303,9 @@ def build_chapter_eval_prompt(
     """
     outline_section = ""
     if chapter_outline:
-        # 尝试提取本章相关的大纲内容
-        ch_tag = f"第{ch_num}章" if f"第{ch_num}章" in chapter_outline else f"第 {ch_num} 章"
         outline_section = f"""
-【本章大纲节选】
-{chapter_outline[:3000]}
+【本章大纲】
+{chapter_outline}
 
 【大纲中与本章相关的节拍/伏笔提示】
 请在评估中检查：本章是否兑现了大纲中规划的节拍？是否种植/收获了规划的伏笔？
@@ -311,7 +315,7 @@ def build_chapter_eval_prompt(
     if voice_text:
         voice_section = f"""
 【本书文风定义（voice.md）】
-{voice_text[:2000]}
+{voice_text}
 
 请在评估中检查：本章的文风是否与定义一致？是否有违反文风规则的地方？
 """
@@ -319,11 +323,41 @@ def build_chapter_eval_prompt(
     canon_section = ""
     if canon_text:
         canon_section = f"""
-【正典硬事实（canon.md，节选）】
-{canon_text[:2000]}
+【正典硬事实（canon.md）】
+{canon_text}
 
 请在评估中检查：本章是否与正典中的已确立事实一致？
 是否有新增事实需要补充到正典？（列在 new_canon_entries 中）
+"""
+
+    world_section = ""
+    if world_text:
+        world_section = f"""
+【世界观设定（world.md）】
+{world_text}
+
+请在评估中检查：本章场景是否与世界观设定一致？
+地理位置、社会规则、技术水平等是否有矛盾？
+"""
+
+    characters_section = ""
+    if characters_text:
+        characters_section = f"""
+【角色注册表（characters.md）】
+{characters_text}
+
+请在评估中检查：本章角色行为/对话/动机是否与角色设定一致？
+是否有角色 OOC（性格不一致）的地方？
+"""
+
+    prev_section = ""
+    if prev_chapter_tail:
+        prev_section = f"""
+【前一章末尾（连续性检查用）】
+{prev_chapter_tail}
+
+请在评估 continuity 维度时检查：
+本章的开头是否与前一章的结尾在情节/情绪/角色状态上无缝衔接？
 """
 
     return f"""请对以下长篇小说第 {ch_num} 章进行深度评审打分。
@@ -333,11 +367,14 @@ def build_chapter_eval_prompt(
 {CHAPTER_CROSS_CHECKS}
 
 【第 {ch_num} 章全文】
-{chapter_text[:12000]}
+{chapter_text}
 
 {outline_section}
 {voice_section}
 {canon_section}
+{world_section}
+{characters_section}
+{prev_section}
 
 【评分维度——9 个独立维度，每维 1-10 分】
 
@@ -467,6 +504,8 @@ def build_full_novel_eval_prompt(
     manuscript_text: str = "",
     outline_text: str = "",
     voice_text: str = "",
+    world_text: str = "",
+    characters_text: str = "",
 ) -> str:
     """构建全文评估 prompt。
 
@@ -490,8 +529,9 @@ def build_full_novel_eval_prompt(
                 head = text[:500]
                 tail = text[-500:] if len(text) > 1000 else ""
                 ch_name = f.stem.replace("ch_", "")
+                wc = len(text.replace(" ", "").replace("\n", ""))
                 chapter_summaries += (
-                    f"\n### 第 {ch_name} 章 开头\n{head}\n"
+                    f"\n### 第 {ch_name} 章（{wc} 字）开头\n{head}\n"
                 )
                 if tail:
                     chapter_summaries += (
@@ -512,14 +552,32 @@ def build_full_novel_eval_prompt(
     if outline_text:
         outline_section = f"""
 【大纲参考】
-{outline_text[:3000]}
+{outline_text}
 """
 
     voice_section = ""
     if voice_text:
         voice_section = f"""
 【文风定义】
-{voice_text[:2000]}
+{voice_text}
+"""
+
+    world_section = ""
+    if world_text:
+        world_section = f"""
+【世界观设定（world.md）】
+{world_text}
+
+请在评估 world_consistency 时检查：全书各章是否都与世界观设定一致？
+"""
+
+    characters_section = ""
+    if characters_text:
+        characters_section = f"""
+【角色注册表（characters.md）】
+{characters_text}
+
+请在评估 arc_coherence 时检查：角色弧线是否与角色设定一致？
 """
 
     return f"""请对以下长篇小说的完整文本进行全局评审打分。
@@ -532,8 +590,10 @@ def build_full_novel_eval_prompt(
 
 {outline_section}
 {voice_section}
+{world_section}
+{characters_section}
 
-【评分维度——6 个全局维度，每维 1-10 分】
+【评分维度——7 个全局维度，每维 1-10 分】
 
 ━━━ STRUCTURE（结构——权重 25%）━━━
 
@@ -564,15 +624,23 @@ def build_full_novel_eval_prompt(
    对话风格在各章之间是否保持角色辨识度？
    评分: ___/10  |  最大弱点: ___  |  改进方案: ___
 
-━━━ READER EXPERIENCE（读者体验——权重 25%）━━━
+━━━ THEME（主题——权重 15%）━━━
 
-5. momentum (动力):
+5. theme_coherence (主题一致性):
+   全书的核心主题是否贯穿始终？是否有章节偏离了主线主题？
+   主题是否通过情节和角色行动自然呈现（而非通过旁白说教）？
+   多重主题之间是否有层次和递进？
+   评分: ___/10  |  最大弱点: ___  |  改进方案: ___
+
+━━━ READER EXPERIENCE（读者体验——权重 35%）━━━
+
+6. momentum (动力):
    是否存在"读者可能放下书"的章节（节奏骤降/信息倾泻/无张力场景）？
    各章结尾是否都有翻页动力？
    全书中间部分（第 2 幕）是否有"第二幕低谷"问题？
    评分: ___/10  |  最大弱点: ___  |  改进方案: ___
 
-6. emotional_range (情感广度):
+7. emotional_range (情感广度):
    小说是否提供了充分的情绪变化（而非单一色调）？
    是否有真正的低点让高潮有意义？
    幽默/温情/紧张/悲伤等是否有合理的分布？
@@ -580,16 +648,15 @@ def build_full_novel_eval_prompt(
 
 ━━━ 额外输出 ━━━
 
-7. weakest_chapter (最弱章节):
+8. weakest_chapter (最弱章节):
    指出全书中最需要修订的一章及其原因。引用具体位置。
 
-8. top_suggestion (最有杠杆效应的建议):
+9. top_suggestion (最有杠杆效应的建议):
    一条建议——如果只改一件事，改什么能最大程度提升全书质量？
    必须具体、可操作。
 
-9. overall_score (综合评分): ___/10
-   (structure 25% + consistency 25% + reader_experience 25%
-    + 25% 基于你对全书品质的整体判断)
+10. overall_score (综合评分): ___/10
+   (structure 25% + consistency 25% + theme 15% + reader_experience 35%)
 
 {FINAL_CHECK}
 
@@ -601,6 +668,7 @@ def build_full_novel_eval_prompt(
   "payoff_satisfaction": {{"score": N, "note": "..."}},
   "world_consistency": {{"score": N, "note": "..."}},
   "voice_consistency": {{"score": N, "note": "..."}},
+  "theme_coherence": {{"score": N, "note": "..."}},
   "momentum": {{"score": N, "note": "..."}},
   "emotional_range": {{"score": N, "note": "..."}},
   "weakest_chapter": N,
