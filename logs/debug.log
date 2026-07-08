@@ -1,0 +1,571 @@
+[06:38:59.153] [TARGETED_REVISE_REVERT] [pipeline_orchestrator.py:749 run_revision]第 99 章修订回退 | chapter=99, pre_score=5.0, post_score=4.7, decision=revert
+[06:38:59.154] [FULL_EVAL] [pipeline_orchestrator.py:755 run_revision]开始全文评估
+[06:38:59.211] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=3, prompt_len=116748, max_total_time=600
+[06:40:08.592] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=69.4, result_len=2021
+[06:40:08.607] [FULL_EVAL_DONE] [pipeline_orchestrator.py:766 run_revision]全文评估完成 | novel_score=4.5, prev_score=0.0, total_words=371677, cycle=1
+[06:40:09.199] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=revision | phase=revision, chapters_drafted=100, iteration=1, novel_score=4.5
+[06:40:09.200] [REVISION_CYCLE] [pipeline_orchestrator.py:659 run_revision]修订循环 2/2 | cycle=2, max_cycles=2, prev_score=4.5
+[06:40:09.201] [ADVERSARIAL_EDIT] [pipeline_orchestrator.py:664 run_revision]开始对抗性编辑 | target=all, retries=2
+[06:40:09.205] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3812, max_total_time=1200
+[06:50:09.503] [API_RETRY] [api_client.py:254 _call_llm_internal]超时 重试 1/2 | attempt=1, max_retries=2, model=deepseek-ai/deepseek-v4-flash, error=Timeout (600s)
+[06:51:46.408] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=697.2, result_len=4350
+[06:51:46.409] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5065, max_total_time=1200
+[06:54:06.174] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=139.8, result_len=4039
+[06:54:06.176] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6006, max_total_time=1200
+[06:57:14.828] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=188.7, result_len=6078
+[06:57:14.832] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6297, max_total_time=1200
+[06:58:24.486] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=69.7, result_len=4808
+[06:58:24.489] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3621, max_total_time=1200
+[07:00:09.134] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=104.6, result_len=3287
+[07:00:09.135] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3928, max_total_time=1200
+[07:01:23.238] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=74.1, result_len=2993
+[07:01:23.240] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3312, max_total_time=1200
+[07:02:34.300] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=71.1, result_len=4475
+[07:02:34.302] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4779, max_total_time=1200
+[07:03:43.484] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=69.2, result_len=4246
+[07:03:43.487] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3806, max_total_time=1200
+[07:05:51.022] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=127.5, result_len=4465
+[07:05:51.025] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5074, max_total_time=1200
+[07:08:52.780] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=181.8, result_len=2699
+[07:08:52.784] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3380, max_total_time=1200
+[07:11:43.545] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=170.8, result_len=3945
+[07:11:43.549] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6036, max_total_time=1200
+[07:13:23.075] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=99.5, result_len=3481
+[07:13:23.079] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5361, max_total_time=1200
+[07:14:52.865] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=89.8, result_len=4006
+[07:14:52.869] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5954, max_total_time=1200
+[07:17:26.947] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=154.1, result_len=4516
+[07:17:26.949] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6390, max_total_time=1200
+[07:18:48.136] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=81.2, result_len=5445
+[07:18:48.140] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=7573, max_total_time=1200
+[07:21:19.589] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=151.4, result_len=3410
+[07:21:19.591] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6838, max_total_time=1200
+[07:22:39.259] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=79.7, result_len=3133
+[07:22:39.260] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5469, max_total_time=1200
+[07:24:57.767] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=138.5, result_len=4484
+[07:24:57.770] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5735, max_total_time=1200
+[07:27:00.343] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=122.6, result_len=3190
+[07:27:00.344] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=7186, max_total_time=1200
+[07:28:28.466] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=88.1, result_len=4301
+[07:28:28.470] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5582, max_total_time=1200
+[07:31:02.812] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=154.3, result_len=4415
+[07:31:02.813] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3638, max_total_time=1200
+[07:33:18.294] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=135.5, result_len=3708
+[07:33:18.298] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4480, max_total_time=1200
+[07:34:27.598] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=69.3, result_len=6643
+[07:34:27.602] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4314, max_total_time=1200
+[07:37:01.015] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=153.4, result_len=4710
+[07:37:01.017] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5737, max_total_time=1200
+[07:38:36.691] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=95.7, result_len=2589
+[07:38:36.693] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5128, max_total_time=1200
+[07:41:44.267] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=187.6, result_len=3878
+[07:41:44.270] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5325, max_total_time=1200
+[07:43:19.711] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=95.4, result_len=4099
+[07:43:19.712] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6624, max_total_time=1200
+[07:44:04.015] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=44.3, result_len=2444
+[07:44:04.016] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=7397, max_total_time=1200
+[07:45:19.840] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=75.8, result_len=4107
+[07:45:19.841] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=7445, max_total_time=1200
+[07:45:47.201] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=27.4, result_len=4432
+[07:45:47.205] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6055, max_total_time=1200
+[07:46:53.826] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=66.6, result_len=5326
+[07:46:53.828] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=7329, max_total_time=1200
+[07:48:24.210] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=90.4, result_len=4077
+[07:48:24.213] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4943, max_total_time=1200
+[07:49:45.427] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=81.2, result_len=3216
+[07:49:45.428] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5690, max_total_time=1200
+[07:51:39.215] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=113.8, result_len=3025
+[07:51:39.222] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4528, max_total_time=1200
+[07:53:04.684] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=85.5, result_len=5728
+[07:53:04.696] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3641, max_total_time=1200
+[07:54:25.341] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=80.6, result_len=5494
+[07:54:25.351] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4251, max_total_time=1200
+[07:55:17.989] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=52.6, result_len=3024
+[07:55:18.001] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4546, max_total_time=1200
+[07:56:12.364] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=54.4, result_len=4380
+[07:56:12.370] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5826, max_total_time=1200
+[07:57:52.591] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=100.2, result_len=2580
+[07:57:52.605] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5361, max_total_time=1200
+[07:58:51.118] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=58.5, result_len=3444
+[07:58:51.131] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5363, max_total_time=1200
+[08:00:33.024] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=101.9, result_len=3542
+[08:00:33.037] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5361, max_total_time=1200
+[08:02:50.198] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=137.2, result_len=4824
+[08:02:50.205] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5985, max_total_time=1200
+[08:05:45.386] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=175.2, result_len=7272
+[08:05:45.393] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6021, max_total_time=1200
+[08:07:07.186] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=81.8, result_len=4882
+[08:07:07.199] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4402, max_total_time=1200
+[08:08:26.602] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=79.4, result_len=4919
+[08:08:26.616] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6029, max_total_time=1200
+[08:10:12.758] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=106.1, result_len=2326
+[08:10:12.768] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5162, max_total_time=1200
+[08:12:00.606] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=107.8, result_len=4341
+[08:12:00.614] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6014, max_total_time=1200
+[08:13:29.069] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=88.5, result_len=4478
+[08:13:29.093] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=1788, max_total_time=1200
+[08:16:42.446] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=193.4, result_len=3324
+[08:16:42.453] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5600, max_total_time=1200
+[08:17:33.748] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=51.3, result_len=3776
+[08:17:33.755] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6014, max_total_time=1200
+[08:18:02.368] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=28.6, result_len=4807
+[08:18:02.375] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6062, max_total_time=1200
+[08:19:04.022] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=61.6, result_len=4755
+[08:19:04.037] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=11070, max_total_time=1200
+[08:20:19.585] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=75.5, result_len=8080
+[08:20:19.592] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5131, max_total_time=1200
+[08:21:58.029] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=98.4, result_len=5727
+[08:21:58.039] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=16736, max_total_time=1200
+[08:23:06.099] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=68.1, result_len=4416
+[08:23:06.108] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=13311, max_total_time=1200
+[08:24:15.366] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=69.3, result_len=9076
+[08:24:15.373] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4720, max_total_time=1200
+[08:25:52.268] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=96.9, result_len=12996
+[08:25:52.277] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3759, max_total_time=1200
+[08:27:46.817] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=114.5, result_len=3082
+[08:27:46.831] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5203, max_total_time=1200
+[08:28:51.987] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=65.2, result_len=5597
+[08:28:52.001] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5205, max_total_time=1200
+[08:29:54.827] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=62.8, result_len=4007
+[08:29:54.837] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5203, max_total_time=1200
+[08:31:29.562] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=94.7, result_len=3466
+[08:31:29.569] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5328, max_total_time=1200
+[08:32:25.869] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=56.3, result_len=4653
+[08:32:25.884] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5493, max_total_time=1200
+[08:33:27.299] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=61.4, result_len=4679
+[08:33:27.310] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4539, max_total_time=1200
+[08:34:04.902] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=37.6, result_len=6453
+[08:34:04.913] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5321, max_total_time=1200
+[08:35:39.791] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=94.9, result_len=5809
+[08:35:39.804] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5398, max_total_time=1200
+[08:37:44.842] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=125.0, result_len=5110
+[08:37:44.850] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4666, max_total_time=1200
+[08:39:45.254] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=120.4, result_len=6083
+[08:39:45.263] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=2896, max_total_time=1200
+[08:40:46.277] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=61.0, result_len=3210
+[08:40:46.285] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=2758, max_total_time=1200
+[08:42:29.667] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=103.4, result_len=4536
+[08:42:29.679] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4585, max_total_time=1200
+[08:43:51.211] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=81.5, result_len=4716
+[08:43:51.238] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6049, max_total_time=1200
+[08:46:11.980] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=140.7, result_len=7353
+[08:46:11.997] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=7521, max_total_time=1200
+[08:47:05.262] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=53.3, result_len=4838
+[08:47:05.276] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=8848, max_total_time=1200
+[08:49:42.914] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=157.6, result_len=3202
+[08:49:42.925] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4595, max_total_time=1200
+[08:51:08.437] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=85.5, result_len=4560
+[08:51:08.446] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=9814, max_total_time=1200
+[08:53:55.134] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=166.7, result_len=3764
+[08:53:55.142] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3372, max_total_time=1200
+[08:55:45.647] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=110.5, result_len=6334
+[08:55:45.654] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3568, max_total_time=1200
+[08:57:45.009] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=119.4, result_len=5764
+[08:57:45.040] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4636, max_total_time=1200
+[09:00:56.578] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=191.5, result_len=6210
+[09:00:56.593] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=10277, max_total_time=1200
+[09:10:56.862] [API_RETRY] [api_client.py:254 _call_llm_internal]超时 重试 1/2 | attempt=1, max_retries=2, model=deepseek-ai/deepseek-v4-flash, error=Timeout (600s)
+[09:14:35.664] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=819.1, result_len=7672
+[09:14:35.671] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5825, max_total_time=1200
+[09:16:40.827] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=125.2, result_len=6955
+[09:16:40.834] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3926, max_total_time=1200
+[09:18:27.274] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=106.4, result_len=5613
+[09:18:27.281] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=6347, max_total_time=1200
+[09:20:44.337] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=137.1, result_len=6709
+[09:20:44.346] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5749, max_total_time=1200
+[09:22:33.413] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=109.1, result_len=3583
+[09:22:33.427] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5545, max_total_time=1200
+[09:23:45.513] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=72.1, result_len=4830
+[09:23:45.520] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5169, max_total_time=1200
+[09:24:42.472] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=57.0, result_len=3281
+[09:24:42.486] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4402, max_total_time=1200
+[09:27:33.296] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=170.8, result_len=5265
+[09:27:33.306] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5199, max_total_time=1200
+[09:28:59.395] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=86.1, result_len=5052
+[09:28:59.402] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5548, max_total_time=1200
+[09:29:35.448] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=36.0, result_len=4627
+[09:29:35.457] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=5128, max_total_time=1200
+[09:30:09.445] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=34.0, result_len=4456
+[09:30:09.452] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3789, max_total_time=1200
+[09:31:35.262] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=85.8, result_len=4064
+[09:31:35.270] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3934, max_total_time=1200
+[09:33:18.568] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=103.3, result_len=5184
+[09:33:18.576] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=4010, max_total_time=1200
+[09:35:34.317] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=135.7, result_len=4919
+[09:35:34.324] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=3640, max_total_time=1200
+[09:37:39.055] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=124.7, result_len=4763
+[09:37:39.068] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=2480, max_total_time=1200
+[09:39:43.055] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=124.0, result_len=4237
+[09:39:43.058] [ADVERSARIAL_EDIT_DONE] [pipeline_orchestrator.py:667 run_revision]对抗性编辑完成
+[09:39:43.059] [APPLY_CUTS] [pipeline_orchestrator.py:671 run_revision]机械裁剪 | target=all, cycle=2, rules=['OVER-EXPLAIN', 'REDUNDANT'], min_fat=15
+[09:39:44.301] [READER_PANEL] [pipeline_orchestrator.py:682 run_revision]开始读者评审团 | retries=2
+[09:39:44.308] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2918, max_total_time=None
+[09:39:50.822] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.5, result_len=133
+[09:39:50.835] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3848, max_total_time=None
+[09:39:57.367] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.5, result_len=174
+[09:39:57.379] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5043, max_total_time=None
+[09:40:05.875] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.5, result_len=197
+[09:40:05.885] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5043, max_total_time=None
+[09:40:13.955] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.1, result_len=167
+[09:40:13.967] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2676, max_total_time=None
+[09:40:19.759] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.8, result_len=161
+[09:40:19.772] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2902, max_total_time=None
+[09:40:27.490] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.7, result_len=190
+[09:40:27.499] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2364, max_total_time=None
+[09:40:33.110] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.6, result_len=203
+[09:40:33.123] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3592, max_total_time=None
+[09:40:38.059] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.9, result_len=184
+[09:40:38.065] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2707, max_total_time=None
+[09:40:43.916] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.9, result_len=190
+[09:40:43.923] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4181, max_total_time=None
+[09:40:49.731] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.8, result_len=204
+[09:40:49.743] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2237, max_total_time=None
+[09:40:56.370] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.6, result_len=125
+[09:40:56.379] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:41:02.918] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.5, result_len=163
+[09:41:02.929] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4468, max_total_time=None
+[09:41:06.549] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=3.6, result_len=115
+[09:41:06.555] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4872, max_total_time=None
+[09:41:07.930] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 1.4s | wait_seconds=1.4, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:41:14.062] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.5, result_len=167
+[09:41:14.074] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:41:34.898] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=20.8, result_len=169
+[09:41:34.911] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:41:41.815] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.9, result_len=172
+[09:41:41.824] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:41:47.770] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.9, result_len=195
+[09:41:47.776] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4576, max_total_time=None
+[09:41:52.379] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.6, result_len=140
+[09:41:52.381] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4842, max_total_time=None
+[09:41:59.298] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.9, result_len=198
+[09:41:59.310] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:42:05.744] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.4, result_len=231
+[09:42:05.757] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4689, max_total_time=None
+[09:42:12.251] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.5, result_len=217
+[09:42:12.263] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2745, max_total_time=None
+[09:42:16.684] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.4, result_len=123
+[09:42:16.696] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3469, max_total_time=None
+[09:42:17.263] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 0.6s | wait_seconds=0.6, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:42:23.820] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.1, result_len=152
+[09:42:23.826] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3297, max_total_time=None
+[09:42:28.824] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.0, result_len=142
+[09:42:28.836] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4757, max_total_time=None
+[09:42:34.152] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.3, result_len=118
+[09:42:34.153] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4235, max_total_time=None
+[09:42:42.782] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.6, result_len=169
+[09:42:42.794] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4327, max_total_time=None
+[09:42:47.808] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.0, result_len=166
+[09:42:47.810] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:42:54.538] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.7, result_len=180
+[09:42:54.546] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:43:01.998] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.5, result_len=208
+[09:43:02.009] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:43:07.525] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.5, result_len=189
+[09:43:07.537] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:43:17.257] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=9.7, result_len=216
+[09:43:17.259] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:43:22.362] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.1, result_len=123
+[09:43:22.375] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3942, max_total_time=None
+[09:43:30.400] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.0, result_len=176
+[09:43:30.407] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4723, max_total_time=None
+[09:43:38.609] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.2, result_len=206
+[09:43:38.620] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3594, max_total_time=None
+[09:43:42.262] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=3.6, result_len=143
+[09:43:42.274] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2424, max_total_time=None
+[09:43:43.621] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 1.3s | wait_seconds=1.3, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:43:48.750] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.5, result_len=145
+[09:43:48.762] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3358, max_total_time=None
+[09:43:57.367] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.6, result_len=140
+[09:43:57.367] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3653, max_total_time=None
+[09:44:02.070] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.7, result_len=137
+[09:44:02.089] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4933, max_total_time=None
+[09:44:08.402] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.3, result_len=102
+[09:44:08.411] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4468, max_total_time=None
+[09:44:13.176] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.8, result_len=182
+[09:44:13.176] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4470, max_total_time=None
+[09:44:31.444] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=18.3, result_len=109
+[09:44:31.444] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4468, max_total_time=None
+[09:44:36.419] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.0, result_len=137
+[09:44:36.430] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3551, max_total_time=None
+[09:44:53.564] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=17.1, result_len=124
+[09:44:53.578] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4871, max_total_time=None
+[09:45:00.954] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.4, result_len=169
+[09:45:00.965] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3104, max_total_time=None
+[09:45:05.782] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.8, result_len=115
+[09:45:05.794] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:45:19.504] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=13.7, result_len=145
+[09:45:19.530] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4269, max_total_time=None
+[09:45:26.262] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.7, result_len=198
+[09:45:26.269] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:45:34.551] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.3, result_len=143
+[09:45:34.558] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=795, max_total_time=None
+[09:45:41.802] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.2, result_len=144
+[09:45:41.802] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4707, max_total_time=None
+[09:45:57.387] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=15.6, result_len=181
+[09:45:57.398] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5032, max_total_time=None
+[09:46:06.960] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=9.6, result_len=209
+[09:46:06.971] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:46:16.868] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=9.9, result_len=125
+[09:46:16.870] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:46:23.295] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.4, result_len=193
+[09:46:23.307] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3638, max_total_time=None
+[09:46:27.510] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.2, result_len=135
+[09:46:27.511] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:46:28.309] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 0.8s | wait_seconds=0.8, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:46:36.143] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.6, result_len=161
+[09:46:36.146] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:46:41.055] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.9, result_len=159
+[09:46:41.066] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=1749, max_total_time=None
+[09:46:44.408] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=3.3, result_len=113
+[09:46:44.419] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2866, max_total_time=None
+[09:46:46.148] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 1.7s | wait_seconds=1.7, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:46:54.101] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=9.7, result_len=160
+[09:46:54.101] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4310, max_total_time=None
+[09:47:00.204] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.1, result_len=180
+[09:47:00.206] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4312, max_total_time=None
+[09:47:06.305] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.1, result_len=203
+[09:47:06.308] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4310, max_total_time=None
+[09:47:14.923] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.6, result_len=169
+[09:47:14.924] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4435, max_total_time=None
+[09:47:24.594] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=9.7, result_len=119
+[09:47:24.596] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4600, max_total_time=None
+[09:47:28.882] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.3, result_len=143
+[09:47:28.884] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3646, max_total_time=None
+[09:47:29.597] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 0.7s | wait_seconds=0.7, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:47:36.729] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.8, result_len=144
+[09:47:36.730] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4428, max_total_time=None
+[09:47:44.466] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.7, result_len=145
+[09:47:44.468] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4505, max_total_time=None
+[09:47:48.032] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=3.6, result_len=115
+[09:47:48.034] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3773, max_total_time=None
+[09:47:49.470] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 1.4s | wait_seconds=1.4, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:47:55.625] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.6, result_len=167
+[09:47:55.627] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2003, max_total_time=None
+[09:48:01.819] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.2, result_len=159
+[09:48:01.827] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=1747, max_total_time=None
+[09:48:12.570] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=10.7, result_len=151
+[09:48:12.573] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3692, max_total_time=None
+[09:48:16.490] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=3.9, result_len=123
+[09:48:16.496] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3150, max_total_time=None
+[09:48:17.574] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 1.1s | wait_seconds=1.1, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:48:23.378] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.9, result_len=160
+[09:48:23.385] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:48:30.160] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.8, result_len=155
+[09:48:30.162] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:48:37.702] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.5, result_len=156
+[09:48:37.713] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3611, max_total_time=None
+[09:49:04.565] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=26.9, result_len=196
+[09:49:04.568] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:49:15.366] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=10.8, result_len=153
+[09:49:15.381] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2105, max_total_time=None
+[09:49:28.193] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=12.8, result_len=144
+[09:49:28.204] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2622, max_total_time=None
+[09:49:38.848] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=10.6, result_len=174
+[09:49:38.849] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=3743, max_total_time=None
+[09:49:44.091] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.2, result_len=170
+[09:49:44.091] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=5044, max_total_time=None
+[09:49:49.023] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.9, result_len=143
+[09:49:49.036] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4745, max_total_time=None
+[09:49:53.086] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.0, result_len=145
+[09:49:53.098] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2952, max_total_time=None
+[09:49:54.093] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 1.0s | wait_seconds=1.0, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:49:58.996] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.9, result_len=165
+[09:49:59.008] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4215, max_total_time=None
+[09:50:03.870] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.9, result_len=143
+[09:50:03.879] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4676, max_total_time=None
+[09:50:11.238] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.4, result_len=134
+[09:50:11.250] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4324, max_total_time=None
+[09:50:19.142] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.9, result_len=136
+[09:50:19.156] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4240, max_total_time=None
+[09:50:26.272] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=7.1, result_len=141
+[09:50:26.284] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2711, max_total_time=None
+[09:50:32.475] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.2, result_len=188
+[09:50:32.477] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4306, max_total_time=None
+[09:50:47.104] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=14.6, result_len=243
+[09:50:47.116] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4442, max_total_time=None
+[09:50:52.356] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.2, result_len=159
+[09:50:52.366] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=4188, max_total_time=None
+[09:50:58.078] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.7, result_len=127
+[09:50:58.090] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2802, max_total_time=None
+[09:51:03.347] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.3, result_len=144
+[09:51:03.355] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2646, max_total_time=None
+[09:51:08.363] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=5.0, result_len=98
+[09:51:08.370] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2743, max_total_time=None
+[09:51:14.949] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=6.6, result_len=192
+[09:51:14.961] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=2588, max_total_time=None
+[09:51:23.401] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=8.4, result_len=110
+[09:51:23.415] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=1440, max_total_time=None
+[09:51:27.629] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=4.2, result_len=116
+[09:51:27.631] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=115227, max_total_time=600
+[09:51:28.416] [API_RATE_WAIT] [api_client.py:169 _call_llm_internal]速率限制等待 0.8s | wait_seconds=0.8, model=deepseek-ai/deepseek-v4-flash, attempt=1
+[09:52:03.740] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=36.1, result_len=1589
+[09:52:03.740] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=115227, max_total_time=600
+[09:52:32.400] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=28.7, result_len=1490
+[09:52:32.401] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=115227, max_total_time=600
+[09:53:03.396] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=31.0, result_len=1388
+[09:53:03.397] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=115227, max_total_time=600
+[09:53:35.250] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=31.9, result_len=1166
+[09:53:35.251] [READER_PANEL_DONE] [pipeline_orchestrator.py:685 run_revision]读者评审团完成
+[09:53:35.260] [CONSENSUS_FOUND] [pipeline_orchestrator.py:696 run_revision]发现 5 个共识问题 | count=5, chapters=[54, 69, 55, 57, 30]
+[09:53:35.298] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=63478, max_total_time=600
+[09:55:16.929] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=101.6, result_len=4124
+[09:55:16.941] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=63478, max_total_time=600
+[09:56:14.093] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=57.2, result_len=3438
+[09:56:14.102] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=63478, max_total_time=600
+[09:57:07.188] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=53.1, result_len=3305
+[09:57:07.192] [TARGETED_REVISE] [pipeline_orchestrator.py:710 run_revision]开始针对性修订第 54 章 | chapter=54, question=momentum_loss, pre_score=3.0
+[09:57:07.219] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=35773, max_total_time=1200
+[09:58:25.976] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=78.8, result_len=8603
+[09:58:25.994] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=56283, max_total_time=600
+[10:00:46.910] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=140.9, result_len=3963
+[10:00:46.917] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=56283, max_total_time=600
+[10:03:00.107] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=133.2, result_len=5557
+[10:03:00.113] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=56283, max_total_time=600
+[10:04:01.135] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=61.0, result_len=3355
+[10:04:02.135] [TARGETED_REVISE_KEEP] [pipeline_orchestrator.py:740 run_revision]第 54 章修订保留 | chapter=54, pre_score=3.0, post_score=4.4, decision=keep
+[10:04:02.148] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50637, max_total_time=600
+[10:05:06.131] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=64.0, result_len=2573
+[10:05:06.135] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50637, max_total_time=600
+[10:07:16.571] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=130.4, result_len=3562
+[10:07:16.578] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50637, max_total_time=600
+[10:07:57.660] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=41.1, result_len=3528
+[10:07:57.664] [TARGETED_REVISE] [pipeline_orchestrator.py:710 run_revision]开始针对性修订第 69 章 | chapter=69, question=cut_candidate, pre_score=4.5
+[10:07:57.680] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=22917, max_total_time=1200
+[10:09:10.813] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=73.1, result_len=3214
+[10:09:10.850] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50203, max_total_time=600
+[10:11:32.333] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=141.5, result_len=3985
+[10:11:32.344] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50203, max_total_time=600
+[10:12:22.107] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=49.8, result_len=3525
+[10:12:22.112] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50203, max_total_time=600
+[10:13:28.011] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=65.9, result_len=2948
+[10:13:28.096] [TARGETED_REVISE_REVERT] [pipeline_orchestrator.py:749 run_revision]第 69 章修订回退 | chapter=69, pre_score=4.5, post_score=3.5, decision=revert
+[10:13:28.105] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=60053, max_total_time=600
+[10:14:23.196] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=55.1, result_len=3311
+[10:14:23.207] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=60053, max_total_time=600
+[10:15:32.169] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=69.0, result_len=3184
+[10:15:32.179] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=60053, max_total_time=600
+[10:25:32.480] [API_RETRY] [api_client.py:254 _call_llm_internal]超时 重试 1/2 | attempt=1, max_retries=2, model=deepseek-ai/deepseek-v4-flash, error=Timeout (600s)
+[10:25:32.481] [API_FAIL] [api_client.py:332 call_llm]LLM 调用失败: API 调用总超时: 累计 600s 超过 600s 限制（共 2 次重试机会） | model=deepseek-ai/deepseek-v4-flash, latency_s=600.3, error=API 调用总超时: 累计 600s 超过 600s 限制（共 2 次重试机会）, retries=2
+[10:25:32.482] [TARGETED_REVISE] [pipeline_orchestrator.py:710 run_revision]开始针对性修订第 55 章 | chapter=55, question=cut_candidate, pre_score=4.5
+[10:25:32.497] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=32139, max_total_time=1200
+[10:26:22.641] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=50.1, result_len=5720
+[10:26:22.651] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=53400, max_total_time=600
+[10:27:11.158] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=48.5, result_len=3068
+[10:27:11.164] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=53400, max_total_time=600
+[10:28:21.605] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=70.4, result_len=3410
+[10:28:21.620] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=53400, max_total_time=600
+[10:29:06.134] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=44.5, result_len=2999
+[10:29:06.722] [TARGETED_REVISE_KEEP] [pipeline_orchestrator.py:740 run_revision]第 55 章修订保留 | chapter=55, pre_score=4.5, post_score=4.5, decision=keep
+[10:29:06.729] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=49207, max_total_time=600
+[10:31:04.608] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=117.9, result_len=4055
+[10:31:04.612] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=49207, max_total_time=600
+[10:32:55.861] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=111.2, result_len=3551
+[10:32:55.865] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=49207, max_total_time=600
+[10:33:39.419] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=43.6, result_len=3035
+[10:33:39.422] [TARGETED_REVISE] [pipeline_orchestrator.py:710 run_revision]开始针对性修订第 57 章 | chapter=57, question=cut_candidate, pre_score=6.0
+[10:33:39.445] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=22141, max_total_time=1200
+[10:34:18.676] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=39.2, result_len=4079
+[10:34:18.707] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50464, max_total_time=600
+[10:35:03.394] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=44.7, result_len=3062
+[10:35:03.401] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50464, max_total_time=600
+[10:36:30.648] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=87.2, result_len=3329
+[10:36:30.655] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=50464, max_total_time=600
+[10:37:36.849] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=66.2, result_len=3133
+[10:37:36.916] [TARGETED_REVISE_REVERT] [pipeline_orchestrator.py:749 run_revision]第 57 章修订回退 | chapter=57, pre_score=6.0, post_score=4.5, decision=revert
+[10:37:36.919] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=41974, max_total_time=600
+[10:38:41.020] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=64.1, result_len=3109
+[10:38:41.027] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=41974, max_total_time=600
+[10:39:19.464] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=38.4, result_len=3278
+[10:39:19.470] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=41974, max_total_time=600
+[10:39:58.408] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=38.9, result_len=2724
+[10:39:58.412] [TARGETED_REVISE] [pipeline_orchestrator.py:710 run_revision]开始针对性修订第 30 章 | chapter=30, question=momentum_loss, pre_score=4.7
+[10:39:58.430] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=24442, max_total_time=1200
+[10:41:05.405] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=67.0, result_len=6368
+[10:41:05.425] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=43311, max_total_time=600
+[10:42:10.434] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=65.0, result_len=3484
+[10:42:10.442] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=43311, max_total_time=600
+[10:43:17.986] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=67.5, result_len=3177
+[10:43:17.993] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=43311, max_total_time=600
+[10:44:13.798] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=55.8, result_len=3371
+[10:44:14.397] [TARGETED_REVISE_KEEP] [pipeline_orchestrator.py:740 run_revision]第 30 章修订保留 | chapter=30, pre_score=4.7, post_score=5.0, decision=keep
+[10:44:14.397] [FULL_EVAL] [pipeline_orchestrator.py:755 run_revision]开始全文评估
+[10:44:14.445] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=3, prompt_len=116746, max_total_time=600
+[10:45:28.491] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=74.0, result_len=1794
+[10:45:28.504] [FULL_EVAL_DONE] [pipeline_orchestrator.py:766 run_revision]全文评估完成 | novel_score=5.0, prev_score=4.5, total_words=348876, cycle=2
+[10:45:29.066] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=revision | phase=revision, chapters_drafted=100, iteration=1, novel_score=5.0
+[10:45:29.251] [REVIEW_ROUND] [pipeline_orchestrator.py:873 _run_review_revision_loop]审阅修订 轮次 1/4 | round=1, max_rounds=4
+[10:45:29.252] [DEEP_REVIEW] [pipeline_orchestrator.py:878 _run_review_revision_loop]开始深度审阅 轮次 1 | round=1, retries=2, max_total_time=1200
+[10:45:29.265] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=403658, max_total_time=1200
+[10:46:18.860] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=49.6, result_len=3466
+[10:46:18.866] [DEEP_REVIEW_DONE] [pipeline_orchestrator.py:883 _run_review_revision_loop]深度审阅完成 轮次 1
+[10:46:18.897] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 80 章 (轮次 1) | chapter=80, round=1
+[10:46:18.905] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=22911, max_total_time=1200
+[10:46:47.580] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=28.7, result_len=1901
+[10:46:48.214] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 80 章审阅修订完成 | chapter=80, round=1
+[10:46:48.216] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 90 章 (轮次 1) | chapter=90, round=1
+[10:46:48.223] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=21855, max_total_time=1200
+[10:49:36.439] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=168.2, result_len=1989
+[10:49:37.021] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 90 章审阅修订完成 | chapter=90, round=1
+[10:49:37.034] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 95 章 (轮次 1) | chapter=95, round=1
+[10:49:37.048] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=19951, max_total_time=1200
+[10:50:17.270] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=40.2, result_len=2740
+[10:50:17.803] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 95 章审阅修订完成 | chapter=95, round=1
+[10:50:17.803] [APPLY_CUTS] [pipeline_orchestrator.py:963 _run_review_revision_loop]审阅后机械清理 | target=all, round=1, rules=['OVER-EXPLAIN', 'REDUNDANT'], min_fat=15
+[10:50:18.494] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=revision | phase=revision, chapters_drafted=100, iteration=1, novel_score=5.0
+[10:50:18.495] [REVIEW_ROUND] [pipeline_orchestrator.py:873 _run_review_revision_loop]审阅修订 轮次 2/4 | round=2, max_rounds=4
+[10:50:18.495] [DEEP_REVIEW] [pipeline_orchestrator.py:878 _run_review_revision_loop]开始深度审阅 轮次 2 | round=2, retries=2, max_total_time=1200
+[10:50:18.517] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=400943, max_total_time=1200
+[10:51:49.341] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=90.8, result_len=3485
+[10:51:49.345] [DEEP_REVIEW_DONE] [pipeline_orchestrator.py:883 _run_review_revision_loop]深度审阅完成 轮次 2
+[10:51:49.354] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 60 章 (轮次 2) | chapter=60, round=2
+[10:51:49.361] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=23450, max_total_time=1200
+[10:52:37.535] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=48.2, result_len=4023
+[10:52:38.437] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 60 章审阅修订完成 | chapter=60, round=2
+[10:52:38.439] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 70 章 (轮次 2) | chapter=70, round=2
+[10:52:38.446] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=22584, max_total_time=1200
+[10:54:40.349] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=121.9, result_len=4289
+[10:54:40.931] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 70 章审阅修订完成 | chapter=70, round=2
+[10:54:40.933] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 80 章 (轮次 2) | chapter=80, round=2
+[10:54:40.943] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=21379, max_total_time=1200
+[10:55:51.286] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=70.3, result_len=4575
+[10:55:51.843] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 80 章审阅修订完成 | chapter=80, round=2
+[10:55:51.843] [APPLY_CUTS] [pipeline_orchestrator.py:963 _run_review_revision_loop]审阅后机械清理 | target=all, round=2, rules=['OVER-EXPLAIN', 'REDUNDANT'], min_fat=15
+[10:55:52.499] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=revision | phase=revision, chapters_drafted=100, iteration=1, novel_score=5.0
+[10:55:52.500] [REVIEW_ROUND] [pipeline_orchestrator.py:873 _run_review_revision_loop]审阅修订 轮次 3/4 | round=3, max_rounds=4
+[10:55:52.500] [DEEP_REVIEW] [pipeline_orchestrator.py:878 _run_review_revision_loop]开始深度审阅 轮次 3 | round=3, retries=2, max_total_time=1200
+[10:55:52.518] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=404010, max_total_time=1200
+[10:57:58.123] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=125.6, result_len=3353
+[10:57:58.125] [DEEP_REVIEW_DONE] [pipeline_orchestrator.py:883 _run_review_revision_loop]深度审阅完成 轮次 3
+[10:57:58.134] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 50 章 (轮次 3) | chapter=50, round=3
+[10:57:58.142] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=24390, max_total_time=1200
+[10:58:54.007] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=55.9, result_len=5306
+[10:58:54.641] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 50 章审阅修订完成 | chapter=50, round=3
+[10:58:54.641] [APPLY_CUTS] [pipeline_orchestrator.py:963 _run_review_revision_loop]审阅后机械清理 | target=all, round=3, rules=['OVER-EXPLAIN', 'REDUNDANT'], min_fat=15
+[10:58:55.294] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=revision | phase=revision, chapters_drafted=100, iteration=1, novel_score=5.0
+[10:58:55.294] [REVIEW_ROUND] [pipeline_orchestrator.py:873 _run_review_revision_loop]审阅修订 轮次 4/4 | round=4, max_rounds=4
+[10:58:55.294] [DEEP_REVIEW] [pipeline_orchestrator.py:878 _run_review_revision_loop]开始深度审阅 轮次 4 | round=4, retries=2, max_total_time=1200
+[10:58:55.311] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.3, retries=2, prompt_len=404304, max_total_time=1200
+[11:00:48.129] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=112.8, result_len=3245
+[11:00:48.134] [DEEP_REVIEW_DONE] [pipeline_orchestrator.py:883 _run_review_revision_loop]深度审阅完成 轮次 4
+[11:00:48.149] [REVIEW_REVISE] [pipeline_orchestrator.py:944 _run_review_revision_loop]审阅修订第 30 章 (轮次 4) | chapter=30, round=4
+[11:00:48.156] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=2, prompt_len=25962, max_total_time=1200
+[11:03:37.378] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=169.2, result_len=6320
+[11:03:38.095] [REVIEW_REVISE_DONE] [pipeline_orchestrator.py:951 _run_review_revision_loop]第 30 章审阅修订完成 | chapter=30, round=4
+[11:03:38.095] [APPLY_CUTS] [pipeline_orchestrator.py:963 _run_review_revision_loop]审阅后机械清理 | target=all, round=4, rules=['OVER-EXPLAIN', 'REDUNDANT'], min_fat=15
+[11:03:38.792] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=revision | phase=revision, chapters_drafted=100, iteration=1, novel_score=5.0
+[11:03:38.792] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=export | phase=export, chapters_drafted=100, iteration=1, novel_score=5.0
+[11:03:38.793] [REVISION_DONE] [pipeline_orchestrator.py:990 run_revision]修订完成 | cycles=2, novel_score=5.0
+[11:03:38.793] [PHASE_EXIT] [pipeline_orchestrator.py:1170 run_pipeline]退出阶段 revision | phase=revision, elapsed_s=29489.7, chapters_drafted=100, novel_score=5.0
+[11:03:38.793] [PHASE_ENTER] [pipeline_orchestrator.py:1139 run_pipeline]进入阶段 export | phase=export, chapters_drafted=100, iteration=1
+[11:03:38.793] [EXPORT_START] [pipeline_orchestrator.py:1004 run_export]开始导出 | total_chapters=100
+[11:03:38.914] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=20120, max_total_time=None
+[11:05:41.704] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=122.8, result_len=5311
+[11:05:41.707] [EXPORT_OUTLINE] [pipeline_orchestrator.py:1012 run_export]大纲重建完成
+[11:05:41.746] [API_CALL] [api_client.py:305 call_llm]LLM 调用 deepseek-ai/deepseek-v4-flash | model=deepseek-ai/deepseek-v4-flash, temperature=0.8, retries=3, prompt_len=25207, max_total_time=None
+[11:06:55.282] [API_SUCCESS] [api_client.py:326 call_llm]LLM 调用成功 | model=deepseek-ai/deepseek-v4-flash, latency_s=73.5, result_len=2864
+[11:06:55.283] [EXPORT_ARC] [pipeline_orchestrator.py:1022 run_export]弧线摘要构建完成
+[11:06:55.332] [EXPORT_MANUSCRIPT] [pipeline_orchestrator.py:1031 run_export]手稿拼接完成
+[11:06:56.278] [STATE_SAVE] [state_manager.py:112 save_state]保存状态 phase=complete | phase=complete, chapters_drafted=100, iteration=1, novel_score=5.0
+[11:06:56.278] [EXPORT_DONE] [pipeline_orchestrator.py:1052 run_export]导出完成 | chapter_files=94, total_words=349280, manuscript_exists=True
+[11:06:56.279] [PHASE_EXIT] [pipeline_orchestrator.py:1170 run_pipeline]退出阶段 export | phase=export, elapsed_s=197.5, chapters_drafted=100, novel_score=5.0
+[11:06:56.294] [PIPELINE_END] [pipeline_orchestrator.py:1180 run_pipeline]流水线完成 | elapsed_h=17.48, total_chapters=100, total_words=349280, novel_score=5.0, revision_cycle=2, phase=complete

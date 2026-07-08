@@ -72,3 +72,7 @@ effa692	review-revision-round-3	0	11767	cycle	审阅修订 轮次3: 修订 4 章
 reverted	rev-ch03	6.2	6872	discard	循环 3: 共识问题 倒退 8.0->6.2
 05838c1	revision-cycle-3	7.0	13988	cycle	循环 3: novel_score 6.2->7.0
 03e620c	export	7.0	13988	export	最终导出
+reverted	rev-ch57	4.5	3392	discard	循环 2: cut_candidate 倒退 6.0->4.5
+	rev-ch30	5.0	5607	keep	循环 2: momentum_loss 改进 4.7->5.0
+	revision-cycle-2	5.0	348876	cycle	循环 2: novel_score 4.5->5.0
+	export	5.0	349280	export	最终导出
