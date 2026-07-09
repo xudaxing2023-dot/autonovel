@@ -22,11 +22,9 @@ from prompts.review_prompts import build_review_prompt, REVIEW_SYSTEM_PROMPT
 
 def run_review_loop(
     state: dict = None,
-    max_tokens: int = 8192,
     max_rounds: int = 4,
     retries: int = 3,
-    max_total_time: int = None,
-) -> None:
+    max_total_time: int = None) -> None:
     """运行深度审阅循环——对齐原版双角色审阅风格。"""
     banner("深度审阅循环", "-")
 
@@ -56,9 +54,8 @@ def run_review_loop(
 
         try:
             result = call_judge(
-                prompt, system=REVIEW_SYSTEM_PROMPT, max_tokens=max_tokens,
-                retries=retries, max_total_time=max_total_time,
-            )
+                prompt, system=REVIEW_SYSTEM_PROMPT,
+                retries=retries, max_total_time=max_total_time)
         except Exception as e:
             step(f"审阅失败: {e}")
             break
@@ -67,22 +64,27 @@ def run_review_loop(
         review_path = EDIT_LOGS_DIR / f"review_round{rnd}.md"
         review_path.write_text(result, encoding="utf-8")
 
-        # 解析星级
+        # 解析星级 — 从结构化摘要的 "总评: ★★★★☆" 格式
         stars = 0
-        for line in result.splitlines():
-            if "★" in line and ("评分" in line or "总" in line or "overall" in line.lower()):
-                stars = line.count("★")
-                break
+        star_match = re.search(r'总评\s*[：:]\s*[★☆]{1,5}', result)
+        if star_match:
+            stars = star_match.group(0).count("★")
+        else:
+            # 回退：搜索行内 ★
+            for line in result.splitlines():
+                if "★" in line and ("评分" in line or "总" in line):
+                    stars = line.count("★")
+                    break
 
-        # 解析问题数
-        major_items = result.count("MAJOR") + result.count("严重") + result.count("必须")
-        total_items = result.count("问题") + result.count("建议")
+        # 解析问题数 — 从结构化摘要字段提取（不靠字符串计数）
+        major_match = re.search(r'严重问题数[：:]\s*(\d+)', result)
+        major_items = int(major_match.group(1)) if major_match else 0
 
-        # 解析合格问题数——优先从末尾结构化摘要提取
-        qualified_items = max(0, total_items - major_items)
+        total_match = re.search(r'总问题数[：:]\s*(\d+)', result)
+        total_items = int(total_match.group(1)) if total_match else 0
+
         qual_match = re.search(r'合格问题数[：:]\s*(\d+)', result)
-        if qual_match:
-            qualified_items = int(qual_match.group(1))
+        qualified_items = int(qual_match.group(1)) if qual_match else max(0, total_items - major_items)
 
         # 解析最弱章节
         weak_chapters = []

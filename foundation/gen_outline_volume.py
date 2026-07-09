@@ -25,8 +25,7 @@ from prompts.outline_prompts import (
     build_volume_outline_prompt_part1,
     build_volume_outline_prompt_part2,
     build_volume_outline_prompt_part3,
-    build_volume_outline_prompt_single,
-)
+    build_volume_outline_prompt_single)
 
 
 def _load_context() -> dict:
@@ -100,8 +99,7 @@ def _call_volume_segment(
     ctx: dict,
     vol_start: int,
     vol_end: int,
-    max_tokens: int,
-) -> str:
+    ) -> str:
     """执行一次卷级总纲 LLM 调用。
 
     segment_index=0 → part1 prompt
@@ -115,8 +113,7 @@ def _call_volume_segment(
             world_text=ctx["world"],
             characters_text=ctx["characters"],
             voice_text=ctx["voice"],
-            total_chapters=ctx["total_chapters"],
-        )
+            total_chapters=ctx["total_chapters"])
         label = "卷级总纲（单卷）"
     elif segment_index == 0:
         prompt = build_volume_outline_prompt_part1(
@@ -127,8 +124,7 @@ def _call_volume_segment(
             vol_start=vol_start,
             vol_end=vol_end,
             total_volumes=ctx["total_volumes"],
-            chapters_per_volume=ctx["chapters_per_volume"],
-        )
+            chapters_per_volume=ctx["chapters_per_volume"])
         label = (
             f"卷级总纲 调用 {segment_index + 1}/{total_segments}: "
             f"卷 {vol_start}–{vol_end}"
@@ -139,8 +135,7 @@ def _call_volume_segment(
             vol_end=vol_end,
             total_volumes=ctx["total_volumes"],
             chapters_per_volume=ctx["chapters_per_volume"],
-            prior_output=prior_outputs,
-        )
+            prior_output=prior_outputs)
         label = (
             f"卷级总纲 调用 {segment_index + 1}/{total_segments}: "
             f"卷 {vol_start}–{vol_end}"
@@ -151,8 +146,7 @@ def _call_volume_segment(
             vol_end=vol_end,
             total_volumes=ctx["total_volumes"],
             chapters_per_volume=ctx["chapters_per_volume"],
-            prior_output=prior_outputs,
-        )
+            prior_output=prior_outputs)
         label = (
             f"卷级总纲 调用 {segment_index + 1}/{total_segments}: "
             f"卷 {vol_start}–{vol_end}"
@@ -162,10 +156,8 @@ def _call_volume_segment(
     result = call_p1_writer(
         prompt,
         system=VOLUME_OUTLINE_SYSTEM_PROMPT,
-        max_tokens=max_tokens,
         temperature=0.7,   # 结构规划需要比创造性写作略低的温度
-        max_total_time=600,
-    )
+        max_total_time=600)
     step(f"{label} 完成 ({len(result)} chars)")
     return result
 
@@ -191,11 +183,11 @@ def _assemble_volume_outline(outputs: list[str], total_vol: int) -> str:
     return "\n".join(parts)
 
 
-def generate_volume_outline(max_tokens: int = 14000) -> None:
+def generate_volume_outline() -> None:
     """生成卷级总纲 → output/outline_volume.md。
 
     根据 total_volumes 自适应拆分为 1–3 次链式 LLM 调用。
-    每次调用 ≤ max_tokens（默认 14000，适配 16000 硬限制）。
+    每次调用不再限制 max_tokens，由模型自主决定输出长度。
     """
     ctx = _load_context()
     total_vol = ctx["total_volumes"]
@@ -218,9 +210,7 @@ def generate_volume_outline(max_tokens: int = 14000) -> None:
             prior_outputs=prior,
             ctx=ctx,
             vol_start=vol_start,
-            vol_end=vol_end,
-            max_tokens=max_tokens,
-        )
+            vol_end=vol_end)
         outputs.append(result)
         prior = "\n\n---\n\n".join(outputs)
 

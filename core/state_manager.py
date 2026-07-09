@@ -24,8 +24,14 @@ from typing import Optional
 
 from core.config import (
     ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, STATE_FILE, RESULTS_FILE,
-    BACKUPS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, BRIEFS_DIR, config,
-)
+    BACKUPS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, BRIEFS_DIR, config)
+
+# 可选导入 debug_log
+try:
+    from core.diagnostic import debug_log as _debug_log
+except ImportError:
+    def _debug_log(*args, **kwargs):
+        pass
 
 
 # ============================================================================
@@ -42,8 +48,7 @@ def _has_git() -> bool:
             ["git", "status"],
             capture_output=True, text=True, timeout=10,
             cwd=str(ROOT_DIR),
-            encoding="utf-8", errors="replace",
-        )
+            encoding="utf-8", errors="replace")
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return False
@@ -93,16 +98,33 @@ def default_state() -> dict:
 def load_state() -> dict:
     """加载 state.json，不存在则返回默认状态。"""
     if STATE_FILE.exists():
-        with open(STATE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            _debug_log("STATE_LOAD", data={
+                "phase": data.get("phase", "?"),
+                "chapters_drafted": data.get("chapters_drafted", 0),
+            })
+            return data
+        except (json.JSONDecodeError, IOError) as e:
+            _debug_log("STATE_ERROR", f"加载 state.json 失败: {e}",
+                       data={"error": str(e)[:200]})
     return default_state()
 
 
 def save_state(state: dict) -> None:
     """写入 state.json。"""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2, ensure_ascii=False)
+    try:
+        with open(STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(state, f, indent=2, ensure_ascii=False)
+        _debug_log("STATE_SAVE", data={
+            "phase": state.get("phase", "?"),
+            "chapters_drafted": state.get("chapters_drafted", 0),
+        })
+    except IOError as e:
+        _debug_log("STATE_ERROR", f"保存 state.json 失败: {e}",
+                   data={"error": str(e)[:200]})
 
 
 def get_total_chapters(state: dict) -> int:
@@ -142,8 +164,7 @@ def _git_run(cmd: str, timeout: int = 30) -> subprocess.CompletedProcess:
         shlex.split(cmd),
         capture_output=True, text=True,
         timeout=timeout, cwd=str(ROOT_DIR),
-        encoding="utf-8", errors="replace",
-    )
+        encoding="utf-8", errors="replace")
 
 
 def git_short_hash() -> str:
@@ -250,8 +271,7 @@ def restore_latest() -> bool:
 
     backups = sorted(
         [d for d in BACKUPS_DIR.iterdir() if d.is_dir()],
-        key=lambda p: p.name, reverse=True,
-    )
+        key=lambda p: p.name, reverse=True)
     if not backups:
         print("  [备份] 无可用备份", file=sys.stderr)
         return False
@@ -288,8 +308,7 @@ def log_result(
     score,
     word_count: int = 0,
     status: str = "",
-    description: str = "",
-) -> None:
+    description: str = "") -> None:
     """追加一行到 results.tsv。
 
     如果 score 为负值（parse_score 无法解析时的哨兵 -1.0），
@@ -332,106 +351,91 @@ def step(text: str):
 
 
 # ============================================================================
-# 分数解析 (兼容原 evaluate.py 输出)
+# 分数解析 — 统一格式：JSON 优先，回退到单一固定 Markdown 格式
 # ============================================================================
 
 def parse_score(stdout: str, key: str = "overall_score") -> float:
     """
-    从 evaluate.py 输出中解析分数。
-    兼容两种格式：
-      1. key: 8.0           （冒号格式）
-      2. **评分**: 9/10      （分数格式，出现在 key 标题下方的 markdown 中）
-    """
-    lines = stdout.splitlines()
-    in_section = False
-    for i, line in enumerate(lines):
-        stripped = line.strip()
+    从 LLM 评估输出中解析分数。
 
-        # 格式 1: key: 8.0
+    策略（严格有序，不猜格式）:
+      1. JSON 提取: 从文本中提取 JSON 对象，读取 key 字段
+      2. Markdown 固定格式: `**综合评分**: X/10` 或 `key: X`
+      3. 以上均失败 → 报错，记录原始输出
+
+    Prompt 已锁定输出格式为纯 JSON（见 eval_judge_prompts.py）。
+    此函数仅处理 LLM 未遵守 JSON 格式时的降级场景。
+    """
+    # ── 策略 1: JSON 提取 ──
+    json_score = _try_json_extract(stdout, key)
+    if json_score is not None:
+        return json_score
+
+    # ── 策略 2: 固定 Markdown 格式 ──
+    # 2a: key: X 格式（最简）
+    for line in stdout.splitlines():
+        stripped = line.strip()
         if stripped.startswith(f"{key}:"):
-            val = stripped.split(":", 1)[1].strip()
+            val = stripped.split(":", 1)[1].strip().rstrip(",")
             try:
                 return round(float(val), 1)
             except ValueError:
                 continue
 
-        # 格式 2: 检测是否进入了目标 key 的 markdown 小节
-        if key in stripped and stripped.startswith("###"):
-            in_section = True
-            continue
+    # 2b: **综合评分**: X/10 格式
+    m = re.search(
+        r'\*\*综合评分\*\*\s*[：:]\s*(\d+(?:\.\d+)?)\s*/\s*10',
+        stdout, re.IGNORECASE)
+    if m:
+        return round(float(m.group(1)), 1)
 
-        # 如果在 key 小节内，查找 **评分**: X/Y 格式
-        if in_section:
-            # 遇到下一个 ### 就离开当前小节
-            if stripped.startswith("###"):
-                in_section = False
-                continue
-            # 匹配 **评分**: 9/10 或 **Score**: 9/10 等
-            m = re.match(
-                r"\*\*.*?(?:评分|Score|score)\*\*\s*:\s*(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)",
-                stripped,
-            )
-            if m:
-                numerator = float(m.group(1))
-                denominator = float(m.group(2))
-                if denominator > 0:
-                    return round(numerator / denominator * 10.0, 1)  # 转换为 10 分制
-                return round(numerator, 1)
-            # 也尝试匹配纯数字评分: **评分**: 8.5
-            m2 = re.match(
-                r"\*\*.*?(?:评分|Score|score)\*\*\s*:\s*(\d+(?:\.\d+)?)",
-                stripped,
-            )
-            if m2:
-                val = round(float(m2.group(1)), 1)
-                # 如果值 > 10 可能是百分制，缩放到10分制
-                if val > 11:
-                    return val / 10.0
-                return val
+    # 2c: **评分**: X/10 格式（在 key 对应的 ### 小节内）
+    m = re.search(
+        rf'###.*?{re.escape(key)}.*?\n.*?\*\*评分\*\*\s*[：:]\s*(\d+(?:\.\d+)?)\s*/\s*10',
+        stdout, re.DOTALL | re.IGNORECASE)
+    if m:
+        return round(float(m.group(1)), 1)
 
-    # ——— Fallback: 全文收集所有候选评分，取位置最靠后的 ———
-    # 裁判模型不使用固定的 ### overall_score 小节头，输出格式多样化。
-    # 跨模式收集所有 (end_position, value) 候选，取 end 最大者
-    # （最后出现的评分通常是整体评分而非子维度评分）。
-    candidates: list[tuple[int, float]] = []  # (end_pos, value)
+    # ── 全部失败 → 报错 ──
+    raise ValueError(
+        f"无法从 LLM 输出中解析 '{key}' 分数。"
+        f"Prompt 要求 JSON 格式，但 LLM 未遵守。"
+        f"原始输出前 500 字符:\n{stdout[:500]}"
+    )
 
-    fallback_patterns = [
-        # 格式 A: 综合评分：6.5/10 或 Overall Score: 6.5 或 Score: 8.2
-        (r'(?:综合评分|Overall\s+Score|final\s+score|Score)\s*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', True),
-        # 格式 B: ### 15. overall_score ... 或 ## score: 7.0 或 overall_score: 6.5
-        (r'(?:overall_score|Overall_Score|score)[^:\n]*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', False),
-        # 格式 C: 最终评分：**6.5/10**
-        (r'最终评分\s*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', True),
-        # 格式 D: **评分**: 6.5/10 或 **score**: 6.5
-        (r'\*\*(?:评分|Score|score)\*\*\s*[：:]\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2}\s*(?:/\s*\*{0,2}(\d+(?:\.\d+)?)\*{0,2})?', False),
-        # 格式 E: X/10 分数
-        (r'(?:评分|Score|score)[^:\n]*?(\d+(?:\.\d+)?)\s*/\s*(?:10|十)', False),
-    ]
-    for pattern, search_whole in fallback_patterns:
-        flags = re.IGNORECASE if search_whole else re.IGNORECASE | re.MULTILINE
-        for m in re.finditer(pattern, stdout, flags):
-            try:
-                val = float(m.group(1))
-            except (ValueError, IndexError):
-                continue
-            if m.lastindex and m.lastindex >= 2:
-                try:
-                    denom = float(m.group(2))
-                    if denom > 0:
-                        val = val / denom * 10.0
-                except (ValueError, IndexError):
-                    pass
-            if val > 11:
-                val = val / 10.0
-            if 0 <= val <= 10:
-                candidates.append((m.end(), val))
 
-    if candidates:
-        # 取全文最后一个评分候选（end 位置最大）
-        candidates.sort(key=lambda x: x[0])
-        return candidates[-1][1]
+def _try_json_extract(text: str, key: str):
+    """从文本中提取 JSON 并读取指定 key 的值。成功返回 float，失败返回 None。"""
+    # 尝试直接 json.loads
+    try:
+        data = json.loads(text.strip())
+        if key in data:
+            return float(data[key])
+    except (json.JSONDecodeError, ValueError, TypeError):
+        pass
 
-    return -1.0
+    # 尝试提取 ```json ... ``` 代码块
+    m = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', text, re.DOTALL)
+    if m:
+        try:
+            data = json.loads(m.group(1).strip())
+            if key in data:
+                return float(data[key])
+        except (json.JSONDecodeError, ValueError, TypeError):
+            pass
+
+    # 尝试从第一个 { 到最后一个 } 提取
+    start = text.find('{')
+    end = text.rfind('}')
+    if start != -1 and end > start:
+        try:
+            data = json.loads(text[start:end + 1])
+            if key in data:
+                return float(data[key])
+        except (json.JSONDecodeError, ValueError, TypeError):
+            pass
+
+    return None
 
 
 # ============================================================================
@@ -442,8 +446,7 @@ def evaluate_chapter_stable(
     ch_num: int,
     retries: int = 2,
     max_total_time: int = 600,
-    samples: int = 3,
-) -> float:
+    samples: int = 3) -> float:
     """稳定版章节评估：调用 N 次取中位数，过滤 -1.0 异常值。
 
     用于修订前后的评分比较，避免单次 LLM 评分波动导致误判回退。
@@ -465,11 +468,9 @@ def evaluate_chapter_stable(
 
 
 def evaluate_foundation_stable(
-    max_tokens: int = 4096,
     retries: int = 3,
     max_total_time: int = None,
-    samples: int = 3,
-) -> float:
+    samples: int = 3) -> float:
     """稳定版 Foundation 评估：调用 N 次取中位数。
 
     用于 Foundation 迭代间的评分比较，避免 LLM 评分波动导致
@@ -479,7 +480,7 @@ def evaluate_foundation_stable(
     scores: list[float] = []
     for _ in range(samples):
         try:
-            result = _eval(max_tokens=max_tokens, retries=retries,
+            result = _eval(retries=retries,
                            max_total_time=max_total_time)
             s = parse_score(result, "overall_score")
             if s >= 0:

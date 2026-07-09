@@ -22,15 +22,12 @@ UPDATE_CANON_SYSTEM_PROMPT = """你是正典管理员。从新完成的章节中
 
 def update_canon_from_chapter(
     chapter_num: int,
-    chapter_text: str,
-    max_tokens: int = 8000,
-) -> int:
+    chapter_text: str) -> int:
     """从章节提取新事实 → 追加 canon.md。返回新增事实条数。
 
     Args:
         chapter_num: 章节编号（1-indexed）。
         chapter_text: 章节全文。
-        max_tokens: LLM 输出上限（新增事实 bullet points，8000 远够用）。
 
     Returns:
         新增的硬事实条目数；0 表示无新增。
@@ -65,9 +62,7 @@ def update_canon_from_chapter(
     result = call_p2_ctx_writer(
         prompt,
         system=UPDATE_CANON_SYSTEM_PROMPT,
-        max_tokens=max_tokens,
-        temperature=0.5,
-    )
+        temperature=0.5)
 
     if "无新增事实" in result:
         step(f"正典更新: 第 {chapter_num} 章无新增事实")
@@ -76,8 +71,7 @@ def update_canon_from_chapter(
     # 追加到 canon.md
     canon_path.write_text(
         existing_canon.rstrip() + "\n\n" + result,
-        encoding="utf-8",
-    )
+        encoding="utf-8")
 
     # 统计新增条目数
     new_entries = len(re.findall(r"^— ", result, re.MULTILINE))

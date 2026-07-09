@@ -20,7 +20,7 @@ ARC_SYSTEM_PROMPT = """你是一位小说分析员。你阅读全部章节后，
 你的汉语写作简洁、有洞察力。"""
 
 
-def build_arc_summary(max_tokens: int = 8192) -> None:
+def build_arc_summary() -> None:
     """构建弧线摘要。"""
     chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
     if not chapter_files:
@@ -54,7 +54,7 @@ def build_arc_summary(max_tokens: int = 8192) -> None:
 （最重要的 5 条伏笔线索及它们的回收情况）"""
 
     step("构建弧线摘要 ...")
-    result = call_writer(prompt, system=ARC_SYSTEM_PROMPT, max_tokens=max_tokens)
+    result = call_writer(prompt, system=ARC_SYSTEM_PROMPT)
 
     arc_path = OUTPUT_DIR / "arc_summary.md"
     arc_path.write_text(result, encoding="utf-8")

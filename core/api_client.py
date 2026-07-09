@@ -25,6 +25,13 @@ import httpx
 
 from core.config import config
 
+# 可选导入 debug_log（避免循环导入）
+try:
+    from core.diagnostic import debug_log as _debug_log
+except ImportError:
+    def _debug_log(*args, **kwargs):
+        pass
+
 
 # ============================================================================
 # Rate Limiter — 全局单例，确保任意两次 API 调用间隔 >= 4 秒
@@ -85,8 +92,7 @@ def _build_messages(
     prompt: str,
     system: Optional[str],
     api_base: str,
-    model: str,
-) -> list:
+    model: str) -> list:
     """构建 messages 列表，处理 system role 兼容性。
 
     如果端点已知不支持 system role，则将 system prompt 合并到 user message 前缀。
@@ -111,22 +117,29 @@ def _call_llm_internal(
     prompt: str,
     system: Optional[str],
     messages: list,
-    max_tokens: int = 16000,
     temperature: float = 0.8,
     timeout: int = 600,
-    retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    retries: int = 5,
+    max_total_time: int = None) -> str:
     """HTTP 引擎——封装 HTTP 调用、速率限制、重试、错误处理。
 
     从原 call_llm 提取的核心逻辑，参数化 api_key/api_base/model，
     使得 Phase 路由成为可能。
+
+    超时策略（梯级递增，适用于所有模型）:
+    - 第1次尝试: timeout=600s,  第2次: timeout=1200s,  第3次: timeout=1800s, ...
+    - 重试间隔: 15s × attempt (指数退避)
+    - max_total_time 未指定时: 自动按 Σ(timeout × attempt) 计算
     """
     if not api_key:
         raise RuntimeError(
             "API Key 未配置。请运行 novel_app.bat 进行配置，"
             "或确保 .env 文件中有有效的 AUTONOVEL_API_KEY。"
         )
+
+    # ★ 自动计算总超时：Σ(timeout × attempt) for attempt in 1..retries
+    if max_total_time is None:
+        max_total_time = sum(timeout * a for a in range(1, retries + 1))
 
     endpoint_key = f"{api_base}|{model}"
     url = f"{api_base}/chat/completions"
@@ -138,7 +151,6 @@ def _call_llm_internal(
     payload = {
         "model": model,
         "messages": messages,
-        "max_tokens": max_tokens,
         "temperature": temperature,
     }
 
@@ -149,33 +161,41 @@ def _call_llm_internal(
 
     for attempt in range(1, retries + 1):
         # 总超时检查（在速率限制等待之前，避免等待后才发现超时）
-        if max_total_time is not None:
-            elapsed_total = time.time() - t_start
-            if elapsed_total > max_total_time:
-                raise RuntimeError(
-                    f"API 调用总超时: 累计 {elapsed_total:.0f}s 超过 "
-                    f"{max_total_time}s 限制（共 {retries} 次重试机会）"
-                )
+        elapsed_total = time.time() - t_start
+        if elapsed_total > max_total_time:
+            raise RuntimeError(
+                f"API 调用总超时: 累计 {elapsed_total:.0f}s 超过 "
+                f"{max_total_time}s 限制（共 {retries} 次重试机会）"
+            )
 
         # 速率限制等待
         waited = limiter.wait()
 
-        elapsed_total = time.time() - t_start if max_total_time is not None else 0
-        total_info = f"（累计 {elapsed_total:.0f}s / 限制 {max_total_time}s）" if max_total_time is not None else ""
+        total_info = f"（累计 {elapsed_total:.0f}s / 限制 {max_total_time}s）"
 
         if waited > 0.5:
             print(f"  [API] 速率限制等待 {waited:.1f}s ...", file=sys.stderr)
 
-        print(f"  [API] 调用 {model} (max_tokens={max_tokens}, t={temperature}) ...",
+        # ★ 梯级递增超时: 第N次尝试使用 timeout × N
+        attempt_timeout = timeout * attempt
+        prompt_len = len(prompt) if prompt else (len(str(messages)) if messages else 0)
+        _debug_log("API_CALL", data={
+            "model": model, "temperature": temperature,
+            "attempt": attempt, "retries": retries,
+            "timeout": attempt_timeout, "prompt_len": prompt_len,
+        })
+        print(f"  [API] 调用 {model} (t={temperature}, timeout={attempt_timeout}s) ...",
               file=sys.stderr)
 
+        t_call_start = time.time()
         try:
             resp = httpx.post(
                 url,
                 headers=headers,
                 json=payload,
-                timeout=timeout,
-            )
+                timeout=attempt_timeout)
+
+            latency_s = round(time.time() - t_call_start, 1)
 
             if resp.status_code == 200:
                 data = resp.json()
@@ -183,10 +203,16 @@ def _call_llm_internal(
                 try:
                     content = data["choices"][0]["message"]["content"]
                     token_count = data.get("usage", {}).get("total_tokens", "?")
+                    _debug_log("API_SUCCESS", data={
+                        "model": model, "latency_s": latency_s,
+                        "result_len": len(content), "tokens": token_count,
+                    })
                     print(f"  [API] 成功 — {token_count} tokens, "
                           f"{len(content)} chars", file=sys.stderr)
                     return content
                 except (KeyError, IndexError, TypeError) as e:
+                    _debug_log("API_RETRY", f"响应格式异常: {e}",
+                               data={"attempt": attempt, "model": model})
                     print(f"  [API] 响应格式异常: {e}", file=sys.stderr)
                     print(f"  [API] 原始响应: {json.dumps(data, ensure_ascii=False)[:500]}",
                           file=sys.stderr)
@@ -196,6 +222,8 @@ def _call_llm_internal(
             elif resp.status_code == 429:
                 # 速率限制 — 等待更长时间后重试
                 wait_extra = 10 * attempt
+                _debug_log("API_RETRY", f"HTTP 429 速率限制",
+                           data={"attempt": attempt, "model": model, "wait_s": wait_extra})
                 print(f"  [API] 429 速率限制，额外等待 {wait_extra}s ...", file=sys.stderr)
                 time.sleep(wait_extra)
                 last_error = RuntimeError(f"HTTP 429: {resp.text[:300]}")
@@ -222,7 +250,7 @@ def _call_llm_internal(
                       file=sys.stderr)
                 last_error = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:300]}")
                 if attempt < retries:
-                    time.sleep(5 * attempt)
+                    time.sleep(15 * attempt)
                 continue
 
             else:
@@ -230,41 +258,57 @@ def _call_llm_internal(
                       file=sys.stderr)
                 last_error = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:300]}")
                 if attempt < retries:
-                    time.sleep(5 * attempt)
+                    time.sleep(15 * attempt)
                 continue
 
         except httpx.TimeoutException:
-            print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 超时 ({timeout}s)",
+            latency_s = round(time.time() - t_call_start, 1)
+            _debug_log("API_RETRY", f"超时 ({attempt_timeout}s)",
+                       data={"attempt": attempt, "model": model,
+                             "latency_s": latency_s, "max_retries": retries,
+                             "error": f"Timeout ({attempt_timeout}s)"})
+            print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 超时 ({attempt_timeout}s)",
                   file=sys.stderr)
-            last_error = RuntimeError(f"请求超时 ({timeout}s)")
+            last_error = RuntimeError(f"请求超时 ({attempt_timeout}s)")
             continue
 
         except httpx.RequestError as e:
+            latency_s = round(time.time() - t_call_start, 1)
+            _debug_log("API_RETRY", f"网络错误: {e}",
+                       data={"attempt": attempt, "model": model,
+                             "latency_s": latency_s, "max_retries": retries,
+                             "error": str(e)[:200]})
             print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 网络错误: {e}",
                   file=sys.stderr)
             last_error = e
-            time.sleep(5 * attempt)
+            time.sleep(15 * attempt)
             continue
 
         except Exception as e:
+            latency_s = round(time.time() - t_call_start, 1)
+            _debug_log("API_RETRY", f"异常: {e}",
+                       data={"attempt": attempt, "model": model,
+                             "latency_s": latency_s, "max_retries": retries,
+                             "error": str(e)[:200]})
             print(f"  [API] 异常: {e}", file=sys.stderr)
             last_error = e
             if attempt < retries:
-                time.sleep(5 * attempt)
+                time.sleep(15 * attempt)
             continue
 
+    _debug_log("API_FAIL", f"全部 {retries} 次重试耗尽",
+               data={"model": model, "retries": retries,
+                     "last_error": str(last_error)[:200]})
     raise RuntimeError(f"API 调用失败（{retries} 次重试后）: {last_error}")
 
 
 def call_llm(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 16000,
     temperature: float = 0.8,
     timeout: int = 600,
-    retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    retries: int = 5,
+    max_total_time: int = None) -> str:
     """调用 OpenAI Chat Completions 兼容 API。（行为不变）"""
     cfg = config
     cfg.load()
@@ -282,12 +326,10 @@ def call_llm(
         prompt=prompt,
         system=system,
         messages=messages,
-        max_tokens=max_tokens,
         temperature=temperature,
         timeout=timeout,
         retries=retries,
-        max_total_time=max_total_time,
-    )
+        max_total_time=max_total_time)
 
 
 # ============================================================================
@@ -297,26 +339,21 @@ def call_llm(
 def call_writer(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 16000,
     temperature: float = 0.8,
-    retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    retries: int = 5,
+    max_total_time: int = None) -> str:
     """写作模型调用（默认高温度，偏创造力）。"""
     return call_llm(
-        prompt, system=system, max_tokens=max_tokens, temperature=temperature,
-        retries=retries, max_total_time=max_total_time,
-    )
+        prompt, system=system, temperature=temperature,
+        retries=retries, max_total_time=max_total_time)
 
 
 def call_judge(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 4096,
     temperature: float = 0.3,
-    retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    retries: int = 5,
+    max_total_time: int = None) -> str:
     """裁判模型调用（默认低温度，偏判断力）。
 
     如果配置了独立的 judge_model_name / judge_api_base_url，
@@ -331,31 +368,27 @@ def call_judge(
     # 如果配置了独立判断模型，使用独立调用
     if judge_model or judge_base or judge_key:
         return _call_with_judge_config(
-            prompt, system=system, max_tokens=max_tokens, temperature=temperature,
+            prompt, system=system, temperature=temperature,
             retries=retries, max_total_time=max_total_time,
             judge_model=judge_model or cfg.model_name,
             judge_base=judge_base or cfg.api_base_url,
-            judge_key=judge_key or cfg.api_key,
-        )
+            judge_key=judge_key or cfg.api_key)
 
     # 否则退回共用模式（保持向后兼容）
     return call_llm(
-        prompt, system=system, max_tokens=max_tokens, temperature=temperature,
-        retries=retries, max_total_time=max_total_time,
-    )
+        prompt, system=system, temperature=temperature,
+        retries=retries, max_total_time=max_total_time)
 
 
 def _call_with_judge_config(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 4096,
     temperature: float = 0.3,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None,
     judge_model: str = "",
     judge_base: str = "",
-    judge_key: str = "",
-) -> str:
+    judge_key: str = "") -> str:
     """使用独立的 Judge 配置调用 API（内部函数）。"""
     api_base = judge_base.rstrip("/")
     model = judge_model
@@ -369,12 +402,10 @@ def _call_with_judge_config(
         prompt=prompt,
         system=system,
         messages=messages,
-        max_tokens=max_tokens,
         temperature=temperature,
         timeout=600,
         retries=retries,
-        max_total_time=max_total_time,
-    )
+        max_total_time=max_total_time)
 
 
 # ============================================================================
@@ -385,11 +416,9 @@ def _call_with_phase_config(
     phase: str,
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 16000,
     temperature: float = 0.8,
-    retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    retries: int = 5,
+    max_total_time: int = None) -> str:
     """按 Phase 选择 API 配置并调用 LLM。
 
     Args:
@@ -418,12 +447,10 @@ def _call_with_phase_config(
         prompt=prompt,
         system=system,
         messages=messages,
-        max_tokens=max_tokens,
         temperature=temperature,
         timeout=600,
         retries=retries,
-        max_total_time=max_total_time,
-    )
+        max_total_time=max_total_time)
 
 
 # ============================================================================
@@ -435,74 +462,62 @@ def _call_with_phase_config(
 def call_p1_writer(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 16000,
     temperature: float = 0.8,
     retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    max_total_time: int = None) -> str:
     """Phase 1 写作调用 — 使用 AUTONOVEL_P1_* 配置。
 
     用于: world / characters / outline / canon / voice 生成。
     回退链: p1_* → 共用_*
     """
     return _call_with_phase_config(
-        "p1", prompt, system=system, max_tokens=max_tokens,
-        temperature=temperature, retries=retries, max_total_time=max_total_time,
-    )
+        "p1", prompt, system=system,
+        temperature=temperature, retries=retries, max_total_time=max_total_time)
 
 
 def call_p2_writer(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 16000,
     temperature: float = 0.8,
     retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    max_total_time: int = None) -> str:
     """Phase 2 写作调用 — 使用 AUTONOVEL_P2_* 配置。
 
     用于: 章节起草（需要大上下文窗口）。
     回退链: p2_* → p1_* → 共用_*
     """
     return _call_with_phase_config(
-        "p2", prompt, system=system, max_tokens=max_tokens,
-        temperature=temperature, retries=retries, max_total_time=max_total_time,
-    )
+        "p2", prompt, system=system,
+        temperature=temperature, retries=retries, max_total_time=max_total_time)
 
 
 def call_p2_ctx_writer(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 16000,
     temperature: float = 0.8,
     retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    max_total_time: int = None) -> str:
     """Phase 2 大上下文写作调用 — 使用 AUTONOVEL_P2_CTX_* 配置。
 
     用于: canon 增量追加等大上下文任务。
     回退链: p2_ctx_* → p2_* → p1_* → 共用_*
     """
     return _call_with_phase_config(
-        "p2_ctx", prompt, system=system, max_tokens=max_tokens,
-        temperature=temperature, retries=retries, max_total_time=max_total_time,
-    )
+        "p2_ctx", prompt, system=system,
+        temperature=temperature, retries=retries, max_total_time=max_total_time)
 
 
 def call_p3_judge(
     prompt: str,
     system: Optional[str] = None,
-    max_tokens: int = 4096,
     temperature: float = 0.3,
     retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    max_total_time: int = None) -> str:
     """Phase 3 裁判调用 — 使用 AUTONOVEL_P3_* 配置。
 
     用于: 对抗编辑、读者评审、全文评估等修订阶段裁判任务。
     回退链: p3_* → p1_* → 共用_*
     """
     return _call_with_phase_config(
-        "p3", prompt, system=system, max_tokens=max_tokens,
-        temperature=temperature, retries=retries, max_total_time=max_total_time,
-    )
+        "p3", prompt, system=system,
+        temperature=temperature, retries=retries, max_total_time=max_total_time)

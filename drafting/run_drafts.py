@@ -13,7 +13,7 @@ from core.state_manager import step, banner, save_state, load_state, get_total_c
 from drafting.draft_chapter import draft_chapter
 
 
-def run_drafts(state: dict = None, max_tokens: int = 16000) -> None:
+def run_drafts(state: dict = None) -> None:
     """批量起草所有未完成的章节。"""
     if state is None:
         state = load_state()
@@ -37,7 +37,7 @@ def run_drafts(state: dict = None, max_tokens: int = 16000) -> None:
         for attempt in range(1, max_attempts + 1):
             step(f"尝试 {attempt}/{max_attempts}")
             try:
-                draft_chapter(ch, max_tokens=max_tokens)
+                draft_chapter(ch)
             except Exception as e:
                 step(f"起草失败: {e}")
                 continue

@@ -25,8 +25,7 @@ from prompts.eval_judge_prompts import (
     build_foundation_eval_prompt,
     build_chapter_eval_prompt,
     build_full_novel_eval_prompt,
-    JUDGE_SYSTEM_PROMPT,
-)
+    JUDGE_SYSTEM_PROMPT)
 
 
 # ============================================================================
@@ -411,10 +410,8 @@ def _load_outline(chapter_num: int | None = None) -> str:
 # ============================================================================
 
 def evaluate_foundation(
-    max_tokens: int = 4096,
     retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    max_total_time: int = None) -> str:
     """评估基础构建文档。"""
     cfg = config
     cfg.load()
@@ -433,14 +430,12 @@ def evaluate_foundation(
 
     prompt = build_foundation_eval_prompt(
         story, world_text=world, characters_text=chars,
-        outline_text=outline, canon_text=canon, mystery_text=mystery,
-    )
+        outline_text=outline, canon_text=canon, mystery_text=mystery)
 
     print("  [评估] 调用 LLM 裁判评估基础构建 ...", file=sys.stderr)
     result = call_judge(
-        prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens,
-        retries=retries, max_total_time=max_total_time,
-    )
+        prompt, system=JUDGE_SYSTEM_PROMPT,
+        retries=retries, max_total_time=max_total_time)
 
     # 记录日志
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -459,10 +454,8 @@ def evaluate_foundation(
 
 def evaluate_chapter(
     ch_num: int,
-    max_tokens: int = 4096,
     retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    max_total_time: int = None) -> str:
     """评估单个章节。
 
     上下文对齐原版 evaluate_chapter(): 传入 voice + world + characters +
@@ -515,14 +508,12 @@ def evaluate_chapter(
         chapter_outline=outline, voice_text=voice, canon_text=canon,
         world_text=world_text,
         characters_text=characters_text,
-        prev_chapter_tail=prev_tail,
-    )
+        prev_chapter_tail=prev_tail)
 
     print(f"  [评估] 调用 LLM 裁判评估第 {ch_num} 章 ...", file=sys.stderr)
     result = call_judge(
-        prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens,
-        retries=retries, max_total_time=max_total_time,
-    )
+        prompt, system=JUDGE_SYSTEM_PROMPT,
+        retries=retries, max_total_time=max_total_time)
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"chapter_{ch_num:02d}_{ts}.json"
@@ -548,10 +539,8 @@ def evaluate_chapter(
 
 
 def evaluate_full(
-    max_tokens: int = 8192,
     retries: int = 3,
-    max_total_time: int = None,
-) -> str:
+    max_total_time: int = None) -> str:
     """全文评估。"""
     chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
     if not chapter_files:
@@ -576,14 +565,12 @@ def evaluate_full(
     prompt = build_full_novel_eval_prompt(
         manuscript, outline_text=outline, voice_text=voice,
         world_text=world_text,
-        characters_text=characters_text,
-    )
+        characters_text=characters_text)
 
     print("  [评估] 调用 LLM 裁判评估全文 ...", file=sys.stderr)
     result = call_judge(
-        prompt, system=JUDGE_SYSTEM_PROMPT, max_tokens=max_tokens,
-        retries=retries, max_total_time=max_total_time,
-    )
+        prompt, system=JUDGE_SYSTEM_PROMPT,
+        retries=retries, max_total_time=max_total_time)
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"full_{ts}.json"

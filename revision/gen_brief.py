@@ -972,10 +972,8 @@ def generate_brief(
     chapter_num: int = 0,
     panel_data: Optional[Path] = None,
     output_path: Optional[Path] = None,
-    max_tokens: int = 4096,
     retries: int = 3,
-    max_total_time: int = None,
-) -> Optional[Path]:
+    max_total_time: int = None) -> Optional[Path]:
     """为指定章节生成修订摘要。
 
     保持与 pipeline_orchestrator 兼容的接口。

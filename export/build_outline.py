@@ -18,7 +18,7 @@ REBUILD_OUTLINE_SYSTEM = """你是一位小说分析员。你阅读所有已完�
 你的汉语写作简洁直接。"""
 
 
-def build_outline(max_tokens: int = 8192) -> None:
+def build_outline() -> None:
     """从章节重建大纲。"""
     chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
     if not chapter_files:
@@ -47,7 +47,7 @@ def build_outline(max_tokens: int = 8192) -> None:
 最后给出整体弧线摘要。"""
 
     step("重建大纲 ...")
-    result = call_writer(prompt, system=REBUILD_OUTLINE_SYSTEM, max_tokens=max_tokens)
+    result = call_writer(prompt, system=REBUILD_OUTLINE_SYSTEM)
 
     outline_path = OUTPUT_DIR / "outline.md"
     outline_path.write_text(result, encoding="utf-8")

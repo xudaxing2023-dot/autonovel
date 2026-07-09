@@ -13,6 +13,7 @@ pipeline_orchestrator.py — 主流水线编排器
 import argparse
 import json
 import re
+import shutil
 import sys
 import time
 from datetime import datetime
@@ -27,14 +28,14 @@ if sys.platform == "win32":
 # 核心基础设施
 from core.config import config, ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, BRIEFS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, STATE_FILE, BACKUPS_DIR
 from core.api_client import call_llm, call_writer, get_rate_limiter
+from core.diagnostic import debug_log, crash_handler
 from core.state_manager import (
     load_state, save_state, default_state,
     git_available, git_short_hash, git_add_commit, git_reset_hard,
     backup_snapshot, restore_latest,
     log_result, banner, step, parse_score, parse_lore_score,
     count_words_in_chapters, count_chapter_files, get_total_chapters,
-    evaluate_chapter_stable, evaluate_foundation_stable,
-)
+    evaluate_chapter_stable, evaluate_foundation_stable)
 
 
 # ============================================================================
@@ -77,8 +78,6 @@ def run_foundation(state: dict) -> dict:
 
     threshold = cfg.foundation_threshold if cfg.loaded else FOUNDATION_THRESHOLD
     max_iters = cfg.max_foundation_iters if cfg.loaded else MAX_FOUNDATION_ITERS
-    max_tokens = cfg.max_tokens_per_call if cfg.loaded else 16000
-
     for i in range(iteration + 1, max_iters + 1):
         banner(f"基础构建 迭代 {i}/{max_iters}", "-")
         state["iteration"] = i
@@ -86,19 +85,19 @@ def run_foundation(state: dict) -> dict:
         # 1. 生成世界观
         step("生成世界观 world.md ...")
         from foundation.gen_world import generate_world
-        generate_world(max_tokens=max_tokens)
+        generate_world()
 
         # 2. 生成角色
         step("生成角色 characters.md ...")
         from foundation.gen_characters import generate_characters
-        generate_characters(max_tokens=max_tokens)
+        generate_characters()
 
         # ★ 方案 D Step 7: 2.5. 生成卷级总纲（output/outline_volume.md）
         # 必须在 generate_outline() 之前，因为 generate_outline_for_volume()
         # 依赖 outline_volume.md 获取每卷的结构化约束
         step("生成卷级总纲 outline_volume.md ...")
         from foundation.gen_outline_volume import generate_volume_outline
-        generate_volume_outline(max_tokens=max_tokens)
+        generate_volume_outline()
         # ★ 记录卷大纲完成状态，用于中断恢复
         state["volumes_outlined"] = cfg.total_volumes if cfg.loaded else 1
 
@@ -107,17 +106,21 @@ def run_foundation(state: dict) -> dict:
         # 自动读取 outline_volume.md 获取卷级约束
         step("生成大纲 outline.md (Part 1) ...")
         from foundation.gen_outline import generate_outline
-        generate_outline(max_tokens=max_tokens)
+        generate_outline()
 
         # 4. 生成大纲 (Part 2 - 伏笔)
         step("生成大纲 outline.md (Part 2 - 伏笔账本) ...")
         from foundation.gen_outline_part2 import generate_outline_part2
-        generate_outline_part2(max_tokens=max_tokens)
+        generate_outline_part2()
 
-        # 5. 生成正典
+        # 5. 生成正典（非关键步骤：失败时允许继续）
         step("生成正典 canon.md ...")
         from foundation.gen_canon import generate_canon, count_canon_entries
-        generate_canon(max_tokens=max_tokens)
+        try:
+            generate_canon()
+        except Exception as e:
+            step(f"⚠ 正典生成失败（非关键），跳过: {e}")
+            debug_log("WARNING", f"正典生成失败: {e}", data={"step": "canon", "iteration": i})
 
         # ★ P2-11 子项 A: 验证正典规模
         canon_counts = count_canon_entries()
@@ -132,10 +135,14 @@ def run_foundation(state: dict) -> dict:
             if canon_total < canon_threshold // 2:
                 step("正典严重不足，后续迭代将使用更大 token 预算重试…")
 
-        # 6. 生成文风指纹
+        # 6. 生成文风指纹（非关键步骤：失败时允许继续）
         step("生成文风指纹 voice.md Part 2 ...")
         from foundation.gen_voice import generate_voice
-        generate_voice(max_tokens=max_tokens)
+        try:
+            generate_voice()
+        except Exception as e:
+            step(f"⚠ 文风指纹生成失败（非关键），跳过: {e}")
+            debug_log("WARNING", f"文风指纹生成失败: {e}", data={"step": "voice", "iteration": i})
 
         # 7. 评估（稳定版：3次中位数，降低 LLM 评分波动）
         step("评估基础构建 ...")
@@ -144,6 +151,9 @@ def run_foundation(state: dict) -> dict:
         lore = parse_lore_score(evaluate_foundation())
 
         step(f"基础构建评分: {score}  (lore: {lore}, 历史最佳: {best_score})")
+        debug_log("FOUNDATION_SCORE",
+                  data={"score": score, "lore": lore, "iteration": i,
+                        "best_score": best_score, "threshold": threshold})
 
         # 8. 保留/丢弃（0.3 分容忍区间，避免评分波动误丢弃）
         if score >= best_score - 0.3:
@@ -197,8 +207,6 @@ def run_drafting(state: dict) -> dict:
     cfg.load()
     threshold = cfg.chapter_threshold if cfg.loaded else CHAPTER_THRESHOLD
     max_attempts = cfg.max_chapter_attempts if cfg.loaded else MAX_CHAPTER_ATTEMPTS
-    max_tokens = cfg.max_tokens_per_call if cfg.loaded else 16000
-
     for ch in range(start_chapter, total + 1):
         banner(f"起草 第 {ch}/{total} 章", "-")
         drafted = False
@@ -211,7 +219,7 @@ def run_drafting(state: dict) -> dict:
 
             # 起草
             try:
-                draft_chapter(ch, max_tokens=max_tokens)
+                draft_chapter(ch)
             except Exception as e:
                 step(f"起草失败: {e}，重试...")
                 continue
@@ -254,6 +262,9 @@ def run_drafting(state: dict) -> dict:
                 save_state(state)
                 drafted = True
                 step(f"起草 第 {ch}/{total} 章 完成 ✓ (评分 {score}, {word_count} 字)")
+                debug_log("CHAPTER_DRAFTED",
+                          data={"ch": ch, "score": score, "attempt": attempt,
+                                "words": word_count, "total": total})
 
                 # Voice fingerprint 检查（每章起草后）
                 try:
@@ -341,6 +352,9 @@ def run_drafting(state: dict) -> dict:
 
         if not drafted:
             step(f"⚠ 警告: 第 {ch}/{total} 章全部 {max_attempts} 次尝试失败，保留最后结果继续")
+            debug_log("CHAPTER_FAILED",
+                      data={"ch": ch, "max_attempts": max_attempts,
+                            "total": total, "reason": "all_attempts_exhausted"})
             ch_file = CHAPTERS_DIR / f"ch_{ch:02d}.md"
             if ch_file.exists():
                 word_count = len(ch_file.read_text(encoding="utf-8").replace(" ", "").replace("\n", ""))
@@ -548,7 +562,6 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     cfg.load()
     plateau_delta = cfg.get("plateau_delta", PLATEAU_DELTA) if cfg.loaded else PLATEAU_DELTA
     threshold = cfg.chapter_threshold if cfg.loaded else CHAPTER_THRESHOLD
-    max_tokens = cfg.max_tokens_per_call if cfg.loaded else 16000
     total = get_total_chapters(state)
 
     from revision.adversarial_edit import run_adversarial_edit
@@ -560,10 +573,13 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
     for cycle in range(start_cycle, max_cycles + 1):
         banner(f"修订 循环 {cycle}/{max_cycles}", "-")
+        debug_log("REVISION_CYCLE",
+                  data={"cycle": cycle, "max_cycles": max_cycles,
+                        "prev_score": prev_score})
 
         # Step 1: 对抗性编辑（retries=2, max_total_time=1200  = 20分钟）
         step("对抗性编辑全部章节 (retries=2, 总超时=1200s) ...")
-        run_adversarial_edit("all", max_tokens=max_tokens, retries=2, max_total_time=1200)
+        run_adversarial_edit("all", retries=2, max_total_time=1200)
         step("对抗性编辑全部章节 完成 ✓")
 
         # Step 2: 应用裁剪
@@ -575,7 +591,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
         # Step 3: 读者评审团（retries=2, max_total_time=600 = 10分钟）
         step("运行读者评审团 (retries=2, 总超时=600s) ...")
-        run_reader_panel(max_tokens=max_tokens, retries=2, max_total_time=600)
+        run_reader_panel(retries=2, max_total_time=600)
         step("读者评审团 完成 ✓")
 
         # Step 4: 解析共识
@@ -605,7 +621,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
             # 执行修订（retries=2, max_total_time=1200 = 20分钟）
             step(f"按摘要修订第 {ch_num} 章 (retries=2, 总超时=1200s) ...")
-            revise_chapter(ch_num, brief_file, max_tokens=max_tokens, retries=2, max_total_time=1200)
+            revise_chapter(ch_num, brief_file, retries=2, max_total_time=1200)
 
             # 评估修订后章节
             post_score = evaluate_chapter_stable(ch_num)
@@ -644,6 +660,9 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
         total_words = count_words_in_chapters()
         step(f"小说评分: {novel_score}  (前次: {prev_score}, 字数: {total_words})")
+        debug_log("FULL_EVAL",
+                  data={"novel_score": novel_score, "prev_score": prev_score,
+                        "total_words": total_words, "cycle": cycle})
 
         commit_hash = git_add_commit(
             f"修订 循环{cycle} 完成: novel_score {novel_score}"
@@ -670,11 +689,9 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
     def _run_review_revision_loop(
         state: dict,
-        max_tokens: int,
         max_revision_rounds: int = 4,
         retries: int = 2,
-        max_total_time: int = 1200,
-    ) -> None:
+        max_total_time: int = 1200) -> None:
         """Phase 3b 审阅修订闭环——对齐原版：整本全文发送给裁判模型审阅。
 
         审阅 → 质量检查 → 从审阅报告中提取弱章 → 逐章修订 → 全局裁剪。
@@ -749,7 +766,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             # --- Step A: 深度审阅（整本全文发送给裁判模型）---
             step("提交手稿给裁判模型深度审阅 ...")
             try:
-                run_review_loop(state=None, max_tokens=max_tokens, max_rounds=1,
+                run_review_loop(state=None, max_rounds=1,
                                 retries=retries, max_total_time=max_total_time)
             except Exception as e:
                 step(f"深度审阅失败: {e}")
@@ -810,7 +827,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
                 step(f"修订第 {ch_num} 章 ...")
                 try:
-                    revise_chapter(ch_num, brief_file, max_tokens=max_tokens,
+                    revise_chapter(ch_num, brief_file,
                                    retries=retries, max_total_time=max_total_time)
                     git_add_commit(f"审阅修订 轮次{rnd}: 修订第 {ch_num} 章")
                     revised_in_round += 1
@@ -835,7 +852,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
 
     # 执行审阅修订闭环
     try:
-        _run_review_revision_loop(state, max_tokens, max_revision_rounds=4,
+        _run_review_revision_loop(state, max_revision_rounds=4,
                                    retries=2, max_total_time=1200)
     except Exception as e:
         step(f"审阅修订闭环跳过: {e}")
@@ -897,8 +914,10 @@ def run_export(state: dict) -> dict:
     state["current_focus"] = "done"
     save_state(state)
 
-    banner(f"导出完成 — {count_chapter_files()} 章, {total_words} 字")
+    chapter_cnt = count_chapter_files()
+    banner(f"导出完成 — {chapter_cnt} 章, {total_words} 字")
     print(f"\n  📄 手稿位置: {OUTPUT_DIR / 'manuscript.md'}")
+    debug_log("EXPORT_COMPLETE", data={"chapter_count": chapter_cnt, "total_words": total_words})
     return state
 
 
@@ -928,6 +947,24 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
         story_file = OUTPUT_DIR / "story_summary.txt"
         story_file.write_text(summary, encoding="utf-8")
 
+        # ★ BUG-4 fix: 完全清理旧产物（包括 chapters/ 目录）
+        print("  清理旧产物...")
+        for old_file in ["state.json", "outline_volume.md", "outline.md",
+                         "canon.md", "voice.md", ".config_hash"]:
+            p = OUTPUT_DIR / old_file
+            if p.exists():
+                p.unlink()
+        old_chapters = OUTPUT_DIR / "chapters"
+        if old_chapters.exists() and old_chapters.is_dir():
+            shutil.rmtree(old_chapters)
+            print("  已清理旧章节目录")
+
+        # 清空上次运行的调试日志
+        debug_log_path = os.path.join(os.path.dirname(__file__), "logs", "debug.log")
+        if os.path.exists(debug_log_path):
+            os.remove(debug_log_path)
+            print("  已清空旧调试日志")
+
         state = default_state()
         # 应用模型等级默认值
         cfg.apply_model_tier_defaults()
@@ -937,6 +974,10 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
         state["chapters_per_volume"] = cfg.chapters_per_volume
         state["chapters_total"] = cfg.total_chapters
         save_state(state)
+        debug_log("PIPELINE_START",
+                  data={"mode": mode, "total_volumes": cfg.total_volumes,
+                        "total_chapters": cfg.total_chapters,
+                        "chapter_word_target": cfg.chapter_word_target})
     else:
         # 恢复模式
         state = load_state()
@@ -977,6 +1018,8 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
     )
 
     for phase in phases:
+        phase_start = time.time()
+        debug_log("PHASE_ENTER", data={"phase": phase})
         try:
             if phase == "foundation":
                 state = run_foundation(state)
@@ -986,14 +1029,23 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
                 state = run_revision(state, max_cycles=revision_cycles)
             elif phase == "export":
                 state = run_export(state)
+            elapsed_s = time.time() - phase_start
+            debug_log("PHASE_EXIT", data={"phase": phase, "elapsed_s": round(elapsed_s, 1), "success": True})
         except KeyboardInterrupt:
             banner("⚠ 用户中断 — 状态已保存")
             save_state(state)
+            debug_log("USER_INTERRUPT", "用户按 Ctrl+C 终止",
+                      data={"phase": phase})
             sys.exit(130)
         except Exception as e:
+            elapsed_s = time.time() - phase_start
+            debug_log("PHASE_EXIT", data={"phase": phase, "elapsed_s": round(elapsed_s, 1), "success": False, "error": str(e)[:200]})
             print(f"\n  ❌ 阶段 {phase} 致命错误: {e}")
-            import traceback
-            traceback.print_exc()
+            try:
+                import traceback
+                traceback.print_exc()
+            except (OSError, UnicodeEncodeError):
+                print(f"  [ERROR] {type(e).__name__}: {e}")
             save_state(state)
             raise
 
@@ -1010,34 +1062,52 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
     print(f"  修订循环:   {state.get('revision_cycle', 0)}")
     print(f"\n  📄 手稿: {OUTPUT_DIR / 'manuscript.md'}")
 
+    final_score = state.get('novel_score', 0)
+    total_words = count_words_in_chapters()
+    debug_log("PIPELINE_END", data={
+        "elapsed_h": round(hours, 2), "final_score": final_score,
+        "phase": state.get("phase"), "total_chapters": state.get("chapters_drafted", 0),
+        "total_words": total_words, "revision_cycle": state.get("revision_cycle", 0),
+    })
+
 
 # ============================================================================
 # CLI 入口
 # ============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="中文长篇小说自动生成器 — 流水线编排",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""示例:
+    try:
+        parser = argparse.ArgumentParser(
+            description="中文长篇小说自动生成器 — 流水线编排",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog="""示例:
   python pipeline_orchestrator.py                        # 从头开始
   python pipeline_orchestrator.py --mode resume          # 恢复继续
   python pipeline_orchestrator.py --max-cycles 4         # 限制修订循环
   python pipeline_orchestrator.py --mode resume --max-cycles 3
-""",
-    )
-    parser.add_argument(
-        "--mode", type=str, choices=["from_scratch", "resume"],
-        default="from_scratch",
-        help="生成模式: from_scratch (从头开始) / resume (继续上次)"
-    )
-    parser.add_argument(
-        "--max-cycles", type=int, default=None,
-        help=f"修订循环上限 (默认: {MAX_REVISION_CYCLES})"
-    )
+""")
+        parser.add_argument(
+            "--mode", type=str, choices=["from_scratch", "resume"],
+            default="from_scratch",
+            help="生成模式: from_scratch (从头开始) / resume (继续上次)"
+        )
+        parser.add_argument(
+            "--max-cycles", type=int, default=None,
+            help=f"修订循环上限 (默认: {MAX_REVISION_CYCLES})"
+        )
 
-    args = parser.parse_args()
-    run_pipeline(mode=args.mode, max_cycles=args.max_cycles)
+        args = parser.parse_args()
+        run_pipeline(mode=args.mode, max_cycles=args.max_cycles)
+    except KeyboardInterrupt:
+        print("\n[中断] 用户手动终止")
+        debug_log("USER_INTERRUPT", "用户按 Ctrl+C 终止",
+                  data={"entry": "main()"})
+        sys.exit(130)
+    except Exception as e:
+        crash_handler(e, {"phase": "unknown", "entry": "main()"})
+        print(f"\n[崩溃] 未捕获异常: {type(e).__name__}: {e}")
+        print("  详细信息已记录到 logs/debug.log")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

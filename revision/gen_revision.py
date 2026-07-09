@@ -19,10 +19,8 @@ from prompts.revision_prompts import build_revision_prompt, REVISION_SYSTEM_PROM
 def revise_chapter(
     ch_num: int,
     brief_file: str,
-    max_tokens: int = 16000,
     retries: int = 3,
-    max_total_time: int = None,
-) -> None:
+    max_total_time: int = None) -> None:
     """根据修订摘要重写章节。"""
     brief_path = Path(brief_file) if isinstance(brief_file, str) else brief_file
     brief_text = brief_path.read_text(encoding="utf-8") if brief_path.exists() else ""
@@ -60,14 +58,12 @@ def revise_chapter(
         old_chapter_text=old_text,
         prev_chapter_tail=prev_tail,
         next_chapter_head=next_head,
-        outline_text=outline_text,
-    )
+        outline_text=outline_text)
 
     step(f"按摘要重写第 {ch_num} 章 ...")
     result = call_writer(
-        prompt, system=REVISION_SYSTEM_PROMPT, max_tokens=max_tokens,
-        retries=retries, max_total_time=max_total_time,
-    )
+        prompt, system=REVISION_SYSTEM_PROMPT,
+        retries=retries, max_total_time=max_total_time)
 
     old_path = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
     old_path.write_text(result, encoding="utf-8")

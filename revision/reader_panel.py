@@ -117,9 +117,7 @@ def _build_arc_summary(chapter_files: list) -> str:
             summary = call_writer(
                 f"用恰好 3 句话总结本章。发生了什么、什么改变了、"
                 f"什么未解问题留下。\n\n第 {ch_num} 章:\n{text[:5000]}",
-                system=summary_system,
-                max_tokens=200,
-            )
+                system=summary_system)
         except Exception:
             summary = "(摘要生成失败)"
 
@@ -155,8 +153,7 @@ def _build_arc_summary(chapter_files: list) -> str:
 
 def _find_disagreements_structured(
     results: dict,
-    chapter_list: list,
-) -> list:
+    chapter_list: list) -> list:
     """从结构化评审结果中找出读者分歧。
 
     对齐原版 find_disagreements(): 对每个 question，
@@ -177,8 +174,7 @@ def _find_disagreements_structured(
             chs = set()
             for m in re.finditer(
                 r'(?:第\s*(\d+)\s*章|Ch\.?\s*(\d+)|Chapter\s+(\d+))',
-                text, re.IGNORECASE,
-            ):
+                text, re.IGNORECASE):
                 num = int(m.group(1) or m.group(2) or m.group(3))
                 if num in chapter_list:
                     chs.add(num)
@@ -207,10 +203,8 @@ def _find_disagreements_structured(
 # =============================================================================
 
 def run_reader_panel(
-    max_tokens: int = 4096,
     retries: int = 3,
-    max_total_time: int = None,
-) -> None:
+    max_total_time: int = None) -> None:
     """运行读者评审团。
 
     对齐原版 main(): 构建摘要 → 4 位读者各评审一次 → 找分歧 → 保存。
@@ -239,10 +233,8 @@ def run_reader_panel(
             response = call_judge(
                 prompt,
                 system=role_info["system"],
-                max_tokens=max_tokens,
                 retries=retries,
-                max_total_time=max_total_time,
-            )
+                max_total_time=max_total_time)
             parsed = _parse_json_response(response)
             results[role_key] = parsed
             step(f"  {role_info['name']} 评审完成 ✓ ({len(parsed)} 字段)")
@@ -262,8 +254,7 @@ def run_reader_panel(
     log_path = EDIT_LOGS_DIR / "reader_panel.json"
     log_path.write_text(
         json.dumps(panel_data, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+        encoding="utf-8")
 
     step(f"读者评审完成: {len(disagreements)} 个分歧")
     for d in disagreements:

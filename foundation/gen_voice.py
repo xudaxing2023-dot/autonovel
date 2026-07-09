@@ -122,13 +122,11 @@ def _build_select_prompt(registers_text: str, eval_scores: dict = None) -> str:
 # 子循环函数
 # ============================================================================
 
-def generate_5_registers(story: str, world: str, chars: str,
-                          max_tokens: int = 16000) -> str:
+def generate_5_registers(story: str, world: str, chars: str) -> str:
     """5段语域试验：调用 writer LLM 生成5种不同风格的试写段落。"""
     prompt = _build_register_prompt(story, world, chars)
     step("调用 LLM 试写 5 种文风 ...")
-    return call_writer(prompt, system=VOICE_SYSTEM_PROMPT,
-                       max_tokens=max_tokens, max_total_time=300)
+    return call_writer(prompt, system=VOICE_SYSTEM_PROMPT, max_total_time=300)
 
 
 def evaluate_registers(registers_text: str, story: str) -> dict:
@@ -172,7 +170,7 @@ def evaluate_registers(registers_text: str, story: str) -> dict:
 }}"""
 
     step("调用裁判模型评估 5 段语域 ...")
-    result = call_judge(eval_prompt, max_tokens=4096, max_total_time=300)
+    result = call_judge(eval_prompt, max_total_time=300)
 
     try:
         json_match = re.search(r'\{[\s\S]*\}', result)
@@ -185,7 +183,7 @@ def evaluate_registers(registers_text: str, story: str) -> dict:
 
 
 def refine_voice(registers_text: str, eval_result: dict, best_register: int,
-                 story: str, max_tokens: int = 8000) -> str:
+                 story: str) -> str:
     """针对裁判评估指出的弱维度，精炼最佳语域。"""
     weaknesses = []
     if "registers" in eval_result:
@@ -216,14 +214,14 @@ def refine_voice(registers_text: str, eval_result: dict, best_register: int,
 {_build_select_prompt(registers_text)}"""
 
     step("调用 LLM 精炼最佳文风 ...")
-    return call_writer(refine_prompt, max_tokens=max_tokens, max_total_time=300)
+    return call_writer(refine_prompt, max_total_time=300)
 
 
 # ============================================================================
 # 主函数 — Voice Discovery 子循环编排
 # ============================================================================
 
-def generate_voice(max_tokens: int = 16000) -> None:
+def generate_voice() -> None:
     """Voice Discovery 子循环：5段语域 → 评估 → 精炼 → 输出。
 
     流程：
@@ -247,7 +245,7 @@ def generate_voice(max_tokens: int = 16000) -> None:
     existing_voice = voice_template.read_text(encoding="utf-8") if voice_template.exists() else ""
 
     # ── Step A: 5段语域试验 ──
-    registers_text = generate_5_registers(story, world, chars, max_tokens)
+    registers_text = generate_5_registers(story, world, chars)
 
     # ── Step B: 裁判评估 ──
     eval_result = evaluate_registers(registers_text, story)
@@ -262,19 +260,15 @@ def generate_voice(max_tokens: int = 16000) -> None:
     if best_score >= VOICE_THRESHOLD:
         step(f"语域评估 {best_score} >= {VOICE_THRESHOLD} — 直接生成文风身份")
         voice_identity = call_writer(
-            _build_select_prompt(registers_text),
-            max_tokens=4096,
-        )
+            _build_select_prompt(registers_text))
     else:
         for rnd in range(1, MAX_REFINE_ROUNDS + 1):
             step(f"语域精炼 轮次 {rnd}/{MAX_REFINE_ROUNDS} (当前分: {best_score})")
             voice_identity = refine_voice(
-                registers_text, eval_result, best_register, story, max_tokens,
-            )
+                registers_text, eval_result, best_register, story)
             # 重新评估精炼后的文风身份
             eval_result = evaluate_registers(
-                f"【精炼后文风身份】\n{voice_identity}", story,
-            )
+                f"【精炼后文风身份】\n{voice_identity}", story)
             best_score = eval_result.get("overall_score", 6.0)
             step(f"精炼后评估: {best_score}")
             if best_score >= VOICE_THRESHOLD:
@@ -284,9 +278,7 @@ def generate_voice(max_tokens: int = 16000) -> None:
     # 兜底：如果精炼后仍无结果，直接生成
     if voice_identity is None:
         voice_identity = call_writer(
-            _build_select_prompt(registers_text),
-            max_tokens=4096,
-        )
+            _build_select_prompt(registers_text))
 
     # ── Step D: 合并 Part 1 + Part 2 → output/voice.md ──
     full_voice = existing_voice.rstrip() + "\n\n---\n\n" + voice_identity

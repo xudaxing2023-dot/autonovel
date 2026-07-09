@@ -21,7 +21,7 @@ OUTLINE_PART2_SYSTEM_PROMPT = """你是一位伏笔设计专家。你为小说�
 你的汉语写作简洁直接。"""
 
 
-def generate_outline_part2(max_tokens: int = 16000) -> None:
+def generate_outline_part2() -> None:
     """增强 outline.md 的伏笔账本部分。"""
     cfg = config
     cfg.load()
@@ -54,7 +54,7 @@ def generate_outline_part2(max_tokens: int = 16000) -> None:
 将结果追加到现有大纲末尾。"""
 
     step("调用 LLM 生成伏笔账本 ...")
-    result = call_writer(prompt, system=OUTLINE_PART2_SYSTEM_PROMPT, max_tokens=max_tokens, max_total_time=300)
+    result = call_writer(prompt, system=OUTLINE_PART2_SYSTEM_PROMPT, max_total_time=300)
 
     # 追加到 outline.md
     combined = outline_text.rstrip() + "\n\n" + result

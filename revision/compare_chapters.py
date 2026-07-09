@@ -20,7 +20,7 @@ COMPARE_SYSTEM_PROMPT = """你是一位公正的文学裁判。你会同时阅�
 你的回答格式必须是: WINNER: A 或 WINNER: B，然后附一句话简短理由。"""
 
 
-def run_compare_chapters(max_tokens: int = 4096) -> None:
+def run_compare_chapters() -> None:
     """运行章节 Elo 锦标赛。"""
     EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -66,7 +66,7 @@ def run_compare_chapters(max_tokens: int = 4096) -> None:
 
         step(f"  比较: {a_stem} vs {b_stem} ...")
         try:
-            result = call_judge(prompt, system=COMPARE_SYSTEM_PROMPT, max_tokens=max_tokens)
+            result = call_judge(prompt, system=COMPARE_SYSTEM_PROMPT)
         except Exception as e:
             step(f"  比较失败: {e}")
             continue

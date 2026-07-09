@@ -14,7 +14,7 @@ from core.state_manager import step, backup_snapshot
 from prompts.world_prompts import build_world_prompt, WORLD_SYSTEM_PROMPT
 
 
-def generate_world(max_tokens: int = 16000) -> None:
+def generate_world() -> None:
     """生成 world.md 并写入 output/ 目录。"""
     cfg = config
     cfg.load()
@@ -32,7 +32,7 @@ def generate_world(max_tokens: int = 16000) -> None:
     prompt = build_world_prompt(story, voice_part2=(voice if voice else ""))
 
     step("调用 LLM 生成世界观 ...")
-    result = call_writer(prompt, system=WORLD_SYSTEM_PROMPT, max_tokens=max_tokens, max_total_time=300)
+    result = call_writer(prompt, system=WORLD_SYSTEM_PROMPT, max_total_time=300)
 
     # 保存到 output/world.md
     world_path = OUTPUT_DIR / "world.md"

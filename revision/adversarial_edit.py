@@ -93,10 +93,8 @@ def _parse_json_response(text: str) -> dict:
 
 def run_adversarial_edit(
     target: str = "all",
-    max_tokens: int = 4096,
     retries: int = 3,
-    max_total_time: int = None,
-) -> None:
+    max_total_time: int = None) -> None:
     """运行对抗性编辑。"""
     EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -120,9 +118,8 @@ def run_adversarial_edit(
         prompt = build_adversarial_prompt(ch_text, cut_target=300)
 
         result = call_judge(
-            prompt, system=ADVERSARIAL_SYSTEM_PROMPT, max_tokens=max_tokens,
-            retries=retries, max_total_time=max_total_time,
-        )
+            prompt, system=ADVERSARIAL_SYSTEM_PROMPT,
+            retries=retries, max_total_time=max_total_time)
 
         # 解析 JSON 响应
         parsed = _parse_json_response(result)

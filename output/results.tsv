@@ -76,3 +76,10 @@ reverted	rev-ch57	4.5	3392	discard	循环 2: cut_candidate 倒退 6.0->4.5
 	rev-ch30	5.0	5607	keep	循环 2: momentum_loss 改进 4.7->5.0
 	revision-cycle-2	5.0	348876	cycle	循环 2: novel_score 4.5->5.0
 	export	5.0	349280	export	最终导出
+reverted	rev-ch05	6.0	1595	discard	循环 2: momentum_loss 倒退 6.5->6.0
+059fd9d	rev-ch08	7.0	3987	keep	循环 2: worst_scene 改进 6.5->7.0
+e4a80d0	rev-ch06	7.0	2208	keep	循环 2: momentum_loss 改进 6.8->7.0
+91ef074	rev-ch07	7.0	4122	keep	循环 2: momentum_loss 改进 6.5->7.0
+99330e0	rev-ch01	7.0	3199	keep	循环 2: momentum_loss 改进 7.0->7.0
+4e0e070	revision-cycle-2	6.0	30737	cycle	循环 2: novel_score 5.5->6.0
+4c49a3e	export	6.0	32151	export	最终导出

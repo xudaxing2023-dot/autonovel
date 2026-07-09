@@ -1,16 +1,29 @@
 #!/usr/bin/env python3
 """Business source instrumentation - minimal, zero-dependency.
-
-Writes one line per event to logs/diagnostic.log.
-Auto-clears the log on first write of each run.
+ 
+Writes one line per event to logs/diagnostic.log (diag) or logs/debug.log (debug_log).
+diag() — fine-grained technical events, auto-clears on first write.
+debug_log() — high-level business events, append mode.
 """
+import os
 import sys
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
-LOG_PATH = Path(__file__).parent.parent / "logs" / "diagnostic.log"
+LOGS_DIR = Path(__file__).parent.parent / "logs"
+LOG_PATH = LOGS_DIR / "diagnostic.log"
+DEBUG_LOG_PATH = LOGS_DIR / "debug.log"
 _CLEARED = False
+_DEBUG_CLEARED = False
+
+# Windows 终端编码兼容性修复
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 
 def _ensure():
@@ -63,7 +76,157 @@ def diag(event, detail="", data=None):
 
     line = "".join(parts) + "\n"
     _ensure()
-    with open(LOG_PATH, "a", encoding="utf-8") as f:
-        f.write(line)
-        f.flush()
-    print(f"  [DIAG] {line.strip()}", file=sys.stderr)
+    try:
+        with open(LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(line)
+            f.flush()
+    except Exception:
+        pass
+    try:
+        print(f"  [DIAG] {line.strip()}", file=sys.stderr)
+    except (OSError, UnicodeEncodeError):
+        pass
+
+
+# ============================================================================
+# debug_log — 高级别业务事件日志 (追加模式, 写入 logs/debug.log)
+# ============================================================================
+
+def _debug_ts():
+    """Full ISO-ish timestamp for debug log."""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+
+def _debug_caller():
+    """Get (filename, lineno, function) of the caller."""
+    try:
+        frame = sys._getframe(2)  # debug_log → caller
+        fname = Path(frame.f_code.co_filename).name
+        lineno = frame.f_lineno
+        func = frame.f_code.co_name
+        return f"{fname}:{lineno} {func}"
+    except Exception:
+        return "?:?"
+
+
+def debug_log(event: str, detail: str = "", data: dict = None, **kwargs) -> None:
+    """Write a structured debug event to logs/debug.log (append mode).
+
+    Format: [YYYY-MM-DD HH:MM:SS.mmm] [EVENT] [caller] detail | k=v, ...
+
+    Args:
+        event:  Event code, e.g. "PIPELINE_START", "CHAPTER_DRAFTED"
+        detail: Human-readable context
+        data:   Optional dict of key=value pairs
+        **kwargs: Additional key=value pairs merged with data
+    """
+    try:
+        ts = _debug_ts()
+        caller = _debug_caller()
+        parts = [f"[{ts}] [{event}] [{caller}]"]
+        if detail:
+            parts.append(detail)
+
+        # Merge data dict + kwargs
+        merged = {}
+        if data:
+            merged.update(data)
+        if kwargs:
+            merged.update(kwargs)
+
+        if merged:
+            items = [f"{k}={_safe(v)}" for k, v in merged.items()]
+            parts.append(" | " + ", ".join(items))
+
+        line = "".join(parts) + "\n"
+
+        # Ensure logs/ directory exists
+        DEBUG_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(line)
+            f.flush()
+
+        # Also print to stderr for real-time observation
+        try:
+            print(f"  [DEBUG] {line.strip()}", file=sys.stderr)
+        except (OSError, UnicodeEncodeError):
+            pass
+    except Exception:
+        pass  # 自身不能抛异常
+
+
+# ============================================================================
+# crash_handler — 崩溃捕获器
+# ============================================================================
+
+def crash_handler(exc: BaseException = None, context: dict = None) -> None:
+    """Capture full crash context and write to debug.log.
+
+    Supports two calling styles:
+        crash_handler(exc, {"phase": "foundation"})
+        crash_handler({"phase": "foundation"})  # exc from sys.exc_info()
+
+    Args:
+        exc:     The exception (if None, uses sys.exc_info())
+        context: Optional dict with current phase, chapter, etc.
+    """
+    try:
+        # Auto-detect: if first arg is a dict, treat as context-only call
+        if exc is not None and not isinstance(exc, BaseException) and isinstance(exc, dict):
+            context = exc
+            exc = None
+
+        if exc is None:
+            exc = sys.exc_info()[1]
+
+        crash_time = datetime.now(timezone.utc).isoformat()
+
+        lines = []
+        lines.append(f"[CRASH] 崩溃时间 (UTC): {crash_time}")
+
+        if exc:
+            lines.append(f"[CRASH] 异常类型: {type(exc).__name__}")
+            lines.append(f"[CRASH] 异常消息: {str(exc)[:500]}")
+            lines.append(f"[CRASH] Traceback:")
+            tb_lines = traceback.format_exception(type(exc), exc, exc.__traceback__)
+            for tb_line in tb_lines:
+                lines.append(f"  {tb_line.rstrip()}")
+
+        if context:
+            lines.append(f"[CRASH] 上下文:")
+            for k, v in context.items():
+                lines.append(f"  {k} = {_safe(v, max_len=500)}")
+
+        # Process memory (psutil, optional)
+        try:
+            import psutil
+            proc = psutil.Process()
+            mem = proc.memory_info()
+            lines.append(f"[CRASH] 内存: RSS={mem.rss // (1024*1024)}MB, VMS={mem.vms // (1024*1024)}MB")
+        except Exception:
+            pass
+
+        # Current directory listing
+        try:
+            cwd = os.getcwd()
+            lines.append(f"[CRASH] 工作目录: {cwd}")
+            output_dir = os.path.join(cwd, "output")
+            if os.path.isdir(output_dir):
+                files = sorted(os.listdir(output_dir))[:30]
+                lines.append(f"[CRASH] output/ 文件 ({len(files)}): {', '.join(files)}")
+        except Exception:
+            pass
+
+        # Write to debug.log
+        DEBUG_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        crash_text = "\n".join(lines) + "\n" + ("=" * 60) + "\n"
+        with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(crash_text)
+            f.flush()
+
+        # Also log as structured event
+        debug_log("CRASH", f"{type(exc).__name__ if exc else 'Unknown'}: {str(exc)[:200] if exc else 'N/A'}",
+                  data=context)
+    except Exception:
+        pass  # 自身不能抛异常
