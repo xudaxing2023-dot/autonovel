@@ -13,6 +13,7 @@ from pathlib import Path
 from core.config import config, OUTPUT_DIR, CHAPTERS_DIR, TEMPLATES_DIR
 from core.api_client import call_p2_writer
 from core.state_manager import step
+from core import _stderr_print
 from prompts.chapter_prompts import build_chapter_prompt
 
 
@@ -150,6 +151,6 @@ def draft_chapter(
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("用法: python draft_chapter.py <章节号>", file=sys.stderr)
+        _stderr_print("用法: python draft_chapter.py <章节号>")
         sys.exit(1)
     draft_chapter(int(sys.argv[1]))

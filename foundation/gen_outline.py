@@ -11,6 +11,7 @@ from pathlib import Path
 
 from core.config import config, OUTPUT_DIR
 from core.api_client import call_writer, call_p1_writer
+from core.diagnostic import debug_log
 from core.state_manager import step
 from prompts.outline_prompts import (
     build_outline_prompt,
@@ -62,23 +63,152 @@ def _split_chapters_for_volume(start_ch: int, end_ch: int) -> list[tuple[int, in
     return groups
 
 
+def _cn_to_arabic(cn: str) -> int | None:
+    """将中文数字（一～九十九）转换为阿拉伯数字。"""
+    _MAP = {
+        "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
+        "六": 6, "七": 7, "八": 8, "九": 9, "十": 10,
+    }
+    cn = cn.strip()
+    if cn in _MAP:
+        return _MAP[cn]
+    # 十一～十九
+    if cn.startswith("十") and len(cn) == 2:
+        return 10 + _MAP.get(cn[1], 0)
+    # 二十～九十九
+    if len(cn) == 2 and cn[1] == "十":
+        tens = _MAP.get(cn[0], 0)
+        return tens * 10
+    if len(cn) == 3 and cn[1] == "十":
+        tens = _MAP.get(cn[0], 0)
+        ones = _MAP.get(cn[2], 0)
+        return tens * 10 + ones
+    return None
+
+
+def _build_volume_patterns(volume_num: int) -> list[tuple[str, str]]:
+    """为指定卷号构建多级正则表达式模式列表。
+
+    返回 [(heading_pattern, next_section_pattern), ...]，按优先级降序排列。
+    每个 heading_pattern 匹配一行包含该卷号的标题/标记行。
+
+    支持两种卷号表述模式：
+      — 「卷 N」模式：卷 1、卷一（数字在"卷"之后）
+      — 「第N卷」模式：第一卷、第1卷（数字在"第"和"卷"之间）
+    """
+    # 生成所有等价的卷号表述
+    num_variants: list[str] = [str(volume_num)]  # "1", "2"
+    # 中文数字映射（1→一, 2→二, ...）
+    _ARABIC_TO_CN = {
+        1: "一", 2: "二", 3: "三", 4: "四", 5: "五",
+        6: "六", 7: "七", 8: "八", 9: "九", 10: "十",
+    }
+    cn = _ARABIC_TO_CN.get(volume_num)
+    if cn:
+        num_variants.append(cn)  # "一", "二"
+
+    def _num_alt() -> str:
+        """构建卷号正则片段: (?:1|一) 等。"""
+        return "(?:" + "|".join(num_variants) + ")"
+
+    n = _num_alt()
+
+    # 核心匹配片段：匹配「卷 N」「卷一」或「第N卷」「第一卷」
+    #   (?:第{N}卷|卷\s*{N})  — 覆盖两种模式
+    vol_ref = rf'(?:第{n}卷|卷\s*{n})\b'
+
+    patterns: list[tuple[str, str]] = [
+        # 1) ### / ## 标题（最优先）：
+        #    '### 二、卷 1 规划'  '### 卷 1：时空的裂缝'  '### 第一卷：开端'
+        #    '### 卷一：迷雾'  '## 卷 1 规划（3章）'  '## 二、逐卷规划（卷1）'
+        (rf'^#{{2,3}}\s*[^\n]*?{vol_ref}[^\n]*$', r'^#{2,3}\s'),
+
+        # 2) **粗体** 标记：'**卷 1：开端**'  '**第一卷：开端**'  '**二、卷 1 规划**'
+        (rf'^\*\*[^*\n]*?{vol_ref}[^*\n]*\*\*\s*$', r'^(\*\*|#{2,3})\s'),
+
+        # 3) 任意包含卷号引用的行（最宽泛回退）
+        (rf'^[^\n]*?{vol_ref}[^\n]*$', r'^(\*\*|#{2,3}|##)\s'),
+    ]
+
+    return patterns
+
+
+def _extract_global_prefix(vol_macro_text: str) -> str:
+    """提取 outline_volume.md 的全局视角前缀。
+
+    识别「全书弧线」「核心冲突」「全局节拍」「MICE」「伏笔总账」
+    等全局战略段落，截取从文件头到第一个卷专属标题之前的内容。
+    每卷生成章级大纲时都应引用此部分作为公共上下文。
+
+    Returns:
+        全局前缀文本；未识别到则返回空字符串。
+    """
+    # 全局段落的关键词标记
+    global_markers = [
+        "全书弧线", "核心冲突", "全局节拍", "MICE",
+        "伏笔总账", "跨卷伏笔", "阶段性演化",
+    ]
+    # 卷专属段落的分界标记（第一个匹配到的行之前为全局部分）
+    vol_boundary = re.search(
+        r'^#{2,3}\s*(?:逐卷规划|[一二三四五六七八九十]、\s*卷\s*\d|卷\s*\d+\s*[：:])',
+        vol_macro_text, re.MULTILINE)
+    
+    if not vol_boundary:
+        return ""
+    
+    prefix_text = vol_macro_text[:vol_boundary.start()].strip()
+    if not prefix_text:
+        return ""
+    
+    # 验证是否包含全局关键词
+    has_global = any(marker in prefix_text for marker in global_markers)
+    return prefix_text if has_global else ""
+
+
 def _extract_volume_section(vol_macro_text: str, volume_num: int) -> str:
     """从卷级总纲（outline_volume.md）提取指定卷的约束段。
 
-    格式要求: prompt 已锁定为 '### 卷 N：标题' 格式。
-    匹配从 '### 卷 N：' 开始到下一个 '### 卷 ' 或文件末尾。
+    多级回退策略：
+    1. 匹配 ### / ## 标题行（支持 '### 二、卷 1 规划' / '### 卷 1：标题' / '### 卷一：…'）
+    2. 回退：匹配 **粗体** 标记行（如 '**卷 1：开端**'）
+    3. 回退：匹配任何包含"卷 N"的非空行
+
+    支持阿拉伯数字（1, 2）和中文数字（一, 二, 第一, 第二）的卷号表述。
+    提取从匹配行到下一个同级标记或文件末尾的内容。
+
+    ★ 每卷都会自动拼接全局视角前缀（全书弧线、跨卷伏笔等公共战略信息）。
 
     Returns:
-        提取到的卷约束文本；未找到返回空字符串。
+        提取到的卷约束文本（含全局前缀）；未找到返回空字符串。
     """
-    pattern = (
-        rf'(###\s*卷\s*{volume_num}\s*[：:].*?)'
-        rf'(?=###\s*卷\s*|\Z)'
-    )
-    match = re.search(pattern, vol_macro_text, re.DOTALL)
-    if match:
-        return match.group(1).strip()
-    return ""
+    # 提取全局前缀（全书弧线等公共战略段落）
+    global_prefix = _extract_global_prefix(vol_macro_text)
+    
+    # 提取卷专属段落
+    patterns = _build_volume_patterns(volume_num)
+    vol_section = ""
+
+    for heading_pat, next_pat in patterns:
+        match = re.search(heading_pat, vol_macro_text, re.MULTILINE)
+        if not match:
+            continue
+
+        start = match.start()
+        remaining = vol_macro_text[match.end():]
+        next_marker = re.search(next_pat, remaining, re.MULTILINE)
+        if next_marker:
+            end = match.end() + next_marker.start()
+            vol_section = vol_macro_text[start:end].strip()
+        else:
+            vol_section = vol_macro_text[start:].strip()
+        break
+
+    # 拼接全局前缀 + 卷专属段落
+    if global_prefix and vol_section:
+        return f"{global_prefix}\n\n---\n\n{vol_section}"
+    elif global_prefix:
+        return global_prefix
+    return vol_section
 
 
 def _generate_outline_segment(
@@ -156,12 +286,16 @@ def generate_outline_for_volume(
         vol_macro = vol_macro_path.read_text(encoding="utf-8-sig")
         vol_section = _extract_volume_section(vol_macro, volume_num)
         if not vol_section:
-            raise RuntimeError(
-                f"无法在 outline_volume.md 中找到卷 {volume_num} 的约束段。"
-                f"请检查卷级总纲的标题格式是否为"
-                f" '## 二、逐卷规划（卷{volume_num}-章号）' 或"
-                f" '### 第{volume_num}-章号：标题'。"
+            step(
+                f"⚠ 警告: 无法在 outline_volume.md 中找到卷 {volume_num} 的约束段。"
+                f"将继续生成章级大纲（依赖 world.md + characters.md 上下文）。"
+                f"建议检查 outline_volume.md 是否包含 "
+                f"'### 卷 {volume_num}：标题' 或 '## 卷 {volume_num} 规划' 等标题行。"
             )
+            debug_log(
+                "WARNING",
+                f"卷 {volume_num} 约束段缺失，回退到无卷约束生成",
+                data={"volume_num": volume_num, "file": str(vol_macro_path)})
 
     # 前一卷章级大纲（跨卷衔接）
     prev_vol_tail = ""

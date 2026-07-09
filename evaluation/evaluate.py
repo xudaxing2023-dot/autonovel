@@ -21,6 +21,7 @@ from pathlib import Path
 
 from core.config import config, OUTPUT_DIR, CHAPTERS_DIR, EVAL_LOGS_DIR
 from core.api_client import call_judge
+from core import _stderr_print, _safe_print
 from prompts.eval_judge_prompts import (
     build_foundation_eval_prompt,
     build_chapter_eval_prompt,
@@ -446,7 +447,7 @@ def evaluate_foundation(
         story, world_text=world, characters_text=chars,
         outline_text=outline, canon_text=canon, mystery_text=mystery)
 
-    print("  [评估] 调用 LLM 裁判评估基础构建 ...", file=sys.stderr)
+    _stderr_print("  [评估] 调用 LLM 裁判评估基础构建 ...")
     result = call_judge(
         prompt, system=JUDGE_SYSTEM_PROMPT,
         retries=retries, max_total_time=max_total_time)
@@ -462,7 +463,7 @@ def evaluate_foundation(
         **parsed,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    print(result)
+    _safe_print(result)
     return result
 
 
@@ -477,20 +478,20 @@ def evaluate_chapter(
     """
     ch_path = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
     if not ch_path.exists():
-        print(f"  [评估] 章节 {ch_num} 不存在", file=sys.stderr)
+        _stderr_print(f"  [评估] 章节 {ch_num} 不存在")
         return "overall_score: 0.0\n"
 
     chapter_text = ch_path.read_text(encoding="utf-8-sig")
 
     # 机械 slop 检测
     mech = slop_score_zh(chapter_text)
-    print(f"  [机械检测] Tier1={len(mech['tier1_hits'])}, "
+    _stderr_print(f"  [机械检测] Tier1={len(mech['tier1_hits'])}, "
           f"Tier2={len(mech['tier2_hits'])}, "
           f"Fiction={len(mech['fiction_ai_tells'])}, "
           f"StructTic={len(mech['structural_ai_tics'])}, "
           f"Telling={mech['telling_violations']}, "
           f"Transition={mech['transition_opener_ratio']}, "
-          f"slop_penalty={mech['slop_penalty']}", file=sys.stderr)
+          f"slop_penalty={mech['slop_penalty']}")
 
     # ★ 对齐原版：加载评估所需的全部上下文（7 项）
     outline = _load_outline(chapter_num=ch_num)  # 卷感知：优先 outline_volume{N}.md
@@ -524,7 +525,7 @@ def evaluate_chapter(
         characters_text=characters_text,
         prev_chapter_tail=prev_tail)
 
-    print(f"  [评估] 调用 LLM 裁判评估第 {ch_num} 章 ...", file=sys.stderr)
+    _stderr_print(f"  [评估] 调用 LLM 裁判评估第 {ch_num} 章 ...")
     result = call_judge(
         prompt, system=JUDGE_SYSTEM_PROMPT,
         retries=retries, max_total_time=max_total_time)
@@ -548,7 +549,7 @@ def evaluate_chapter(
         **parsed,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    print(result)
+    _safe_print(result)
     return result
 
 
@@ -558,7 +559,7 @@ def evaluate_full(
     """全文评估。"""
     chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
     if not chapter_files:
-        print("  [评估] 无章节文件", file=sys.stderr)
+        _stderr_print("  [评估] 无章节文件")
         return "novel_score: 0.0\n"
 
     manuscript = "\n\n---\n\n".join(
@@ -581,7 +582,7 @@ def evaluate_full(
         world_text=world_text,
         characters_text=characters_text)
 
-    print("  [评估] 调用 LLM 裁判评估全文 ...", file=sys.stderr)
+    _stderr_print("  [评估] 调用 LLM 裁判评估全文 ...")
     result = call_judge(
         prompt, system=JUDGE_SYSTEM_PROMPT,
         retries=retries, max_total_time=max_total_time)
@@ -596,7 +597,7 @@ def evaluate_full(
         **parsed,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    print(result)
+    _safe_print(result)
     return result
 
 

@@ -26,6 +26,7 @@ from typing import Optional
 
 from core.config import OUTPUT_DIR, CHAPTERS_DIR, BRIEFS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR
 from core.state_manager import step
+from core import _stderr_print
 
 # voice.md 路径
 VOICE_PATH = OUTPUT_DIR / "voice.md"
@@ -1139,10 +1140,10 @@ def main():
     BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
     out_path = BRIEFS_DIR / f"ch{ch:02d}_{suffix}.md"
     out_path.write_text(brief_text, encoding="utf-8")
-    print(f"已保存: {out_path}", file=sys.stderr)
-    print(f"章节: 第 {ch} 章", file=sys.stderr)
-    print(f"类型: {suffix}", file=sys.stderr)
-    print(f"摘要长度: {word_count(brief_text)} 字", file=sys.stderr)
+    _stderr_print(f"已保存: {out_path}")
+    _stderr_print(f"章节: 第 {ch} 章")
+    _stderr_print(f"类型: {suffix}")
+    _stderr_print(f"摘要长度: {word_count(brief_text)} 字")
 
 
 if __name__ == "__main__":

@@ -367,56 +367,6 @@ class Config:
     def antipattern_max_warnings(self) -> int:
         return self._data.get("antipattern_max_warnings", 4)
 
-    # ——— 模型能力等级 —————————————————————
-
-    @property
-    def model_tier(self) -> str:
-        return self._data.get("model_tier", self._guess_model_tier())
-
-    def _guess_model_tier(self) -> str:
-        model = self.model_name.lower()
-        high_models = [
-            "deepseek-v3", "deepseek-v4", "deepseek-chat", "deepseek-r1",
-            "llama-3.3-70b", "llama-3.1-405b", "qwen2.5-72b",
-        ]
-        medium_models = ["qwen2.5-32b", "llama-3.1-70b", "llama-3-70b"]
-        if any(k in model for k in high_models):
-            return "high"
-        if any(k in model for k in medium_models):
-            return "medium"
-        return "low"
-
-    def apply_model_tier_defaults(self) -> None:
-        """根据 model_tier 自动设置阈值和重试次数。"""
-        tier = self.model_tier
-        defaults = {
-            "high": {
-                "foundation_threshold": 7.5, "chapter_threshold": 6.0,
-                "max_foundation_iters": 10, "max_chapter_attempts": 5,
-                "chapter_word_target": 3250, "max_tokens_per_call": 16000,
-                "min_revision_cycles": 3, "max_revision_cycles": 4,
-                "plateau_delta": 0.3,
-            },
-            "medium": {
-                "foundation_threshold": 7.0, "chapter_threshold": 5.5,
-                "max_foundation_iters": 25, "max_chapter_attempts": 6,
-                "chapter_word_target": 2000, "max_tokens_per_call": 8192,
-                "min_revision_cycles": 4, "max_revision_cycles": 7,
-                "plateau_delta": 0.4,
-            },
-            "low": {
-                "foundation_threshold": 6.5, "chapter_threshold": 5.0,
-                "max_foundation_iters": 30, "max_chapter_attempts": 7,
-                "chapter_word_target": 1500, "max_tokens_per_call": 4096,
-                "min_revision_cycles": 5, "max_revision_cycles": 8,
-                "plateau_delta": 0.5,
-            },
-        }
-        d = defaults.get(tier, defaults["high"])
-        for k, v in d.items():
-            if k not in self._data:
-                self._data[k] = v
-
     def __repr__(self) -> str:
         return f"Config(api={self.api_base_url}, model={self.model_name}, ch={self.total_chapters})"
 

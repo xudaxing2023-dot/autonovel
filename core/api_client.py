@@ -33,6 +33,9 @@ except ImportError:
         pass
 
 
+from core import _stderr_print
+
+
 # ============================================================================
 # Rate Limiter — 全局单例，确保任意两次 API 调用间隔 >= 4 秒
 # ============================================================================
@@ -174,7 +177,7 @@ def _call_llm_internal(
         total_info = f"（累计 {elapsed_total:.0f}s / 限制 {max_total_time}s）"
 
         if waited > 0.5:
-            print(f"  [API] 速率限制等待 {waited:.1f}s ...", file=sys.stderr)
+            _stderr_print(f"  [API] 速率限制等待 {waited:.1f}s ...")
 
         # ★ 梯级递增超时: 第N次尝试使用 timeout × N
         attempt_timeout = timeout * attempt
@@ -184,8 +187,7 @@ def _call_llm_internal(
             "attempt": attempt, "retries": retries,
             "timeout": attempt_timeout, "prompt_len": prompt_len,
         })
-        print(f"  [API] 调用 {model} (t={temperature}, timeout={attempt_timeout}s) ...",
-              file=sys.stderr)
+        _stderr_print(f"  [API] 调用 {model} (t={temperature}, timeout={attempt_timeout}s) ...")
 
         t_call_start = time.time()
         try:
@@ -207,15 +209,14 @@ def _call_llm_internal(
                         "model": model, "latency_s": latency_s,
                         "result_len": len(content), "tokens": token_count,
                     })
-                    print(f"  [API] 成功 — {token_count} tokens, "
-                          f"{len(content)} chars", file=sys.stderr)
+                    _stderr_print(f"  [API] 成功 — {token_count} tokens, "
+                          f"{len(content)} chars")
                     return content
                 except (KeyError, IndexError, TypeError) as e:
                     _debug_log("API_RETRY", f"响应格式异常: {e}",
                                data={"attempt": attempt, "model": model})
-                    print(f"  [API] 响应格式异常: {e}", file=sys.stderr)
-                    print(f"  [API] 原始响应: {json.dumps(data, ensure_ascii=False)[:500]}",
-                          file=sys.stderr)
+                    _stderr_print(f"  [API] 响应格式异常: {e}")
+                    _stderr_print(f"  [API] 原始响应: {json.dumps(data, ensure_ascii=False)[:500]}")
                     last_error = RuntimeError(f"响应格式异常: {e}")
                     continue
 
@@ -224,7 +225,7 @@ def _call_llm_internal(
                 wait_extra = 10 * attempt
                 _debug_log("API_RETRY", f"HTTP 429 速率限制",
                            data={"attempt": attempt, "model": model, "wait_s": wait_extra})
-                print(f"  [API] 429 速率限制，额外等待 {wait_extra}s ...", file=sys.stderr)
+                _stderr_print(f"  [API] 429 速率限制，额外等待 {wait_extra}s ...")
                 time.sleep(wait_extra)
                 last_error = RuntimeError(f"HTTP 429: {resp.text[:300]}")
                 continue
@@ -237,8 +238,7 @@ def _call_llm_internal(
                     or "role" in error_text
                     or "invalid" in error_text
                 ):
-                    print(f"  [API] 检测到 system role 不支持，将自动降级合并到 user message",
-                          file=sys.stderr)
+                    _stderr_print(f"  [API] 检测到 system role 不支持，将自动降级合并到 user message")
                     _SYSTEM_ROLE_FAILED_FOR_ENDPOINT.add(endpoint_key)
 
                     # 重新构建 messages（无 system role）
@@ -246,16 +246,14 @@ def _call_llm_internal(
                     payload["messages"] = messages
                     continue
 
-                print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — HTTP {resp.status_code}: {resp.text[:300]}",
-                      file=sys.stderr)
+                _stderr_print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — HTTP {resp.status_code}: {resp.text[:300]}")
                 last_error = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:300]}")
                 if attempt < retries:
                     time.sleep(15 * attempt)
                 continue
 
             else:
-                print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — HTTP {resp.status_code}: {resp.text[:300]}",
-                      file=sys.stderr)
+                _stderr_print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — HTTP {resp.status_code}: {resp.text[:300]}")
                 last_error = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:300]}")
                 if attempt < retries:
                     time.sleep(15 * attempt)
@@ -267,8 +265,7 @@ def _call_llm_internal(
                        data={"attempt": attempt, "model": model,
                              "latency_s": latency_s, "max_retries": retries,
                              "error": f"Timeout ({attempt_timeout}s)"})
-            print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 超时 ({attempt_timeout}s)",
-                  file=sys.stderr)
+            _stderr_print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 超时 ({attempt_timeout}s)")
             last_error = RuntimeError(f"请求超时 ({attempt_timeout}s)")
             continue
 
@@ -278,8 +275,7 @@ def _call_llm_internal(
                        data={"attempt": attempt, "model": model,
                              "latency_s": latency_s, "max_retries": retries,
                              "error": str(e)[:200]})
-            print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 网络错误: {e}",
-                  file=sys.stderr)
+            _stderr_print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 网络错误: {e}")
             last_error = e
             time.sleep(15 * attempt)
             continue
@@ -290,7 +286,7 @@ def _call_llm_internal(
                        data={"attempt": attempt, "model": model,
                              "latency_s": latency_s, "max_retries": retries,
                              "error": str(e)[:200]})
-            print(f"  [API] 异常: {e}", file=sys.stderr)
+            _stderr_print(f"  [API] 异常: {e}")
             last_error = e
             if attempt < retries:
                 time.sleep(15 * attempt)

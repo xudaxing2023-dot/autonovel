@@ -12,6 +12,7 @@ pipeline_orchestrator.py — 主流水线编排器
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -21,10 +22,18 @@ from pathlib import Path
 from typing import Optional
 
 # Windows 控制台 GBK 编码不支持中文，强制使用 UTF-8
+# 管道/重定向环境下 reconfigure 可能失败，此时依赖 _safe_print / _stderr_print 降级
+_STDOUT_UTF8_OK = False
+_STDERR_UTF8_OK = False
 if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        _STDOUT_UTF8_OK = True
+    except (OSError, AttributeError):
+        pass
+    try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        _STDERR_UTF8_OK = True
     except (OSError, AttributeError):
         pass
 
@@ -72,58 +81,97 @@ def run_foundation(state: dict) -> dict:
 
     best_score = state.get("foundation_score", 0.0)
     iteration = state.get("iteration", 0)
+    # ★ 断点续传：当前迭代内已完成的步骤（同迭代崩溃恢复用）
+    completed_step = state.get("foundation_step")
 
-    # 应用模型能力等级阈值
     cfg = config
     cfg.load()
-    if cfg.loaded:
-        cfg.apply_model_tier_defaults()
 
     threshold = cfg.foundation_threshold if cfg.loaded else FOUNDATION_THRESHOLD
     max_iters = cfg.max_foundation_iters if cfg.loaded else MAX_FOUNDATION_ITERS
+    # ★ 步骤执行顺序（用于判断"是否已完成"）
+    _STEP_ORDER = ["world", "characters", "outline_volume", "outline",
+                   "outline_part2", "canon", "voice"]
+
     for i in range(iteration + 1, max_iters + 1):
         banner(f"基础构建 迭代 {i}/{max_iters}", "-")
         state["iteration"] = i
+        # ★ 新迭代：重置步骤追踪（跨迭代必须全量重生成以提升质量）
+        if completed_step is not None:
+            state["foundation_step"] = None
+            completed_step = None
+            save_state(state)
 
         # 1. 生成世界观
-        step("生成世界观 world.md ...")
-        from foundation.gen_world import generate_world
-        generate_world()
+        if completed_step and _STEP_ORDER.index("world") <= _STEP_ORDER.index(completed_step):
+            step("跳过 world.md（同迭代断点续传）")
+        else:
+            step("生成世界观 world.md ...")
+            from foundation.gen_world import generate_world
+            generate_world()
+            state["foundation_step"] = "world"
+            completed_step = "world"
+            save_state(state)
 
         # 2. 生成角色
-        step("生成角色 characters.md ...")
-        from foundation.gen_characters import generate_characters
-        generate_characters()
+        if completed_step and _STEP_ORDER.index("characters") <= _STEP_ORDER.index(completed_step):
+            step("跳过 characters.md（同迭代断点续传）")
+        else:
+            step("生成角色 characters.md ...")
+            from foundation.gen_characters import generate_characters
+            generate_characters()
+            state["foundation_step"] = "characters"
+            completed_step = "characters"
+            save_state(state)
 
         # ★ 方案 D Step 7: 2.5. 生成卷级总纲（output/outline_volume.md）
-        # 必须在 generate_outline() 之前，因为 generate_outline_for_volume()
-        # 依赖 outline_volume.md 获取每卷的结构化约束
-        step("生成卷级总纲 outline_volume.md ...")
-        from foundation.gen_outline_volume import generate_volume_outline
-        generate_volume_outline()
-        # ★ 记录卷大纲完成状态，用于中断恢复
+        if completed_step and _STEP_ORDER.index("outline_volume") <= _STEP_ORDER.index(completed_step):
+            step("跳过 outline_volume.md（同迭代断点续传）")
+        else:
+            step("生成卷级总纲 outline_volume.md ...")
+            from foundation.gen_outline_volume import generate_volume_outline
+            generate_volume_outline()
+            state["foundation_step"] = "outline_volume"
+            completed_step = "outline_volume"
+            save_state(state)
         state["volumes_outlined"] = cfg.total_volumes if cfg.loaded else 1
 
         # 3. 生成大纲 (Part 1) — 逐卷章级大纲 + 合并 outline.md
-        # generate_outline() 内部调用 generate_outline_for_volume()
-        # 自动读取 outline_volume.md 获取卷级约束
-        step("生成大纲 outline.md (Part 1) ...")
-        from foundation.gen_outline import generate_outline
-        generate_outline()
+        if completed_step and _STEP_ORDER.index("outline") <= _STEP_ORDER.index(completed_step):
+            step("跳过 outline.md（同迭代断点续传）")
+        else:
+            step("生成大纲 outline.md (Part 1) ...")
+            from foundation.gen_outline import generate_outline
+            generate_outline()
+            state["foundation_step"] = "outline"
+            completed_step = "outline"
+            save_state(state)
 
         # 4. 生成大纲 (Part 2 - 伏笔)
-        step("生成大纲 outline.md (Part 2 - 伏笔账本) ...")
-        from foundation.gen_outline_part2 import generate_outline_part2
-        generate_outline_part2()
+        if completed_step and _STEP_ORDER.index("outline_part2") <= _STEP_ORDER.index(completed_step):
+            step("跳过 outline_part2（同迭代断点续传）")
+        else:
+            step("生成大纲 outline.md (Part 2 - 伏笔账本) ...")
+            from foundation.gen_outline_part2 import generate_outline_part2
+            generate_outline_part2()
+            state["foundation_step"] = "outline_part2"
+            completed_step = "outline_part2"
+            save_state(state)
 
         # 5. 生成正典（非关键步骤：失败时允许继续）
-        step("生成正典 canon.md ...")
-        from foundation.gen_canon import generate_canon, count_canon_entries
-        try:
-            generate_canon()
-        except Exception as e:
-            step(f"⚠ 正典生成失败（非关键），跳过: {e}")
-            debug_log("WARNING", f"正典生成失败: {e}", data={"step": "canon", "iteration": i})
+        if completed_step and _STEP_ORDER.index("canon") <= _STEP_ORDER.index(completed_step):
+            step("跳过 canon.md（同迭代断点续传）")
+        else:
+            step("生成正典 canon.md ...")
+            from foundation.gen_canon import generate_canon, count_canon_entries
+            try:
+                generate_canon()
+            except Exception as e:
+                step(f"⚠ 正典生成失败（非关键），跳过: {e}")
+                debug_log("WARNING", f"正典生成失败: {e}", data={"step": "canon", "iteration": i})
+            state["foundation_step"] = "canon"
+            completed_step = "canon"
+            save_state(state)
 
         # ★ P2-11 子项 A: 验证正典规模
         canon_counts = count_canon_entries()
@@ -139,24 +187,25 @@ def run_foundation(state: dict) -> dict:
                 step("正典严重不足，后续迭代将使用更大 token 预算重试…")
 
         # 6. 生成文风指纹（非关键步骤：失败时允许继续）
-        step("生成文风指纹 voice.md Part 2 ...")
-        from foundation.gen_voice import generate_voice
-        try:
-            generate_voice()
-        except Exception as e:
-            step(f"⚠ 文风指纹生成失败（非关键），跳过: {e}")
-            debug_log("WARNING", f"文风指纹生成失败: {e}", data={"step": "voice", "iteration": i})
+        if completed_step and _STEP_ORDER.index("voice") <= _STEP_ORDER.index(completed_step):
+            step("跳过 voice.md（同迭代断点续传）")
+        else:
+            step("生成文风指纹 voice.md Part 2 ...")
+            from foundation.gen_voice import generate_voice
+            try:
+                generate_voice()
+            except Exception as e:
+                step(f"⚠ 文风指纹生成失败（非关键），跳过: {e}")
+                debug_log("WARNING", f"文风指纹生成失败: {e}", data={"step": "voice", "iteration": i})
+            state["foundation_step"] = "voice"
+            completed_step = "voice"
+            save_state(state)
 
-        # 7. 评估（稳定版：3次中位数，降低 LLM 评分波动）
+        # 7. 评估（稳定版：3次中位数，同时产出 overall + lore，零额外调用）
         step("评估基础构建 ...")
-        score = evaluate_foundation_stable()
-        from evaluation.evaluate import evaluate_foundation
-        lore = parse_lore_score(evaluate_foundation())
+        score, lore = evaluate_foundation_stable()
 
         step(f"基础构建评分: {score}  (lore: {lore}, 历史最佳: {best_score})")
-        debug_log("FOUNDATION_SCORE",
-                  data={"score": score, "lore": lore, "iteration": i,
-                        "best_score": best_score, "threshold": threshold})
 
         # 8. 保留/丢弃（0.3 分容忍区间，避免评分波动误丢弃）
         if score >= best_score - 0.3:
@@ -170,11 +219,19 @@ def run_foundation(state: dict) -> dict:
             state["lore_score"] = lore
             state["canon_entry_count"] = canon_total  # ★ P1 fix: 记录 Foundation 生成的 canon 条目数
             save_state(state)
+            # ★ 日志移到 best_score 更新后，记录新值
+            debug_log("FOUNDATION_SCORE",
+                      data={"score": score, "lore": lore, "iteration": i,
+                            "best_score": best_score, "threshold": threshold})
         else:
             step(f"评分未提升 ({score} <= {best_score})，丢弃")
             git_reset_hard("HEAD")
             log_result("discarded", "foundation", score, 0, "discard",
                        f"迭代 {i}: 未提升 ({score} <= {best_score})")
+            debug_log("FOUNDATION_SCORE",
+                      data={"score": score, "lore": lore, "iteration": i,
+                            "best_score": best_score, "threshold": threshold,
+                            "action": "discard"})
 
         # 9. 检查退出条件
         if best_score >= threshold:
@@ -964,8 +1021,10 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
             if p.exists():
                 p.unlink()
 
-        # 清理 output/ 根目录下所有残留的 .json / .tsv 文件
+        # 清理 output/ 根目录下所有残留的 .json / .tsv 文件（保留 config.json）
         for f in OUTPUT_DIR.glob("*.json"):
+            if f.name == "config.json":
+                continue
             f.unlink()
         for f in OUTPUT_DIR.glob("*.tsv"):
             f.unlink()
@@ -988,8 +1047,6 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
             print("  已清空旧调试日志")
 
         state = default_state()
-        # 应用模型等级默认值
-        cfg.apply_model_tier_defaults()
         # ★ P7 fix: 将 config 中的卷/章配置传播到 state
         # default_state() 中这些字段为 0，需要从 config 同步
         state["total_volumes"] = cfg.total_volumes

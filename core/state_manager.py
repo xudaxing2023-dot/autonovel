@@ -25,6 +25,7 @@ from typing import Optional
 from core.config import (
     ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, STATE_FILE, RESULTS_FILE,
     BACKUPS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, BRIEFS_DIR, config)
+from core import _stderr_print
 
 # 可选导入 debug_log
 try:
@@ -63,9 +64,9 @@ def git_available() -> bool:
     if _GIT_AVAILABLE is None:
         _GIT_AVAILABLE = _has_git()
         if _GIT_AVAILABLE:
-            print("  [状态] Git 可用，使用 Git 版本控制", file=sys.stderr)
+            _stderr_print("  [状态] Git 可用，使用 Git 版本控制")
         else:
-            print("  [状态] Git 不可用，使用文件快照备份", file=sys.stderr)
+            _stderr_print("  [状态] Git 不可用，使用文件快照备份")
     return _GIT_AVAILABLE
 
 
@@ -92,6 +93,8 @@ def default_state() -> dict:
         "volumes_outlined": 0,
         "canon_entry_count": 0,
         "canon_last_updated_ch": 0,
+        # ★ 断点续传：当前迭代内已完成的 foundation 步骤名
+        "foundation_step": None,
     }
 
 
@@ -203,7 +206,7 @@ def git_add_commit(message: str) -> str:
         result = _git_run(f'git commit -m "{message}" --allow-empty')
         if result.returncode == 0:
             return git_short_hash()
-        print(f"  [Git] 提交失败或无变更: {message}", file=sys.stderr)
+        _stderr_print(f"  [Git] 提交失败或无变更: {message}")
         return ""
     else:
         # 文件备份模式
@@ -213,7 +216,7 @@ def git_add_commit(message: str) -> str:
 def git_reset_hard(ref: str = "HEAD"):
     """Hard reset 丢弃变更。Git 模式用 reset，备份模式用 restore。"""
     if git_available():
-        print(f"  [Git] 回滚到: {ref}", file=sys.stderr)
+        _stderr_print(f"  [Git] 回滚到: {ref}")
         _git_run(f"git reset --hard {ref}")
     else:
         # 备份模式：恢复最近的快照
@@ -259,28 +262,28 @@ def backup_snapshot(label: str = "") -> str:
     (backup_dir / "label.txt").write_text(label, encoding="utf-8")
 
     snapshot_id = f"snapshot-{timestamp}"
-    print(f"  [备份] {snapshot_id}: {label}", file=sys.stderr)
+    _stderr_print(f"  [备份] {snapshot_id}: {label}")
     return snapshot_id
 
 
 def restore_latest() -> bool:
     """从最新备份恢复所有文件。"""
     if not BACKUPS_DIR.exists():
-        print("  [备份] 无可用备份", file=sys.stderr)
+        _stderr_print("  [备份] 无可用备份")
         return False
 
     backups = sorted(
         [d for d in BACKUPS_DIR.iterdir() if d.is_dir()],
         key=lambda p: p.name, reverse=True)
     if not backups:
-        print("  [备份] 无可用备份", file=sys.stderr)
+        _stderr_print("  [备份] 无可用备份")
         return False
 
     latest = backups[0]
     label_file = latest / "label.txt"
     label = label_file.read_text(encoding="utf-8-sig").strip() if label_file.exists() else ""
 
-    print(f"  [备份] 恢复到: {latest.name} ({label})", file=sys.stderr)
+    _stderr_print(f"  [备份] 恢复到: {latest.name} ({label})")
 
     # 恢复根目录文件到 output/
     for f in latest.iterdir():
@@ -473,14 +476,18 @@ def evaluate_chapter_stable(
 def evaluate_foundation_stable(
     retries: int = 3,
     max_total_time: int = None,
-    samples: int = 3) -> float:
+    samples: int = 3) -> tuple[float, float]:
     """稳定版 Foundation 评估：调用 N 次取中位数。
 
     用于 Foundation 迭代间的评分比较，避免 LLM 评分波动导致
     更优的迭代被错误丢弃。
+
+    Returns:
+        (overall_score, lore_score) — 两个分数的中位数。
     """
     from evaluation.evaluate import evaluate_foundation as _eval
     scores: list[float] = []
+    lores: list[float] = []
     for _ in range(samples):
         try:
             result = _eval(retries=retries,
@@ -488,17 +495,28 @@ def evaluate_foundation_stable(
             s = parse_score(result, "overall_score")
             if s >= 0:
                 scores.append(s)
+            # ★ 同时提取 lore_score（零额外 API 调用）
+            l = parse_lore_score(result)
+            if l >= 0:
+                lores.append(l)
         except Exception:
             pass
-    if not scores:
-        return 0.0
-    scores.sort()
-    n = len(scores)
-    if n % 2 == 0:
-        return (scores[n // 2 - 1] + scores[n // 2]) / 2
-    return scores[n // 2]
+
+    def _median(vals: list[float]) -> float:
+        if not vals:
+            return 0.0
+        vals.sort()
+        n = len(vals)
+        if n % 2 == 0:
+            return (vals[n // 2 - 1] + vals[n // 2]) / 2
+        return vals[n // 2]
+
+    return _median(scores), _median(lores)
 
 
 def parse_lore_score(stdout: str) -> float:
-    """解析 lore_score。"""
-    return parse_score(stdout, "lore_score")
+    """解析 lore_score。失败时返回 0.0 而非崩溃。"""
+    try:
+        return parse_score(stdout, "lore_score")
+    except (ValueError, KeyError):
+        return 0.0
