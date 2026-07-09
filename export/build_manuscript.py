@@ -23,7 +23,7 @@ def build_manuscript() -> None:
     toc_lines = ["# 目录\n"]
 
     for i, f in enumerate(chapter_files, 1):
-        text = f.read_text(encoding="utf-8").strip()
+        text = f.read_text(encoding="utf-8-sig").strip()
         if not text:
             continue
 

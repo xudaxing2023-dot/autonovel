@@ -34,13 +34,13 @@ def _load_context() -> dict:
     cfg.load()
 
     world_path = OUTPUT_DIR / "world.md"
-    world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+    world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
 
     chars_path = OUTPUT_DIR / "characters.md"
-    chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     voice_path = OUTPUT_DIR / "voice.md"
-    voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
+    voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
 
     total_vol = cfg.total_volumes
     total_ch = cfg.total_chapters

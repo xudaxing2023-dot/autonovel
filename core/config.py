@@ -191,7 +191,7 @@ class Config:
         if not summary:
             story_file = OUTPUT_DIR / "story_summary.txt"
             if story_file.exists():
-                summary = story_file.read_text(encoding="utf-8").strip()
+                summary = story_file.read_text(encoding="utf-8-sig").strip()
         return summary
 
     @property
@@ -424,10 +424,13 @@ class Config:
 # 全局单例
 config = Config()
 
-# 预创建关键目录
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-CHAPTERS_DIR.mkdir(parents=True, exist_ok=True)
-BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
-EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)
-EVAL_LOGS_DIR.mkdir(parents=True, exist_ok=True)
-BACKUPS_DIR.mkdir(parents=True, exist_ok=True)
+# 预创建关键目录（只读文件系统友好：exist_ok=True + try/except 包裹）
+try:
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    CHAPTERS_DIR.mkdir(parents=True, exist_ok=True)
+    BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
+    EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    EVAL_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    BACKUPS_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass

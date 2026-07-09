@@ -29,9 +29,9 @@ def generate_characters() -> None:
 
     story = cfg.story_summary
     world_path = OUTPUT_DIR / "world.md"
-    world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+    world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
     voice_path = OUTPUT_DIR / "voice.md"
-    voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
+    voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
 
     prompt = build_character_prompt(story, world_text=world, voice_part2=voice)
 

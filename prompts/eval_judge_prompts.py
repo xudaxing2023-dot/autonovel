@@ -525,7 +525,7 @@ def build_full_novel_eval_prompt(
         ch_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))
         if ch_files:
             for f in ch_files:
-                text = f.read_text(encoding="utf-8")
+                text = f.read_text(encoding="utf-8-sig")
                 head = text[:500]
                 tail = text[-500:] if len(text) > 1000 else ""
                 ch_name = f.stem.replace("ch_", "")

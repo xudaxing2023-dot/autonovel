@@ -21,12 +21,12 @@ def generate_world() -> None:
 
     # 读取模板
     template_path = TEMPLATES_DIR / "world.md"
-    template = template_path.read_text(encoding="utf-8") if template_path.exists() else ""
+    template = template_path.read_text(encoding="utf-8-sig") if template_path.exists() else ""
 
     # 读取 seed / voice
     story = cfg.story_summary
     voice_path = OUTPUT_DIR / "voice.md"
-    voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
+    voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
 
     # 构建 prompt
     prompt = build_world_prompt(story, voice_part2=(voice if voice else ""))

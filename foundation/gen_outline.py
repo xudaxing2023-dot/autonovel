@@ -153,7 +153,7 @@ def generate_outline_for_volume(
     vol_macro_path = OUTPUT_DIR / "outline_volume.md"
     vol_section = ""
     if vol_macro_path.exists():
-        vol_macro = vol_macro_path.read_text(encoding="utf-8")
+        vol_macro = vol_macro_path.read_text(encoding="utf-8-sig")
         vol_section = _extract_volume_section(vol_macro, volume_num)
         if not vol_section:
             raise RuntimeError(
@@ -168,19 +168,19 @@ def generate_outline_for_volume(
     if volume_num > 1:
         prev_path = OUTPUT_DIR / f"outline_volume{volume_num - 1}.md"
         if prev_path.exists():
-            prev_text = prev_path.read_text(encoding="utf-8")
+            prev_text = prev_path.read_text(encoding="utf-8-sig")
             prev_vol_tail = prev_text[-4000:] if len(prev_text) > 4000 else prev_text
             step(f"  加载前一卷章级大纲: {len(prev_vol_tail)} chars (尾部)")
 
     # 基础文档
     world_path = OUTPUT_DIR / "world.md"
-    world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+    world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
 
     chars_path = OUTPUT_DIR / "characters.md"
-    chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     voice_path = OUTPUT_DIR / "voice.md"
-    voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
+    voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
 
     # ── 拆分章组并链式调用 ──────────────────────────────
 
@@ -247,7 +247,7 @@ def generate_outline() -> None:
                 f"\n\n{'=' * 60}\n"
                 f"## 第 {vol} 卷\n"
                 f"{'=' * 60}\n\n"
-                + vol_path.read_text(encoding="utf-8")
+                + vol_path.read_text(encoding="utf-8-sig")
             )
 
     outline_path = OUTPUT_DIR / "outline.md"

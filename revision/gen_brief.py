@@ -39,7 +39,7 @@ def load_json(path: Path) -> dict:
     """加载 JSON 文件，文件不存在时退出报错。"""
     if not path.exists():
         sys.exit(f"错误: JSON 文件不存在: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def chapter_path(ch: int) -> Path:
@@ -52,7 +52,7 @@ def chapter_text(ch: int) -> str:
     p = chapter_path(ch)
     if not p.exists():
         sys.exit(f"错误: 章节文件不存在: {p}")
-    return p.read_text(encoding="utf-8")
+    return p.read_text(encoding="utf-8-sig")
 
 
 def chapter_title(text: str) -> str:
@@ -100,7 +100,7 @@ def extract_voice_rules() -> list[str]:
     if not VOICE_PATH.exists():
         return ["(voice.md 未找到)"]
 
-    voice_text = VOICE_PATH.read_text(encoding="utf-8")
+    voice_text = VOICE_PATH.read_text(encoding="utf-8-sig")
     rules: list[str] = []
 
     # 匹配模式: "1. **规则名**：规则描述" 或 "1. **规则名** — 规则描述"
@@ -222,7 +222,7 @@ def panel_mentions_for_chapter(panel: dict, ch: int) -> dict:
 
     # 中文兼容正则: "第3章" / "Ch.3" / "ch_3" / "Chapter 3"
     ch_re = re.compile(
-        rf"\b(?:第\s*{ch}\s*章|Ch\.?\s*{ch}|ch_?\s*{ch}|Chapter\s+{ch})\b",
+        rf"(?<!\w)(?:第\s*{ch}\s*章|Ch\.?\s*{ch}|ch_?\s*{ch}|Chapter\s+{ch})(?!\w)",
         re.IGNORECASE
     )
 
@@ -541,7 +541,7 @@ def build_eval_brief(ch: int) -> str:
         pacing = full_eval.get("pacing_curve", {})
         pacing_note = pacing.get("note", "")
         ch_re = re.compile(
-            rf"\b(?:第\s*{ch}\s*章|Ch\.?\s*{ch}|Chapter\s+{ch})\b",
+            rf"(?<!\w)(?:第\s*{ch}\s*章|Ch\.?\s*{ch}|Chapter\s+{ch})(?!\w)",
             re.IGNORECASE
         )
         if ch_re.search(pacing_note):
@@ -794,7 +794,7 @@ def build_auto_brief() -> tuple[int, str]:
         "overall_engagement": "整体吸引力",
     }
     ch_re = re.compile(
-        rf"\b(?:第\s*{ch}\s*章|Ch\.?\s*{ch}|Chapter\s+{ch})\b",
+        rf"(?<!\w)(?:第\s*{ch}\s*章|Ch\.?\s*{ch}|Chapter\s+{ch})(?!\w)",
         re.IGNORECASE
     )
     for dk in dim_keys:
@@ -1003,7 +1003,7 @@ def generate_brief(
             elif cuts_path.exists():
                 # ★ 检查 cuts 是否真的有内容（而非 0 条目空壳）
                 try:
-                    cuts_data = json.loads(cuts_path.read_text(encoding="utf-8"))
+                    cuts_data = json.loads(cuts_path.read_text(encoding="utf-8-sig"))
                     total_cuttable = cuts_data.get("total_cuttable_words", 0)
                     if total_cuttable > 0:
                         step(f"第 {chapter_num} 章: 使用对抗性编辑摘要 (--cuts)")

@@ -31,9 +31,9 @@ def generate_outline_part2() -> None:
         step("大纲文件不存在，跳过 Part 2")
         return
 
-    outline_text = outline_path.read_text(encoding="utf-8")
+    outline_text = outline_path.read_text(encoding="utf-8-sig")
     chars_path = OUTPUT_DIR / "characters.md"
-    chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     prompt = f"""请基于以下大纲和角色信息，补充完整的伏笔账本（Foreshadowing Ledger）。
 

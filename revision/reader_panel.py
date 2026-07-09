@@ -108,7 +108,7 @@ def _build_arc_summary(chapter_files: list) -> str:
     )
 
     for cf in sorted(chapter_files):
-        text = cf.read_text(encoding="utf-8")
+        text = cf.read_text(encoding="utf-8-sig")
         ch_num = int(cf.stem.split("_")[1])
         chars = len(text.replace(" ", "").replace("\n", ""))
 

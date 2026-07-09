@@ -28,7 +28,7 @@ def build_outline() -> None:
     # 拼接各章概要
     summaries = []
     for f in chapter_files:
-        text = f.read_text(encoding="utf-8")
+        text = f.read_text(encoding="utf-8-sig")
         summaries.append(f"## {f.stem}\n{text[:800]}...（共{len(text)}字）")
 
     manuscript = "\n\n".join(summaries)

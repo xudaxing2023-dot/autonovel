@@ -23,29 +23,29 @@ def revise_chapter(
     max_total_time: int = None) -> None:
     """根据修订摘要重写章节。"""
     brief_path = Path(brief_file) if isinstance(brief_file, str) else brief_file
-    brief_text = brief_path.read_text(encoding="utf-8") if brief_path.exists() else ""
+    brief_text = brief_path.read_text(encoding="utf-8-sig") if brief_path.exists() else ""
 
     voice_path = OUTPUT_DIR / "voice.md"
     world_path = OUTPUT_DIR / "world.md"
     chars_path = OUTPUT_DIR / "characters.md"
 
-    voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
-    world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
-    chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
+    world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
+    chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     old_path = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
-    old_text = old_path.read_text(encoding="utf-8") if old_path.exists() else ""
+    old_text = old_path.read_text(encoding="utf-8-sig") if old_path.exists() else ""
 
     prev_path = CHAPTERS_DIR / f"ch_{ch_num - 1:02d}.md"
     next_path = CHAPTERS_DIR / f"ch_{ch_num + 1:02d}.md"
-    prev_tail = prev_path.read_text(encoding="utf-8")[-2000:] if prev_path.exists() else "(第一章)"
-    next_head = next_path.read_text(encoding="utf-8")[:1500] if next_path.exists() else "(最后一章)"
+    prev_tail = prev_path.read_text(encoding="utf-8-sig")[-2000:] if prev_path.exists() else "(第一章)"
+    next_head = next_path.read_text(encoding="utf-8-sig")[:1500] if next_path.exists() else "(最后一章)"
 
     # ★ 提取本章大纲条目，防止多次修订后偏离大纲结构
     outline_text = ""
     outline_path = OUTPUT_DIR / "outline.md"
     if outline_path.exists():
-        outline_raw = outline_path.read_text(encoding="utf-8")
+        outline_raw = outline_path.read_text(encoding="utf-8-sig")
         # 匹配 "### 第N章" 到下一个 "### " 或全文结束
         pattern = rf"###\s*第\s*{ch_num}\s*章\s*\n(.*?)(?=\n###\s|\n---|\n##\s*整体|$)"
         m = re.search(pattern, outline_raw, re.DOTALL)

@@ -30,7 +30,7 @@ def build_arc_summary() -> None:
     # 取每章开头和结尾各 500 字
     snippets = []
     for f in chapter_files:
-        text = f.read_text(encoding="utf-8")
+        text = f.read_text(encoding="utf-8-sig")
         head = text[:500]
         tail = text[-500:]
         snippets.append(f"## {f.stem} (开头)\n{head}\n...\n## {f.stem} (结尾)\n{tail}")

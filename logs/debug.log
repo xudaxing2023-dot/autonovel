@@ -1,0 +1,60 @@
+[2026-07-09 11:25:42.777] [STATE_ERROR] [state_manager.py:110 load_state]加载 state.json 失败: Unterminated string starting at: line 1 column 11 (char 10) | error=Unterminated string starting at: line 1 column 11 (char 10)
+[2026-07-09 11:25:42.790] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 11:25:42.797] [STATE_SAVE] [state_manager.py:121 save_state] | phase=drafting, chapters_drafted=12
+[2026-07-09 11:25:42.807] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:25:42.808] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:25:42.809] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:25:42.809] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:25:42.810] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:25:42.850] [STATE_SAVE] [state_manager.py:121 save_state] | phase=?, chapters_drafted=0
+[2026-07-09 11:25:42.857] [STATE_LOAD] [state_manager.py:104 load_state] | phase=?, chapters_drafted=0
+[2026-07-09 11:26:48.937] [STATE_ERROR] [state_manager.py:110 load_state]加载 state.json 失败: Unterminated string starting at: line 1 column 11 (char 10) | error=Unterminated string starting at: line 1 column 11 (char 10)
+[2026-07-09 11:26:48.943] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 11:26:48.948] [STATE_SAVE] [state_manager.py:121 save_state] | phase=drafting, chapters_drafted=12
+[2026-07-09 11:26:48.953] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:26:48.954] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:26:48.954] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:26:48.954] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:26:48.955] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 11:26:48.961] [STATE_SAVE] [state_manager.py:121 save_state] | phase=?, chapters_drafted=0
+[2026-07-09 11:26:48.962] [STATE_LOAD] [state_manager.py:104 load_state] | phase=?, chapters_drafted=0
+[2026-07-09 12:07:21.169] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 12:07:21.192] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=10
+[2026-07-09 12:10:49.868] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 12:10:49.883] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=10
+[2026-07-09 12:24:28.262] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 12:24:28.293] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=10
+[2026-07-09 12:24:28.709] [STATE_ERROR] [state_manager.py:110 load_state]加载 state.json 失败: Unterminated string starting at: line 1 column 11 (char 10) | error=Unterminated string starting at: line 1 column 11 (char 10)
+[2026-07-09 12:24:28.716] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 12:24:28.721] [STATE_SAVE] [state_manager.py:121 save_state] | phase=drafting, chapters_drafted=12
+[2026-07-09 12:24:28.733] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:24:28.733] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:24:28.733] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:24:28.734] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:24:28.734] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:24:28.740] [STATE_SAVE] [state_manager.py:121 save_state] | phase=?, chapters_drafted=0
+[2026-07-09 12:24:28.747] [STATE_LOAD] [state_manager.py:104 load_state] | phase=?, chapters_drafted=0
+[2026-07-09 12:26:38.144] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 12:26:38.153] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=10
+[2026-07-09 12:26:38.829] [STATE_ERROR] [state_manager.py:110 load_state]加载 state.json 失败: Unterminated string starting at: line 1 column 11 (char 10) | error=Unterminated string starting at: line 1 column 11 (char 10)
+[2026-07-09 12:26:38.836] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 12:26:38.840] [STATE_SAVE] [state_manager.py:121 save_state] | phase=drafting, chapters_drafted=12
+[2026-07-09 12:26:38.846] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:26:38.847] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:26:38.847] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:26:38.847] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:26:38.848] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 12:26:38.854] [STATE_SAVE] [state_manager.py:121 save_state] | phase=?, chapters_drafted=0
+[2026-07-09 12:26:38.855] [STATE_LOAD] [state_manager.py:104 load_state] | phase=?, chapters_drafted=0
+[2026-07-09 13:20:23.253] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 13:20:23.271] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=10
+[2026-07-09 13:20:23.676] [STATE_ERROR] [state_manager.py:110 load_state]加载 state.json 失败: Unterminated string starting at: line 1 column 11 (char 10) | error=Unterminated string starting at: line 1 column 11 (char 10)
+[2026-07-09 13:20:23.685] [STATE_LOAD] [state_manager.py:104 load_state] | phase=drafting, chapters_drafted=0
+[2026-07-09 13:20:23.693] [STATE_SAVE] [state_manager.py:121 save_state] | phase=drafting, chapters_drafted=12
+[2026-07-09 13:20:23.703] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 13:20:23.704] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 13:20:23.705] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 13:20:23.706] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 13:20:23.707] [STATE_SAVE] [state_manager.py:121 save_state] | phase=test, chapters_drafted=0
+[2026-07-09 13:20:23.747] [STATE_SAVE] [state_manager.py:121 save_state] | phase=?, chapters_drafted=0
+[2026-07-09 13:20:23.749] [STATE_LOAD] [state_manager.py:104 load_state] | phase=?, chapters_drafted=0

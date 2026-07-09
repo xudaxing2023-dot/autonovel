@@ -42,7 +42,7 @@ def load_cuts(chapter_num: int) -> dict | None:
     if not cuts_file.exists():
         return None
     try:
-        return json.loads(cuts_file.read_text(encoding="utf-8"))
+        return json.loads(cuts_file.read_text(encoding="utf-8-sig"))
     except (json.JSONDecodeError, OSError) as exc:
         step(f"  ⚠ 解析失败 {cuts_file.name}: {exc}")
         return None
@@ -159,7 +159,7 @@ def process_chapter(
         stats["error"] = f"章节文件不存在: {ch_path.name}"
         return stats
 
-    text = ch_path.read_text(encoding="utf-8")
+    text = ch_path.read_text(encoding="utf-8-sig")
     original_chars = char_count(text)
 
     # 逐个处理裁剪条目

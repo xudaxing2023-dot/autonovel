@@ -236,6 +236,20 @@ def slop_score_zh(text: str) -> dict:
       - dialog_tag_ratio: float — 对话标签比例
       - slop_penalty: float — 综合惩罚分 0-10
     """
+    if text is None:
+        return {
+            "tier1_hits": [],
+            "tier2_hits": [],
+            "fiction_ai_tells": [],
+            "structural_ai_tics": [],
+            "telling_violations": 0,
+            "four_char_density": 0.0,
+            "em_dash_density": 0.0,
+            "sentence_cv": 0.0,
+            "transition_opener_ratio": 0.0,
+            "dialog_tag_ratio": 0.0,
+            "slop_penalty": 0.0,
+        }
     char_count = len(text.replace(" ", "").replace("\n", "")) or 1
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
 
@@ -392,14 +406,14 @@ def _load_outline(chapter_num: int | None = None) -> str:
     """
     path, _label = _resolve_outline_path(chapter_num)
     if path is not None:
-        return path.read_text(encoding="utf-8")
+        return path.read_text(encoding="utf-8-sig")
 
     # 回退合并模式：拼接所有 outline_volume*.md
     vol_files = sorted(OUTPUT_DIR.glob("outline_volume*.md"))
     if vol_files:
         parts = []
         for vf in vol_files:
-            parts.append(vf.read_text(encoding="utf-8"))
+            parts.append(vf.read_text(encoding="utf-8-sig"))
         return "\n\n".join(parts)
 
     return ""
@@ -422,11 +436,11 @@ def evaluate_foundation(
     canon_path = OUTPUT_DIR / "canon.md"
     mystery_path = OUTPUT_DIR / "MYSTERY.md"
 
-    world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
-    chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
+    chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
     outline = _load_outline()  # 卷感知：优先 outline.md（合并版），回退合并所有 outline_volume*.md
-    canon = canon_path.read_text(encoding="utf-8") if canon_path.exists() else ""
-    mystery = mystery_path.read_text(encoding="utf-8") if mystery_path.exists() else ""
+    canon = canon_path.read_text(encoding="utf-8-sig") if canon_path.exists() else ""
+    mystery = mystery_path.read_text(encoding="utf-8-sig") if mystery_path.exists() else ""
 
     prompt = build_foundation_eval_prompt(
         story, world_text=world, characters_text=chars,
@@ -466,7 +480,7 @@ def evaluate_chapter(
         print(f"  [评估] 章节 {ch_num} 不存在", file=sys.stderr)
         return "overall_score: 0.0\n"
 
-    chapter_text = ch_path.read_text(encoding="utf-8")
+    chapter_text = ch_path.read_text(encoding="utf-8-sig")
 
     # 机械 slop 检测
     mech = slop_score_zh(chapter_text)
@@ -481,24 +495,24 @@ def evaluate_chapter(
     # ★ 对齐原版：加载评估所需的全部上下文（7 项）
     outline = _load_outline(chapter_num=ch_num)  # 卷感知：优先 outline_volume{N}.md
     voice_path = OUTPUT_DIR / "voice.md"
-    voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
+    voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
     canon_path = OUTPUT_DIR / "canon.md"
-    canon = canon_path.read_text(encoding="utf-8") if canon_path.exists() else ""
+    canon = canon_path.read_text(encoding="utf-8-sig") if canon_path.exists() else ""
 
     # ★ 新增：world.md（对齐原版）
     world_path = OUTPUT_DIR / "world.md"
-    world_text = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+    world_text = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
 
     # ★ 新增：characters.md（对齐原版）
     chars_path = OUTPUT_DIR / "characters.md"
-    characters_text = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    characters_text = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     # ★ 新增：前章末尾 3000 字（对齐原版 prev_chapter_tail）
     prev_tail = ""
     if ch_num > 1:
         prev_path = CHAPTERS_DIR / f"ch_{ch_num - 1:02d}.md"
         if prev_path.exists():
-            prev_full = prev_path.read_text(encoding="utf-8")
+            prev_full = prev_path.read_text(encoding="utf-8-sig")
             prev_tail = prev_full[-3000:] if len(prev_full) > 3000 else prev_full
     else:
         prev_tail = "（第一章，无前章）"
@@ -548,19 +562,19 @@ def evaluate_full(
         return "novel_score: 0.0\n"
 
     manuscript = "\n\n---\n\n".join(
-        f.read_text(encoding="utf-8") for f in chapter_files
+        f.read_text(encoding="utf-8-sig") for f in chapter_files
     )
 
     outline = _load_outline()  # 卷感知：优先 outline.md（合并版），回退合并所有 outline_volume*.md
     voice_path = OUTPUT_DIR / "voice.md"
-    voice = voice_path.read_text(encoding="utf-8") if voice_path.exists() else ""
+    voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
 
     # ★ 对齐原版：全文评估需传入 world + characters
     world_path = OUTPUT_DIR / "world.md"
-    world_text = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+    world_text = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
 
     chars_path = OUTPUT_DIR / "characters.md"
-    characters_text = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    characters_text = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     prompt = build_full_novel_eval_prompt(
         manuscript, outline_text=outline, voice_text=voice,

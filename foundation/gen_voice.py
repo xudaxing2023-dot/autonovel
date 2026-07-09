@@ -236,13 +236,13 @@ def generate_voice() -> None:
 
     story = cfg.story_summary
     world_path = OUTPUT_DIR / "world.md"
-    world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+    world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
     chars_path = OUTPUT_DIR / "characters.md"
-    chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     # 读取 voice 模板 Part 1
     voice_template = TEMPLATES_DIR / "voice.md"
-    existing_voice = voice_template.read_text(encoding="utf-8") if voice_template.exists() else ""
+    existing_voice = voice_template.read_text(encoding="utf-8-sig") if voice_template.exists() else ""
 
     # ── Step A: 5段语域试验 ──
     registers_text = generate_5_registers(story, world, chars)

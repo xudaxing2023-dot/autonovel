@@ -22,8 +22,11 @@ from typing import Optional
 
 # Windows 控制台 GBK 编码不支持中文，强制使用 UTF-8
 if sys.platform == "win32":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (OSError, AttributeError):
+        pass
 
 # 核心基础设施
 from core.config import config, ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, BRIEFS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, STATE_FILE, BACKUPS_DIR
@@ -230,7 +233,7 @@ def run_drafting(state: dict) -> dict:
                 step("章节文件缺失或过短，重试...")
                 continue
 
-            word_count = len(ch_file.read_text(encoding="utf-8").replace(" ", "").replace("\n", ""))
+            word_count = len(ch_file.read_text(encoding="utf-8-sig").replace(" ", "").replace("\n", ""))
             step(f"生成 {word_count} 字")
 
             # 评估
@@ -301,7 +304,7 @@ def run_drafting(state: dict) -> dict:
                 # ★ P2-11 子项 C: 结构反模式审计
                 try:
                     from evaluation.antipatterns import run_structural_audit
-                    chapter_text = ch_file.read_text(encoding="utf-8")
+                    chapter_text = ch_file.read_text(encoding="utf-8-sig")
                     audit = run_structural_audit(chapter_text)
                     antipattern_max = cfg.antipattern_max_warnings if cfg.loaded else 4
                     if audit["warning_count"] > 0:
@@ -328,7 +331,7 @@ def run_drafting(state: dict) -> dict:
                 # 每章起草通过后，从章节文本提取新设定追加到 canon.md
                 try:
                     from foundation.update_canon import update_canon_from_chapter
-                    ch_text = ch_file.read_text(encoding="utf-8")
+                    ch_text = ch_file.read_text(encoding="utf-8-sig")
                     new_count = update_canon_from_chapter(ch, ch_text)
                     if new_count > 0:
                         step(f"正典更新: +{new_count} 条新事实（第 {ch} 章）")
@@ -357,7 +360,7 @@ def run_drafting(state: dict) -> dict:
                             "total": total, "reason": "all_attempts_exhausted"})
             ch_file = CHAPTERS_DIR / f"ch_{ch:02d}.md"
             if ch_file.exists():
-                word_count = len(ch_file.read_text(encoding="utf-8").replace(" ", "").replace("\n", ""))
+                word_count = len(ch_file.read_text(encoding="utf-8-sig").replace(" ", "").replace("\n", ""))
                 commit_hash = git_add_commit(
                     f"ch{ch:02d}: 尽力而为 ({max_attempts} 次重试后)"
                 )
@@ -452,7 +455,7 @@ def _build_fallback_brief(ch_num: int, context: str, label: str = "修订") -> s
         import json as _json
         ch_eval_path = latest_chapter_eval(ch_num)
         if ch_eval_path:
-            ch_eval = _json.loads(ch_eval_path.read_text(encoding="utf-8"))
+            ch_eval = _json.loads(ch_eval_path.read_text(encoding="utf-8-sig"))
             score = ch_eval.get("overall_score", "?")
             weakest = ch_eval.get("weakest_dimension", "")
             parts.append(f"## 最新单章评分: {score}/10\n")
@@ -483,7 +486,7 @@ def _build_fallback_brief(ch_num: int, context: str, label: str = "修订") -> s
         from revision.gen_brief import latest_full_eval
         full_path = latest_full_eval()
         if full_path:
-            full_eval = _json.loads(full_path.read_text(encoding="utf-8"))
+            full_eval = _json.loads(full_path.read_text(encoding="utf-8-sig"))
             nscore = full_eval.get("novel_score", "?")
             tsug = full_eval.get("top_suggestion", "")
             parts.append(f"\n## 全文评估: {nscore}/10\n")
@@ -496,7 +499,7 @@ def _build_fallback_brief(ch_num: int, context: str, label: str = "修订") -> s
     try:
         panel_path = EDIT_LOGS_DIR / "reader_panel.json"
         if panel_path.exists():
-            panel = _json.loads(panel_path.read_text(encoding="utf-8"))
+            panel = _json.loads(panel_path.read_text(encoding="utf-8-sig"))
             for d in panel.get("disagreements", []):
                 if d.get("chapter") == ch_num:
                     q = d.get("question", "")
@@ -509,7 +512,7 @@ def _build_fallback_brief(ch_num: int, context: str, label: str = "修订") -> s
     try:
         review_jsons = sorted(EDIT_LOGS_DIR.glob("review_round*.json"))
         if review_jsons:
-            latest_review = _json.loads(review_jsons[-1].read_text(encoding="utf-8"))
+            latest_review = _json.loads(review_jsons[-1].read_text(encoding="utf-8-sig"))
             stars = latest_review.get("stars", 0)
             major = latest_review.get("major_items", 0)
             parts.append(f"\n## 审阅结果: {'★' * int(stars)}, {major} 严重问题\n")
@@ -528,7 +531,7 @@ def _build_fallback_brief(ch_num: int, context: str, label: str = "修订") -> s
     try:
         ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
         if ch_file.exists():
-            text = ch_file.read_text(encoding="utf-8")
+            text = ch_file.read_text(encoding="utf-8-sig")
             wc = len(text.replace(" ", "").replace("\n", ""))
             parts.append(f"\n## 当前字数: {wc} 字\n")
     except Exception:
@@ -627,7 +630,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             post_score = evaluate_chapter_stable(ch_num)
 
             ch_file = CHAPTERS_DIR / f"ch_{ch_num:02d}.md"
-            word_count = len(ch_file.read_text(encoding="utf-8").replace(" ", "").replace("\n", "")) if ch_file.exists() else 0
+            word_count = len(ch_file.read_text(encoding="utf-8-sig").replace(" ", "").replace("\n", "")) if ch_file.exists() else 0
 
             step(f"第 {ch_num} 章: {pre_score} -> {post_score}")
 
@@ -730,7 +733,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             wc = 0
             title = ""
             if ch_file.exists():
-                ch_text = ch_file.read_text(encoding="utf-8")
+                ch_text = ch_file.read_text(encoding="utf-8-sig")
                 wc = len(ch_text.replace(" ", "").replace("\n", ""))
                 for line in ch_text.splitlines()[:3]:
                     if line.startswith("#"):
@@ -778,7 +781,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                 step("无审阅 JSON，跳过修订")
                 break
 
-            latest_review = json.loads(review_jsons[-1].read_text(encoding="utf-8"))
+            latest_review = json.loads(review_jsons[-1].read_text(encoding="utf-8-sig"))
             stars = latest_review.get("stars", 0) or 0
             total_items = latest_review.get("total_items", 0)
             major_items = latest_review.get("major_items", 0)
@@ -947,17 +950,36 @@ def run_pipeline(mode: str = "from_scratch", max_cycles: Optional[int] = None):
         story_file = OUTPUT_DIR / "story_summary.txt"
         story_file.write_text(summary, encoding="utf-8")
 
-        # ★ BUG-4 fix: 完全清理旧产物（包括 chapters/ 目录）
+        # ★ 全面清理旧产物：output/ 下所有子目录和文件
         print("  清理旧产物...")
-        for old_file in ["state.json", "outline_volume.md", "outline.md",
-                         "canon.md", "voice.md", ".config_hash"]:
-            p = OUTPUT_DIR / old_file
+        # 清理 output/ 根目录下的旧生成文件
+        output_root_files = [
+            "state.json", "outline_volume.md", "outline.md",
+            "canon.md", "voice.md", "world.md", "characters.md",
+            "manuscript.md", "arc_summary.md", "results.tsv",
+            ".config_hash", "story_summary.txt",
+        ]
+        for fname in output_root_files:
+            p = OUTPUT_DIR / fname
             if p.exists():
                 p.unlink()
-        old_chapters = OUTPUT_DIR / "chapters"
-        if old_chapters.exists() and old_chapters.is_dir():
-            shutil.rmtree(old_chapters)
-            print("  已清理旧章节目录")
+
+        # 清理 output/ 根目录下所有残留的 .json / .tsv 文件
+        for f in OUTPUT_DIR.glob("*.json"):
+            f.unlink()
+        for f in OUTPUT_DIR.glob("*.tsv"):
+            f.unlink()
+
+        # 清理各卷章级大纲 outline_volume{N}.md
+        for f in OUTPUT_DIR.glob("outline_volume*.md"):
+            f.unlink()
+
+        # 清理 output/ 子目录：chapters, briefs, edit_logs, eval_logs, backups
+        for sub in ["chapters", "briefs", "edit_logs", "eval_logs", "backups"]:
+            subdir = OUTPUT_DIR / sub
+            if subdir.exists() and subdir.is_dir():
+                shutil.rmtree(subdir)
+                print(f"  已清理 output/{sub}/")
 
         # 清空上次运行的调试日志
         debug_log_path = os.path.join(os.path.dirname(__file__), "logs", "debug.log")

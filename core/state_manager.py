@@ -143,7 +143,7 @@ def count_words_in_chapters() -> int:
     total = 0
     if CHAPTERS_DIR.exists():
         for f in CHAPTERS_DIR.glob("ch_*.md"):
-            text = f.read_text(encoding="utf-8")
+            text = f.read_text(encoding="utf-8-sig")
             total += len(text.replace(" ", "").replace("\n", ""))
     return total
 
@@ -278,7 +278,7 @@ def restore_latest() -> bool:
 
     latest = backups[0]
     label_file = latest / "label.txt"
-    label = label_file.read_text(encoding="utf-8").strip() if label_file.exists() else ""
+    label = label_file.read_text(encoding="utf-8-sig").strip() if label_file.exists() else ""
 
     print(f"  [备份] 恢复到: {latest.name} ({label})", file=sys.stderr)
 
@@ -464,7 +464,10 @@ def evaluate_chapter_stable(
     if not scores:
         return 0.0
     scores.sort()
-    return scores[len(scores) // 2]  # 中位数
+    n = len(scores)
+    if n % 2 == 0:
+        return (scores[n // 2 - 1] + scores[n // 2]) / 2
+    return scores[n // 2]
 
 
 def evaluate_foundation_stable(
@@ -490,7 +493,10 @@ def evaluate_foundation_stable(
     if not scores:
         return 0.0
     scores.sort()
-    return scores[len(scores) // 2]  # 中位数
+    n = len(scores)
+    if n % 2 == 0:
+        return (scores[n // 2 - 1] + scores[n // 2]) / 2
+    return scores[n // 2]
 
 
 def parse_lore_score(stdout: str) -> float:

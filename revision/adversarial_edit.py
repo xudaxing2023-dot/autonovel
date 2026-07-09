@@ -111,7 +111,7 @@ def run_adversarial_edit(
 
     total_chapters = len(chapter_files)
     for idx, ch_file in enumerate(chapter_files, 1):
-        ch_text = ch_file.read_text(encoding="utf-8")
+        ch_text = ch_file.read_text(encoding="utf-8-sig")
         ch_num = int(ch_file.stem.split("_")[1])
 
         step(f"对抗性编辑 第 {ch_num} 章 ({idx}/{total_chapters}) ...")

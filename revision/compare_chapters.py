@@ -51,8 +51,8 @@ def run_compare_chapters() -> None:
         a_path = CHAPTERS_DIR / f"{a_stem}.md"
         b_path = CHAPTERS_DIR / f"{b_stem}.md"
 
-        a_text = a_path.read_text(encoding="utf-8")[:3000]
-        b_text = b_path.read_text(encoding="utf-8")[:3000]
+        a_text = a_path.read_text(encoding="utf-8-sig")[:3000]
+        b_text = b_path.read_text(encoding="utf-8-sig")[:3000]
 
         prompt = f"""请判定以下两段章节谁更优秀：
 

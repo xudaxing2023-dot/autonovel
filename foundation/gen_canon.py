@@ -23,9 +23,9 @@ CANON_SYSTEM_PROMPT = """你是一位严谨的设定审计员。你从世界设�
 def generate_canon() -> None:
     """生成 canon.md 并写入 output/ 目录。"""
     world_path = OUTPUT_DIR / "world.md"
-    world = world_path.read_text(encoding="utf-8") if world_path.exists() else ""
+    world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
     chars_path = OUTPUT_DIR / "characters.md"
-    chars = chars_path.read_text(encoding="utf-8") if chars_path.exists() else ""
+    chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
 
     cfg = config
     cfg.load()
@@ -84,7 +84,7 @@ def count_canon_entries(canon_path=None) -> dict:
     if not canon_path.exists():
         return {"total": 0, "world": 0, "character": 0, "timeline": 0, "rules": 0}
 
-    text = canon_path.read_text(encoding="utf-8")
+    text = canon_path.read_text(encoding="utf-8-sig")
     sections = {"一、世界观": 0, "二、角色": 0, "三、时间线": 0, "四、规则": 0}
     current_section = None
 
@@ -93,10 +93,12 @@ def count_canon_entries(canon_path=None) -> dict:
         if not line:
             continue
         # 检测节标题 — 匹配 "## 一、世界观硬事实" 等
-        for key in sections:
-            if key in line and line.startswith("##"):
-                current_section = key
-                break
+        if line.startswith("##"):
+            current_section = None
+            for key in sections:
+                if key in line:
+                    current_section = key
+                    break
         # 统计条目 — 兼容 EM DASH / HYPHEN / ASTERISK 三种 bullet
         if current_section and line.startswith(("—", "-", "*")):
             sections[current_section] += 1

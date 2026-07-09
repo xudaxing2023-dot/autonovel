@@ -34,14 +34,14 @@ def run_review_loop(
         return
 
     manuscript = "\n\n---\n\n".join(
-        f.read_text(encoding="utf-8") for f in chapter_files
+        f.read_text(encoding="utf-8-sig") for f in chapter_files
     )
 
     # 提取书名（对齐原版 get_title()）
     title = ""
     outline_path = OUTPUT_DIR / "outline.md"
     if outline_path.exists():
-        first_line = outline_path.read_text(encoding="utf-8").split("\n")[0]
+        first_line = outline_path.read_text(encoding="utf-8-sig").split("\n")[0]
         title = first_line.lstrip("# ").strip()
 
     EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)

@@ -2,7 +2,7 @@
 name = "autonovel-zh"
 version = "1.0.0"
 description = "中文长篇小说自动生成器 — 基于 NousResearch/autonovel 重构，支持通用 OpenAI 兼容 API"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "httpx>=0.28.1",
     "python-dotenv>=1.2.2",

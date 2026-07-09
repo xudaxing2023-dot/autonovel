@@ -33,7 +33,7 @@ def update_canon_from_chapter(
         新增的硬事实条目数；0 表示无新增。
     """
     canon_path = OUTPUT_DIR / "canon.md"
-    existing_canon = canon_path.read_text(encoding="utf-8") if canon_path.exists() else ""
+    existing_canon = canon_path.read_text(encoding="utf-8-sig") if canon_path.exists() else ""
 
     prompt = f"""【已有正典】
 {existing_canon}

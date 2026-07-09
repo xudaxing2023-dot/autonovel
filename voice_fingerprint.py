@@ -18,9 +18,7 @@ import statistics
 from pathlib import Path
 from collections import Counter
 
-BASE_DIR = Path(__file__).parent
-CHAPTERS_DIR = BASE_DIR / "chapters"
-OUTPUT_DIR = BASE_DIR / "output"
+from core.config import CHAPTERS_DIR, OUTPUT_DIR, EDIT_LOGS_DIR
 
 # ============================================================================
 # Legacy: hardcoded English fantasy vocabulary wells (preserved for backward
@@ -202,7 +200,7 @@ def extract_vocabulary_wells_from_voice(voice_path: Path = None) -> list[set]:
     if not voice_path.exists():
         return []
 
-    voice_text = voice_path.read_text(encoding="utf-8")
+    voice_text = voice_path.read_text(encoding="utf-8-sig")
 
     # 定位 "Vocabulary Register" 节
     vocab_section_match = re.search(
@@ -259,7 +257,7 @@ def analyze_chapter_zh(path: Path, vocab_wells: list[set] = None) -> dict:
     Returns:
         包含量化文风指标的字典。
     """
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     chars = text.replace(" ", "").replace("\n", "").replace("\r", "")
     char_count = len(chars)
 
@@ -450,7 +448,7 @@ def main():
                     print(f"    {o}")
 
     # Save full results
-    out_path = BASE_DIR / "edit_logs" / "voice_fingerprint.json"
+    out_path = EDIT_LOGS_DIR / "voice_fingerprint.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "legacy": {"chapters": results, "outliers": outliers} if results else {},

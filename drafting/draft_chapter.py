@@ -26,8 +26,9 @@ DRAFT_SYSTEM_PROMPT = """你是一位文学小说作者，正在撰写一部长�
 
 def load_file(path: Path) -> str:
     try:
-        return path.read_text(encoding="utf-8")
-    except FileNotFoundError:
+        return path.read_text(encoding="utf-8-sig")
+    except (FileNotFoundError, IsADirectoryError, PermissionError,
+            UnicodeDecodeError, OSError):
         return ""
 
 
@@ -50,7 +51,7 @@ def extract_chapter_outline(chapter_num: int) -> str:
     # 匹配 "### 第 N 章" 或 "### Ch N"
     patterns = [
         rf'###\s*(?:第\s*)?{chapter_num}\s*章.*?(?=###\s*(?:第\s*)?{chapter_num + 1}\s*章|## 伏笔|## 二、|## 三、|$)',
-        rf'###\s*Ch\s*{chapter_num}[:：].*?(?=###\s*Ch\s*{chapter_num + 1}[:：]|## Foreshadowing|$)',
+        rf'###\s*(?:Ch(?:apter)?)\s*{chapter_num}[:：\s].*?(?=###\s*(?:Ch(?:apter)?)\s*{chapter_num + 1}[:：\s]|## Foreshadowing|$)',
     ]
     for pattern in patterns:
         match = re.search(pattern, outline_text, re.DOTALL)
@@ -90,7 +91,7 @@ def _load_recent_chapters(chapter_num: int) -> str:
             break
         prev_path = CHAPTERS_DIR / f"ch_{prev_ch:02d}.md"
         if prev_path.exists():
-            text = prev_path.read_text(encoding="utf-8")
+            text = prev_path.read_text(encoding="utf-8-sig")
             recent_chapters.append(
                 f"【第 {prev_ch} 章全文】\n{text}"
             )
