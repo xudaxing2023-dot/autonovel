@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 from core.config import config, OUTPUT_DIR, TEMPLATES_DIR
-from core.api_client import call_writer, call_judge
+from core.api_client import call_writer, call_p3_judge
 from core.state_manager import step
 
 
@@ -126,7 +126,7 @@ def generate_5_registers(story: str, world: str, chars: str) -> str:
     """5段语域试验：调用 writer LLM 生成5种不同风格的试写段落。"""
     prompt = _build_register_prompt(story, world, chars)
     step("调用 LLM 试写 5 种文风 ...")
-    return call_writer(prompt, system=VOICE_SYSTEM_PROMPT, max_total_time=300)
+    return call_writer(prompt, system=VOICE_SYSTEM_PROMPT)
 
 
 def evaluate_registers(registers_text: str, story: str) -> dict:
@@ -170,7 +170,7 @@ def evaluate_registers(registers_text: str, story: str) -> dict:
 }}"""
 
     step("调用裁判模型评估 5 段语域 ...")
-    result = call_judge(eval_prompt, max_total_time=300)
+    result = call_p3_judge(eval_prompt)
 
     try:
         json_match = re.search(r'\{[\s\S]*\}', result)
@@ -214,7 +214,7 @@ def refine_voice(registers_text: str, eval_result: dict, best_register: int,
 {_build_select_prompt(registers_text)}"""
 
     step("调用 LLM 精炼最佳文风 ...")
-    return call_writer(refine_prompt, max_total_time=300)
+    return call_writer(refine_prompt)
 
 
 # ============================================================================

@@ -15,7 +15,7 @@ from datetime import datetime
 from pathlib import Path
 
 from core.config import OUTPUT_DIR, CHAPTERS_DIR, EDIT_LOGS_DIR, config
-from core.api_client import call_judge
+from core.api_client import call_p3_judge
 from core.state_manager import step, banner
 from prompts.review_prompts import build_review_prompt, REVIEW_SYSTEM_PROMPT
 
@@ -53,7 +53,7 @@ def run_review_loop(
         prompt = build_review_prompt(manuscript, title=title)
 
         try:
-            result = call_judge(
+            result = call_p3_judge(
                 prompt, system=REVIEW_SYSTEM_PROMPT,
                 retries=retries, max_total_time=max_total_time)
         except Exception as e:

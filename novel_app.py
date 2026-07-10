@@ -245,7 +245,7 @@ def _generate_and_pick_seed(total_chapters: int) -> str:
     print()
     try:
         raw = call_writer(prompt, system=SEED_SYSTEM_PROMPT,
-                          temperature=1.0, max_total_time=600)
+                          temperature=1.0)
     except Exception as e:
         print(f"  ⚠ 种子生成失败: {e}")
         print("  将切换到手动输入模式。\n")

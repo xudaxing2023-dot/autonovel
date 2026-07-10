@@ -673,9 +673,9 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                   data={"cycle": cycle, "max_cycles": max_cycles,
                         "prev_score": prev_score})
 
-        # Step 1: 对抗性编辑（retries=2, max_total_time=1200  = 20分钟）
-        step("对抗性编辑全部章节 (retries=2, 总超时=1200s) ...")
-        run_adversarial_edit("all", retries=2, max_total_time=1200)
+        # Step 1: 对抗性编辑（retries=3, max_total_time=None  = 自动计算）
+        step("对抗性编辑全部章节 (retries=3, 总超时=自动) ...")
+        run_adversarial_edit("all", retries=3, max_total_time=None)
         step("对抗性编辑全部章节 完成 ✓")
 
         # Step 2: 应用裁剪
@@ -685,9 +685,9 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
         except Exception as e:
             step(f"apply_cuts 跳过: {e}")
 
-        # Step 3: 读者评审团（retries=2, max_total_time=600 = 10分钟）
-        step("运行读者评审团 (retries=2, 总超时=600s) ...")
-        run_reader_panel(retries=2, max_total_time=600)
+        # Step 3: 读者评审团（retries=3, max_total_time=None = 自动计算）
+        step("运行读者评审团 (retries=3, 总超时=自动) ...")
+        run_reader_panel(retries=3, max_total_time=None)
         step("读者评审团 完成 ✓")
 
         # Step 4: 解析共识
@@ -715,9 +715,9 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             brief_text = build_panel_brief(ch_num)
             brief_file.write_text(brief_text, encoding="utf-8")
 
-            # 执行修订（retries=2, max_total_time=1200 = 20分钟）
-            step(f"按摘要修订第 {ch_num} 章 (retries=2, 总超时=1200s) ...")
-            revise_chapter(ch_num, brief_file, retries=2, max_total_time=1200)
+            # 执行修订（retries=5, max_total_time=None = 自动计算）
+            step(f"按摘要修订第 {ch_num} 章 (retries=5, 总超时=自动) ...")
+            revise_chapter(ch_num, brief_file, retries=5, max_total_time=None)
 
             # 评估修订后章节
             post_score = evaluate_chapter_stable(ch_num)
@@ -747,7 +747,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
         # Step 6: 全文评估（对齐原版位置：共识修订之后、平台检测之前）
         step("运行全文评估 ...")
         try:
-            fe = evaluate_full(max_total_time=600)
+            fe = evaluate_full(max_total_time=None)
             novel_score = parse_score(fe, "novel_score")
             if novel_score < 0:
                 novel_score = parse_score(fe, "overall_score")
@@ -786,8 +786,8 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     def _run_review_revision_loop(
         state: dict,
         max_revision_rounds: int = 4,
-        retries: int = 2,
-        max_total_time: int = 1200) -> None:
+        retries: int = 3,
+        max_total_time: int = None) -> None:
         """Phase 3b 审阅修订闭环——对齐原版：整本全文发送给裁判模型审阅。
 
         审阅 → 质量检查 → 从审阅报告中提取弱章 → 逐章修订 → 全局裁剪。
@@ -949,7 +949,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     # 执行审阅修订闭环
     try:
         _run_review_revision_loop(state, max_revision_rounds=4,
-                                   retries=2, max_total_time=1200)
+                                   retries=3, max_total_time=None)
     except Exception as e:
         step(f"审阅修订闭环跳过: {e}")
 

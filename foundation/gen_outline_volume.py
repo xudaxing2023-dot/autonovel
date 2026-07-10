@@ -156,8 +156,7 @@ def _call_volume_segment(
     result = call_p1_writer(
         prompt,
         system=VOLUME_OUTLINE_SYSTEM_PROMPT,
-        temperature=0.7,   # 结构规划需要比创造性写作略低的温度
-        max_total_time=600)
+        temperature=0.7)   # 结构规划需要比创造性写作略低的温度
     step(f"{label} 完成 ({len(result)} chars)")
     return result
 

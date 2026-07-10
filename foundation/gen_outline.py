@@ -275,8 +275,7 @@ def _generate_outline_segment(
     result = call_p1_writer(
         prompt,
         system=CHAPTER_OUTLINE_SYSTEM_PROMPT,
-        temperature=0.7,
-        max_total_time=600)
+        temperature=0.7)
     step(f"{label} 完成 ({len(result)} chars)")
     return result
 

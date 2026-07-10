@@ -280,8 +280,7 @@ def main():
         prompt,
         system=SEED_SYSTEM_PROMPT,
         max_tokens=max_tokens,
-        temperature=1.0,  # 保持高创意温度
-        max_total_time=600,
+        temperature=1.0,
     )
 
     print()

@@ -447,8 +447,8 @@ def _try_json_extract(text: str, key: str):
 
 def evaluate_chapter_stable(
     ch_num: int,
-    retries: int = 2,
-    max_total_time: int = 600,
+    retries: int = 3,
+    max_total_time: int = None,
     samples: int = 3) -> float:
     """稳定版章节评估：调用 N 次取中位数，过滤 -1.0 异常值。
 

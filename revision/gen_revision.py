@@ -19,7 +19,7 @@ from prompts.revision_prompts import build_revision_prompt, REVISION_SYSTEM_PROM
 def revise_chapter(
     ch_num: int,
     brief_file: str,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> None:
     """根据修订摘要重写章节。"""
     brief_path = Path(brief_file) if isinstance(brief_file, str) else brief_file

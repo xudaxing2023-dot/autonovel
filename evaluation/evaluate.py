@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 from core.config import config, OUTPUT_DIR, CHAPTERS_DIR, EVAL_LOGS_DIR
-from core.api_client import call_judge
+from core.api_client import call_p3_judge
 from core import _stderr_print, _safe_print
 from prompts.eval_judge_prompts import (
     build_foundation_eval_prompt,
@@ -448,7 +448,7 @@ def evaluate_foundation(
         outline_text=outline, canon_text=canon, mystery_text=mystery)
 
     _stderr_print("  [评估] 调用 LLM 裁判评估基础构建 ...")
-    result = call_judge(
+    result = call_p3_judge(
         prompt, system=JUDGE_SYSTEM_PROMPT,
         retries=retries, max_total_time=max_total_time)
 
@@ -526,7 +526,7 @@ def evaluate_chapter(
         prev_chapter_tail=prev_tail)
 
     _stderr_print(f"  [评估] 调用 LLM 裁判评估第 {ch_num} 章 ...")
-    result = call_judge(
+    result = call_p3_judge(
         prompt, system=JUDGE_SYSTEM_PROMPT,
         retries=retries, max_total_time=max_total_time)
 
@@ -583,7 +583,7 @@ def evaluate_full(
         characters_text=characters_text)
 
     _stderr_print("  [评估] 调用 LLM 裁判评估全文 ...")
-    result = call_judge(
+    result = call_p3_judge(
         prompt, system=JUDGE_SYSTEM_PROMPT,
         retries=retries, max_total_time=max_total_time)
 

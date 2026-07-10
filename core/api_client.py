@@ -382,6 +382,7 @@ def _call_with_judge_config(
     temperature: float = 0.3,
     retries: int = 5,
     max_total_time: int = None,
+    timeout: int = 600,
     judge_model: str = "",
     judge_base: str = "",
     judge_key: str = "") -> str:
@@ -399,7 +400,7 @@ def _call_with_judge_config(
         system=system,
         messages=messages,
         temperature=temperature,
-        timeout=600,
+        timeout=timeout,
         retries=retries,
         max_total_time=max_total_time)
 
@@ -414,7 +415,8 @@ def _call_with_phase_config(
     system: Optional[str] = None,
     temperature: float = 0.8,
     retries: int = 5,
-    max_total_time: int = None) -> str:
+    max_total_time: int = None,
+    timeout: int = 600) -> str:
     """按 Phase 选择 API 配置并调用 LLM。
 
     Args:
@@ -444,7 +446,7 @@ def _call_with_phase_config(
         system=system,
         messages=messages,
         temperature=temperature,
-        timeout=600,
+        timeout=timeout,
         retries=retries,
         max_total_time=max_total_time)
 

@@ -107,7 +107,7 @@ def _load_recent_chapters(chapter_num: int) -> str:
 
 def draft_chapter(
     chapter_num: int,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> None:
     """起草指定章节。"""
     cfg = config

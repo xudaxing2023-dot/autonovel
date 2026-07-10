@@ -54,7 +54,7 @@ def generate_outline_part2() -> None:
 将结果追加到现有大纲末尾。"""
 
     step("调用 LLM 生成伏笔账本 ...")
-    result = call_writer(prompt, system=OUTLINE_PART2_SYSTEM_PROMPT, max_total_time=300)
+    result = call_writer(prompt, system=OUTLINE_PART2_SYSTEM_PROMPT)
 
     # 追加到 outline.md
     combined = outline_text.rstrip() + "\n\n" + result
