@@ -1,6 +1,6 @@
 {
-  "phase": "revision",
-  "current_focus": "full_novel",
+  "phase": "export",
+  "current_focus": "export",
   "iteration": 1,
   "foundation_score": 7.5,
   "lore_score": 7.8,
@@ -15,5 +15,6 @@
   "volumes_outlined": 3,
   "canon_entry_count": 644,
   "canon_last_updated_ch": 0,
-  "foundation_step": "voice"
+  "foundation_step": "voice",
+  "review_revision_round": 1
 }
