@@ -44,13 +44,13 @@ def _build_register_prompt(story: str, world: str, chars: str) -> str:
     return f"""请为以下小说概念试写 5 种不同文风的小说开头段落（每种约 300-500 字）。
 
 【故事梗概】
-{story[:2000]}
+{story}
 
 【世界观设定参考】
-{world[:2000]}
+{world}
 
 【角色参考】
-{chars[:2000]}
+{chars}
 
 请依次写出：
 
@@ -134,7 +134,7 @@ def evaluate_registers(registers_text: str, story: str) -> dict:
     eval_prompt = f"""请评估以下5段语域试验的文风质量。
 
 【故事梗概】
-{story[:1000]}
+{story}
 
 【5段语域试验】
 {registers_text}

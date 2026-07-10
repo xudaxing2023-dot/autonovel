@@ -459,7 +459,7 @@ def call_p1_writer(
     prompt: str,
     system: Optional[str] = None,
     temperature: float = 0.8,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> str:
     """Phase 1 写作调用 — 使用 AUTONOVEL_P1_* 配置。
 
@@ -475,7 +475,7 @@ def call_p2_writer(
     prompt: str,
     system: Optional[str] = None,
     temperature: float = 0.8,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> str:
     """Phase 2 写作调用 — 使用 AUTONOVEL_P2_* 配置。
 
@@ -491,7 +491,7 @@ def call_p2_ctx_writer(
     prompt: str,
     system: Optional[str] = None,
     temperature: float = 0.8,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> str:
     """Phase 2 大上下文写作调用 — 使用 AUTONOVEL_P2_CTX_* 配置。
 

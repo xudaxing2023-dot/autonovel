@@ -31,13 +31,13 @@ def build_arc_summary() -> None:
     snippets = []
     for f in chapter_files:
         text = f.read_text(encoding="utf-8-sig")
-        head = text[:500]
-        tail = text[-500:]
+        head = text
+        tail = text
         snippets.append(f"## {f.stem} (开头)\n{head}\n...\n## {f.stem} (结尾)\n{tail}")
 
     prompt = f"""请阅读以下所有章节的开头和结尾片段，分析全局弧线：
 
-{chr(10).join(snippets)[:25000]}
+{chr(10).join(snippets)}
 
 请输出：
 

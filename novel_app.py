@@ -4,8 +4,8 @@ novel_app.py — 中文长篇小说自动生成器 交互式启动入口
 
 用户输入顺序：
   1. 生成模式 (from_scratch / resume)
-  2. 故事来源（手动输入 / AI 种子生成 → 挑选）
-  3. 总章节数 + 分卷设置
+  2. 总章节数 + 分卷设置
+  3. 故事来源（手动输入 / AI 种子生成 → 挑选，种子生成使用步骤 2 的章节数）
   4. 确认并启动
 
 API 配置（模型、Key、端点）全部通过 .env 文件管理，不在此交互输入。
@@ -204,8 +204,8 @@ def _collect_mode() -> str:
     print("   [1] 从头开始生成（完整流水线）")
     print("   [2] 继续上次生成（从 state.json 恢复）")
     print()
-    choice = input("   请选择 [1/2] (默认: 1): ").strip()
-    mode = "from_scratch" if choice != "2" else "resume"
+    choice = input("   请选择 [1/2] (默认: 2): ").strip()
+    mode = "resume" if choice != "1" else "from_scratch"
     if mode == "resume":
         state_file = OUTPUT_DIR / "state.json"
         if not state_file.exists():
@@ -230,10 +230,9 @@ def _input_story_manually() -> str:
     return story
 
 
-def _generate_and_pick_seed() -> str:
+def _generate_and_pick_seed(total_chapters: int) -> str:
     from core.api_client import call_writer
     seed_count = 8
-    total_chapters = 24
     genre_constraint = _build_genre_constraint(None, seed_count)
     genre_diversity = _build_genre_diversity(None, seed_count)
     prompt = SEED_GENERATE_PROMPT.format(
@@ -286,15 +285,15 @@ def _generate_and_pick_seed() -> str:
         print("  ⚠ 编号无效，请重新输入。")
 
 
-def _collect_story() -> str:
-    """步骤 2: 采集故事梗概。"""
-    _section("2. 故事来源：")
+def _collect_story(total_chapters: int) -> str:
+    """步骤 3: 采集故事梗概（种子生成使用用户指定的章节数）。"""
+    _section("3. 故事来源：")
     print("   [1] 我自己写一段梗概")
     print("   [2] 让 AI 帮我生成一批种子概念，我从中挑选")
     print()
     choice = input("   请选择 [1/2] (默认: 1): ").strip()
     if choice == "2":
-        return _generate_and_pick_seed()
+        return _generate_and_pick_seed(total_chapters)
     else:
         return _input_story_manually()
 
@@ -302,14 +301,14 @@ def _collect_story() -> str:
 # ——— 章节和分卷配置 ———
 
 def _collect_chapters_volumes() -> tuple[int, int, int]:
-    """步骤 3: 采集总章节数 + 分卷设置。返回 (total_chapters, total_volumes, chapters_per_volume)。"""
-    _section("3. 小说总章节数（建议 9–30，默认 9）：")
+    """步骤 2: 采集总章节数 + 分卷设置。返回 (total_chapters, total_volumes, chapters_per_volume)。"""
+    _section("2. 小说总章节数（建议 9–30，默认 9）：")
     ch_input = input("   > ").strip()
     total_chapters = int(ch_input) if ch_input.isdigit() and int(ch_input) > 0 else 9
     print(f"   → 总章节数: {total_chapters}")
     print()
 
-    _section("3.1. 分卷设置:")
+    _section("2.1. 分卷设置:")
     print("   方案 D 始终启用分层大纲。将小说分为若干卷，每卷固定章数。")
     print("   单卷时（默认），一卷包含全部章节。")
     print()
@@ -396,10 +395,10 @@ def main():
         _check_env()
         # 2. 模式选择（最前面）
         mode = _collect_mode()
-        # 3. 故事梗概
-        story = _collect_story()
-        # 4. 章节和分卷
+        # 3. 章节和分卷（先确定章节数，供后续种子生成使用）
         total_ch, total_vol, chpv = _collect_chapters_volumes()
+        # 4. 故事梗概（种子生成可使用已确定的章节数）
+        story = _collect_story(total_ch)
         # 5. 确认启动
         confirm_and_start(mode, story, total_ch, total_vol, chpv)
     except KeyboardInterrupt:

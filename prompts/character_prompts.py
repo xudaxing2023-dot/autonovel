@@ -22,7 +22,7 @@ def build_character_prompt(seed_text: str, world_text: str = "", voice_part2: st
 【故事梗概】
 {story}
 
-{('【世界观设定】' + world_text[:4000]) if world_text else ''}
+{('【世界观设定】' + world_text) if world_text else ''}
 
 {('【文风身份】' + voice_part2) if voice_part2 else ''}
 

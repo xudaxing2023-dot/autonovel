@@ -25,8 +25,8 @@ def run_drafts(state: dict = None) -> None:
 
     cfg = config
     cfg.load()
-    max_attempts = cfg.max_chapter_attempts if cfg.loaded else 5
-    threshold = cfg.chapter_threshold if cfg.loaded else 6.0
+    max_attempts = cfg.max_chapter_attempts if cfg.loaded else 10
+    threshold = cfg.chapter_threshold if cfg.loaded else 7.0
 
     CHAPTERS_DIR.mkdir(parents=True, exist_ok=True)
 

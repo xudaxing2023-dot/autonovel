@@ -48,6 +48,7 @@ from core.state_manager import (
     log_result, banner, step, parse_score, parse_lore_score,
     count_words_in_chapters, count_chapter_files, get_total_chapters,
     evaluate_chapter_stable, evaluate_foundation_stable)
+from foundation.gen_outline import _cn_to_arabic
 
 
 # ============================================================================
@@ -55,9 +56,9 @@ from core.state_manager import (
 # ============================================================================
 
 FOUNDATION_THRESHOLD = 7.5
-CHAPTER_THRESHOLD = 6.0
-MAX_FOUNDATION_ITERS = 10
-MAX_CHAPTER_ATTEMPTS = 5
+CHAPTER_THRESHOLD = 7.0
+MAX_FOUNDATION_ITERS = 20
+MAX_CHAPTER_ATTEMPTS = 10
 MIN_REVISION_CYCLES = 3
 MAX_REVISION_CYCLES = 6
 PLATEAU_DELTA = 0.3
@@ -326,6 +327,16 @@ def run_drafting(state: dict) -> dict:
                           data={"ch": ch, "score": score, "attempt": attempt,
                                 "words": word_count, "total": total})
 
+                # ── 质量门禁：文风指纹 + 结构反模式审计 ──
+                # 先计算严重程度，再统一判断是否重写；
+                # update_canon 只在所有门禁通过后才执行，避免从低质量章节提取事实污染正典。
+
+                voice_severe = False
+                anti_severe = False
+                anti_warnings = []
+                anti_warning_count = 0
+                antipattern_max = cfg.antipattern_max_warnings if cfg.loaded else 4
+
                 # Voice fingerprint 检查（每章起草后）
                 try:
                     from voice_fingerprint import analyze_chapter_zh, extract_vocabulary_wells_from_voice
@@ -350,7 +361,11 @@ def run_drafting(state: dict) -> dict:
                     if transition_per_1k > 15:
                         warnings.append(f"过渡词密度过高 ({transition_per_1k:.1f}/千字)")
 
-                    if warnings:
+                    # ≥3 项并发警告视为文风严重漂移
+                    if len(warnings) >= 3:
+                        voice_severe = True
+                        step(f"⚠ 文风指纹严重警告 (第 {ch} 章): {', '.join(warnings)}")
+                    elif warnings:
                         step(f"⚠ 文风指纹警告 (第 {ch} 章): {', '.join(warnings)}")
                     else:
                         step(f"文风指纹: ✓ (对话 {dialogue_ratio:.0%}, "
@@ -363,29 +378,42 @@ def run_drafting(state: dict) -> dict:
                     from evaluation.antipatterns import run_structural_audit
                     chapter_text = ch_file.read_text(encoding="utf-8-sig")
                     audit = run_structural_audit(chapter_text)
-                    antipattern_max = cfg.antipattern_max_warnings if cfg.loaded else 4
-                    if audit["warning_count"] > 0:
-                        if audit["warning_count"] >= antipattern_max:
-                            step(f"⚠ 结构反模式过多 ({audit['warning_count']} 项 ≥ {antipattern_max})，"
-                                 f"触发重写…")
-                            for w in audit["warnings"]:
-                                step(f"  — {w}")
-                            if ch_file.exists():
-                                ch_file.unlink()
-                            # 重置 drafted 标志，下一轮 attempt 会重新起草
-                            drafted = False
-                            continue
-                        else:
-                            step(f"⚠ 结构反模式警告 ({audit['warning_count']} 项):")
-                            for w in audit["warnings"]:
-                                step(f"  — {w}")
+                    anti_warning_count = audit["warning_count"]
+                    anti_warnings = audit["warnings"]
+                    if anti_warning_count >= antipattern_max:
+                        anti_severe = True
+                        step(f"⚠ 结构反模式过多 ({anti_warning_count} 项 ≥ {antipattern_max})")
+                        for w in anti_warnings:
+                            step(f"  — {w}")
+                    elif anti_warning_count > 0:
+                        step(f"⚠ 结构反模式警告 ({anti_warning_count} 项):")
+                        for w in anti_warnings:
+                            step(f"  — {w}")
                     else:
                         step("结构反模式: ✓")
                 except Exception as e:
                     step(f"结构反模式审计跳过: {e}")
 
+                # ★ 质量门禁 1：文风 + 结构双重严重告警 → 必须重写
+                if voice_severe and anti_severe:
+                    step("⚠ 文风指纹与结构反模式双重大警，触发重写…")
+                    if ch_file.exists():
+                        ch_file.unlink()
+                    # 重置 drafted 标志，下一轮 attempt 会重新起草
+                    drafted = False
+                    continue
+
+                # ★ 质量门禁 2：结构反模式单项严重 → 触发重写（保留既有行为）
+                if anti_severe:
+                    if ch_file.exists():
+                        ch_file.unlink()
+                    drafted = False
+                    continue
+
+                # ── 所有质量门禁通过：更新正典 ──
                 # ★ 方案 D Step 7: 增量 canon 追加
                 # 每章起草通过后，从章节文本提取新设定追加到 canon.md
+                # 仅在章节确认不会被重写后才执行，防止低质量事实污染正典。
                 try:
                     from foundation.update_canon import update_canon_from_chapter
                     ch_text = ch_file.read_text(encoding="utf-8-sig")
@@ -470,7 +498,15 @@ def _parse_panel_consensus(panel_path: Optional[Path]) -> list:
             answer = answers.get(question, "")
             if not isinstance(answer, str):
                 continue
+            # 阿拉伯数字章节号: 第1章, 第12章, 1章
             chs = re.findall(r'第?\s*(\d+)\s*章', answer)
+            # 中文数字章节号回退: 第一章, 第十二章, 第一百二十三章
+            cn_chs = re.findall(r'(?:第\s*)?([一二三四五六七八九十百零]+)\s*章', answer)
+            for cn_str in cn_chs:
+                arabic = _cn_to_arabic(cn_str)
+                if arabic is not None:
+                    debug_log("panel_cn_chapter", f"中文数字章节号匹配: '{cn_str}' → {arabic} (读者={reader_key}, 问题={question})")
+                    chs.append(str(arabic))
             for ch_str in chs:
                 ch_num = int(ch_str)
                 key = (ch_num, question)

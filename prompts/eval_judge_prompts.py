@@ -92,19 +92,19 @@ def build_foundation_eval_prompt(
 {MANDATORY_GAP_FIX}
 
 【故事梗概】
-{seed_text[:3000]}
+{seed_text}
 
 【世界观设定】
-{world_text[:8000]}
+{world_text}
 
 【角色注册表】
-{characters_text[:8000]}
+{characters_text}
 
 【章节大纲（含伏笔账本）】
-{outline_text[:8000]}
+{outline_text}
 
-{('【正典硬事实】' + canon_text[:3000]) if canon_text else ''}
-{('【核心谜团（仅作者知晓）】' + mystery_text[:2000]) if mystery_text else ''}
+{('【正典硬事实】' + canon_text) if canon_text else ''}
+{('【核心谜团（仅作者知晓）】' + mystery_text) if mystery_text else ''}
 
 【评分维度——13 个独立维度，每维 1-10 分】
 
@@ -541,12 +541,12 @@ def build_full_novel_eval_prompt(
                 chapter_count += 1
     except Exception:
         # 回退：使用传入的 manuscript_text 截断
-        chapter_summaries = manuscript_text[:25000] if manuscript_text else ""
+        chapter_summaries = manuscript_text if manuscript_text else ""
         chapter_count = 0
 
     # 如果章节摘要为空但 manuscript_text 有内容，回退到截断模式
     if not chapter_summaries and manuscript_text:
-        chapter_summaries = manuscript_text[:25000]
+        chapter_summaries = manuscript_text
 
     outline_section = ""
     if outline_text:

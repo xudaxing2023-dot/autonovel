@@ -145,7 +145,6 @@ class TestAllModuleImports:
             "revision.gen_brief",
             "revision.gen_revision",
             "revision.review",
-            "revision.compare_chapters",
         ]
         failed = []
         for mod_name in revision_modules:
@@ -345,7 +344,6 @@ class TestCircularDependency:
             "revision.adversarial_edit",
             "revision.apply_cuts",
             "revision.reader_panel",
-            "revision.compare_chapters",
             # 第8层: export
             "export.build_manuscript",
             "export.build_outline",

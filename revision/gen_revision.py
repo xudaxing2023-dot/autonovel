@@ -38,8 +38,8 @@ def revise_chapter(
 
     prev_path = CHAPTERS_DIR / f"ch_{ch_num - 1:02d}.md"
     next_path = CHAPTERS_DIR / f"ch_{ch_num + 1:02d}.md"
-    prev_tail = prev_path.read_text(encoding="utf-8-sig")[-2000:] if prev_path.exists() else "(第一章)"
-    next_head = next_path.read_text(encoding="utf-8-sig")[:1500] if next_path.exists() else "(最后一章)"
+    prev_tail = prev_path.read_text(encoding="utf-8-sig") if prev_path.exists() else "(第一章)"
+    next_head = next_path.read_text(encoding="utf-8-sig") if next_path.exists() else "(最后一章)"
 
     # ★ 提取本章大纲条目，防止多次修订后偏离大纲结构
     outline_text = ""

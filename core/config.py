@@ -329,7 +329,7 @@ class Config:
 
     @property
     def chapter_threshold(self) -> float:
-        return self._data.get("chapter_threshold", 6.0)
+        return self._data.get("chapter_threshold", 7.0)
 
     @property
     def max_foundation_iters(self) -> int:
@@ -337,7 +337,7 @@ class Config:
 
     @property
     def max_chapter_attempts(self) -> int:
-        return self._data.get("max_chapter_attempts", 5)
+        return self._data.get("max_chapter_attempts", 10)
 
     @property
     def chapter_word_target(self) -> int:

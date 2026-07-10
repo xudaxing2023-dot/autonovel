@@ -29,13 +29,13 @@ def build_outline() -> None:
     summaries = []
     for f in chapter_files:
         text = f.read_text(encoding="utf-8-sig")
-        summaries.append(f"## {f.stem}\n{text[:800]}...（共{len(text)}字）")
+        summaries.append(f"## {f.stem}\n{text}...（共{len(text)}字）")
 
     manuscript = "\n\n".join(summaries)
 
     prompt = f"""请阅读以下所有章节的概要，反向重建一份实际的章节大纲（反映真实完成的章节内容，而非初始计划）：
 
-{manuscript[:20000]}
+{manuscript}
 
 对每一章，写出：
 ### 第 N 章

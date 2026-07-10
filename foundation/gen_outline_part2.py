@@ -38,10 +38,10 @@ def generate_outline_part2() -> None:
     prompt = f"""请基于以下大纲和角色信息，补充完整的伏笔账本（Foreshadowing Ledger）。
 
 【现有大纲】
-{outline_text[:12000]}
+{outline_text}
 
 【角色信息】
-{chars[:3000]}
+{chars}
 
 请添加「## 伏笔账本」章节，格式如下：
 

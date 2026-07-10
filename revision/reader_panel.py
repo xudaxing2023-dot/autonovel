@@ -116,7 +116,7 @@ def _build_arc_summary(chapter_files: list) -> str:
         try:
             summary = call_writer(
                 f"用恰好 3 句话总结本章。发生了什么、什么改变了、"
-                f"什么未解问题留下。\n\n第 {ch_num} 章:\n{text[:5000]}",
+                f"什么未解问题留下。\n\n第 {ch_num} 章:\n{text}",
                 system=summary_system)
         except Exception:
             summary = "(摘要生成失败)"

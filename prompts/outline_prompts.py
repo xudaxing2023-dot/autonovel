@@ -30,15 +30,15 @@ def build_outline_prompt(
 【故事梗概】
 {story}
 
-{('【核心谜团（仅作者知道——读者逐步发现）】' + mystery_text[:3000]) if mystery_text else ''}
+{('【核心谜团（仅作者知道——读者逐步发现）】' + mystery_text) if mystery_text else ''}
 
-{('【世界观设定】' + world_text[:4000]) if world_text else ''}
+{('【世界观设定】' + world_text) if world_text else ''}
 
-{('【角色注册表】' + characters_text[:4000]) if characters_text else ''}
+{('【角色注册表】' + characters_text) if characters_text else ''}
 
-{('【文风身份】' + voice_part2[:2000]) if voice_part2 else ''}
+{('【文风身份】' + voice_part2) if voice_part2 else ''}
 
-{('【叙事技艺参考】' + craft_text[:3000]) if craft_text else '请参考以下结构原则：\n— Save the Cat 节拍表 (Opening Image/Catalyst/Midpoint/All Is Lost/Finale)\n— try-fail 循环 (Yes-but / No-and 占 60%+)\n— MICE 商数 (Milieu/Inquiry/Character/Event 四线程嵌套关闭)\n— 伏笔种植与回收 (Plant → Reinforce → Payoff，间距 ≥ 3 章)'}
+{('【叙事技艺参考】' + craft_text) if craft_text else '请参考以下结构原则：\n— Save the Cat 节拍表 (Opening Image/Catalyst/Midpoint/All Is Lost/Finale)\n— try-fail 循环 (Yes-but / No-and 占 60%+)\n— MICE 商数 (Milieu/Inquiry/Character/Event 四线程嵌套关闭)\n— 伏笔种植与回收 (Plant → Reinforce → Payoff，间距 ≥ 3 章)'}
 
 【大纲结构 — 请包含以下内容】
 
@@ -119,16 +119,16 @@ def build_volume_outline_prompt_part1(
 — 当前规划范围: 卷 {vol_start}–{vol_end}
 
 【故事梗概】
-{story[:3000]}
+{story}
 
 【世界观设定】
-{world_text[:4000]}
+{world_text}
 
 【角色注册表】
-{characters_text[:4000]}
+{characters_text}
 
 【文风参考】
-{voice_text[:2000]}
+{voice_text}
 
 【输出要求】
 
@@ -292,16 +292,16 @@ def build_volume_outline_prompt_single(
 — 总章节数: {total_chapters}
 
 【故事梗概】
-{story[:3000]}
+{story}
 
 【世界观设定】
-{world_text[:5000]}
+{world_text}
 
 【角色注册表】
-{characters_text[:5000]}
+{characters_text}
 
 【文风参考】
-{voice_text[:2000]}
+{voice_text}
 
 【输出格式 — 必须严格使用以下 Markdown 标题，不得修改标题文本】
 你必须使用三级标题（###）作为各段的标题。以下是唯一允许的标题格式：
@@ -361,20 +361,20 @@ def build_chapter_outline_for_volume_prompt(
     return f"""请为第 {volume_num} 卷生成章级大纲（第 {ch_start}–{ch_end} 章）。
 
 【卷级总纲约束 — 本卷必须遵循】
-{vol_section[:3000]}
+{vol_section}
 
 {('【前一卷章级大纲（尾部 —— 用于跨卷衔接）】' + chr(10) + prev_vol_tail) if prev_vol_tail else ''}
 
 {('【本卷前段章级大纲（已生成 —— 严格继承，不可冲突）】' + chr(10) + prior_segment) if prior_segment else ''}
 
 【世界观设定】
-{world_text[:3000]}
+{world_text}
 
 【角色注册表】
-{characters_text[:3000]}
+{characters_text}
 
 【文风参考】
-{voice_text[:1500]}
+{voice_text}
 
 【输出要求】
 

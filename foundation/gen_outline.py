@@ -64,12 +64,39 @@ def _split_chapters_for_volume(start_ch: int, end_ch: int) -> list[tuple[int, in
 
 
 def _cn_to_arabic(cn: str) -> int | None:
-    """将中文数字（一～九十九）转换为阿拉伯数字。"""
+    """将中文数字（一～四百九十九）转换为阿拉伯数字。"""
     _MAP = {
         "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
         "六": 6, "七": 7, "八": 8, "九": 9, "十": 10,
     }
     cn = cn.strip()
+
+    # —— 百位处理 (100–499) ——
+    if "百" in cn:
+        parts = cn.split("百", 1)
+        hundreds_str = parts[0]
+        remainder = parts[1] if len(parts) > 1 else ""
+
+        hundreds = _MAP.get(hundreds_str, 0)
+        if hundreds == 0 or hundreds > 4:
+            return None
+
+        if not remainder:
+            return hundreds * 100
+
+        # remainder: 零一(101), 一十(110), 二十一(121), 九十九(499) 等
+        if remainder.startswith("零"):
+            # 一百零一 → 101, 二百零九 → 209
+            ones = _MAP.get(remainder[1], 0) if len(remainder) >= 2 else 0
+            return hundreds * 100 + ones
+        else:
+            # 递归解析余数 (1–99)
+            remainder_val = _cn_to_arabic(remainder)
+            if remainder_val is not None:
+                return hundreds * 100 + remainder_val
+            return None
+
+    # —— 个位/十位处理 (1–99) ——
     if cn in _MAP:
         return _MAP[cn]
     # 十一～十九
@@ -303,7 +330,7 @@ def generate_outline_for_volume(
         prev_path = OUTPUT_DIR / f"outline_volume{volume_num - 1}.md"
         if prev_path.exists():
             prev_text = prev_path.read_text(encoding="utf-8-sig")
-            prev_vol_tail = prev_text[-4000:] if len(prev_text) > 4000 else prev_text
+            prev_vol_tail = prev_text
             step(f"  加载前一卷章级大纲: {len(prev_vol_tail)} chars (尾部)")
 
     # 基础文档

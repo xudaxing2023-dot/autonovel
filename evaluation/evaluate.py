@@ -514,7 +514,7 @@ def evaluate_chapter(
         prev_path = CHAPTERS_DIR / f"ch_{ch_num - 1:02d}.md"
         if prev_path.exists():
             prev_full = prev_path.read_text(encoding="utf-8-sig")
-            prev_tail = prev_full[-3000:] if len(prev_full) > 3000 else prev_full
+            prev_tail = prev_full
     else:
         prev_tail = "（第一章，无前章）"
 
