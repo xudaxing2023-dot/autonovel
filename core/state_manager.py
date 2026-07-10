@@ -26,6 +26,7 @@ from core.config import (
     ROOT_DIR, OUTPUT_DIR, CHAPTERS_DIR, STATE_FILE, RESULTS_FILE,
     BACKUPS_DIR, EDIT_LOGS_DIR, EVAL_LOGS_DIR, BRIEFS_DIR, config)
 from core import _stderr_print
+from core.pattern_registry import registry
 
 # 可选导入 debug_log
 try:
@@ -385,26 +386,16 @@ def parse_score(stdout: str, key: str = "overall_score") -> float:
             except ValueError:
                 continue
 
-    # 2b: **综合评分**: X/10 格式
-    m = re.search(
-        r'\*\*综合评分\*\*\s*[：:]\s*(\d+(?:\.\d+)?)\s*/\s*10',
-        stdout, re.IGNORECASE)
-    if m:
-        return round(float(m.group(1)), 1)
+    # 2b: Markdown 格式回退（通过 Pattern Registry 统一管理）
+    md_result = registry.match("score.markdown_fallback", stdout)
+    if md_result.value is not None:
+        return round(float(md_result.value.group(1)), 1)
 
-    # 2c: **评分**: X/10 格式（在 key 对应的 ### 小节内）
-    m = re.search(
-        rf'###.*?{re.escape(key)}.*?\n.*?\*\*评分\*\*\s*[：:]\s*(\d+(?:\.\d+)?)\s*/\s*10',
-        stdout, re.DOTALL | re.IGNORECASE)
-    if m:
-        return round(float(m.group(1)), 1)
-
-    # ── 全部失败 → 报错 ──
-    raise ValueError(
-        f"无法从 LLM 输出中解析 '{key}' 分数。"
-        f"Prompt 要求 JSON 格式，但 LLM 未遵守。"
-        f"原始输出前 500 字符:\n{stdout[:500]}"
-    )
+    # ── 全部失败 → 记录 WARNING 并返回 sentinel 值（永不崩溃）──
+    _debug_log("SCORE_PARSE_WARN",
+               f"无法从 LLM 输出中解析 '{key}' 分数，返回 sentinel 0.0",
+               data={"preview": str(stdout)[:500]})
+    return 0.0
 
 
 def _try_json_extract(text: str, key: str):

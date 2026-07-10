@@ -17,6 +17,7 @@ from pathlib import Path
 from core.config import OUTPUT_DIR, CHAPTERS_DIR, EDIT_LOGS_DIR, config
 from core.api_client import call_p3_judge
 from core.state_manager import step, banner
+from core.pattern_registry import registry
 from prompts.review_prompts import build_review_prompt, REVIEW_SYSTEM_PROMPT
 
 
@@ -64,11 +65,13 @@ def run_review_loop(
         review_path = EDIT_LOGS_DIR / f"review_round{rnd}.md"
         review_path.write_text(result, encoding="utf-8")
 
-        # 解析星级 — 从结构化摘要的 "总评: ★★★★☆" 格式
+        # 解析星级 — 从结构化摘要的 "总评: ★★★★☆" 格式（通过 Pattern Registry 统一管理）
         stars = 0
-        star_match = re.search(r'总评\s*[：:]\s*[★☆]{1,5}', result)
-        if star_match:
-            stars = star_match.group(0).count("★")
+        star_result = registry.match("review.stars", result)
+        if star_result.value and isinstance(star_result.value, (int, float)) and star_result.value > 0:
+            stars = int(star_result.value)
+        elif star_result.value and hasattr(star_result.value, 'group'):
+            stars = star_result.value.group(0).count("★")
         else:
             # 回退：搜索行内 ★
             for line in result.splitlines():
@@ -76,20 +79,21 @@ def run_review_loop(
                     stars = line.count("★")
                     break
 
-        # 解析问题数 — 从结构化摘要字段提取（不靠字符串计数）
-        major_match = re.search(r'严重问题数[：:]\s*(\d+)', result)
-        major_items = int(major_match.group(1)) if major_match else 0
+        # 解析问题数 — 从结构化摘要字段提取（通过 Pattern Registry 统一管理）
+        major_result = registry.match("review.major_count", result)
+        major_items = int(major_result.value.group(1)) if major_result.value and major_result.confidence > 0 else 0
 
-        total_match = re.search(r'总问题数[：:]\s*(\d+)', result)
-        total_items = int(total_match.group(1)) if total_match else 0
+        total_result = registry.match("review.total_count", result)
+        total_items = int(total_result.value.group(1)) if total_result.value and total_result.confidence > 0 else 0
 
-        qual_match = re.search(r'合格问题数[：:]\s*(\d+)', result)
-        qualified_items = int(qual_match.group(1)) if qual_match else max(0, total_items - major_items)
+        qual_result = registry.match("review.qualified_count", result)
+        qualified_items = int(qual_result.value.group(1)) if qual_result.value and qual_result.confidence > 0 else max(0, total_items - major_items)
 
-        # 解析最弱章节
+        # 解析最弱章节（通过 Pattern Registry 统一管理）
         weak_chapters = []
-        weak_match = re.search(r'最弱章节[：:]\s*([\d,\s]+)', result)
-        if weak_match:
+        weak_result = registry.match("review.weak_chapters", result)
+        if weak_result.value and weak_result.confidence > 0:
+            weak_match = weak_result.value
             weak_chapters = [
                 int(c.strip()) for c in re.split(r'[,，\s]+', weak_match.group(1))
                 if c.strip().isdigit() and int(c.strip()) > 0

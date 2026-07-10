@@ -12,6 +12,7 @@ from pathlib import Path
 from core.config import config, OUTPUT_DIR
 from core.api_client import call_p2_ctx_writer
 from core.state_manager import step
+from core.pattern_registry import registry
 
 
 UPDATE_CANON_SYSTEM_PROMPT = """你是正典管理员。从新完成的章节中提取首次出现的新增硬事实。
@@ -64,7 +65,7 @@ def update_canon_from_chapter(
         system=UPDATE_CANON_SYSTEM_PROMPT,
         temperature=0.5)
 
-    if "无新增事实" in result:
+    if registry.match("canon.no_new_facts", result).value:
         step(f"正典更新: 第 {chapter_num} 章无新增事实")
         return 0
 
@@ -74,6 +75,6 @@ def update_canon_from_chapter(
         encoding="utf-8")
 
     # 统计新增条目数
-    new_entries = len(re.findall(r"^(?:—|-|\*) ", result, re.MULTILINE))
+    new_entries = registry.match("canon.entry_count", result).value
     step(f"正典更新: +{new_entries} 条新事实（第 {chapter_num} 章）")
     return new_entries

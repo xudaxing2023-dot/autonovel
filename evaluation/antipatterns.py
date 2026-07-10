@@ -10,6 +10,8 @@ evaluation/antipatterns.py — 结构反模式检测器
 import re
 from typing import List, Dict
 
+from core.pattern_registry import registry
+
 
 # ============================================================================
 # 1. 过度解释检测 (OVER-EXPLAIN)
@@ -59,7 +61,7 @@ def detect_triadic_listing(text: str) -> dict:
     # 模式1: 连续三个句号分隔的短句 (< 20 字) 且具有重复结构
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
     for para in paragraphs:
-        sentences = re.split(r'[。！？]', para)
+        sentences = registry.match("text.sentence_split", para).value
         sentences = [s.strip() for s in sentences if s.strip()]
         for i in range(len(sentences) - 2):
             s1, s2, s3 = sentences[i], sentences[i + 1], sentences[i + 2]
@@ -185,9 +187,7 @@ def detect_section_break_abuse(text: str) -> dict:
 # 7. 目录式思考检测 (CATALOGING-BY-THINKING)
 # ============================================================================
 
-CATALOG_THINK_PATTERN = re.compile(
-    r'(?:他|她)\s*(?:想|思考|思索|琢磨|盘算|回忆).*?(?:了|着|到)'
-)
+# 已迁移到 Pattern Registry: antipattern.catalog_think
 
 
 def detect_catalog_thinking(text: str) -> dict:
@@ -197,7 +197,7 @@ def detect_catalog_thinking(text: str) -> dict:
     返回: {"count": int, "per_1000_chars": float}
     """
     char_count = len(text.replace(" ", "").replace("\n", "")) or 1
-    matches = CATALOG_THINK_PATTERN.findall(text)
+    matches = registry.match("antipattern.catalog_think", text).value
     return {
         "count": len(matches),
         "per_1000_chars": round(len(matches) / char_count * 1000, 2),

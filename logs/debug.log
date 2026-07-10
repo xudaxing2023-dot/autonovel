@@ -446,3 +446,4 @@
 [2026-07-10 21:44:03.371] [INFO] [EXPORT_COMPLETE] [pipeline_orchestrator.py:1116 run_export] | chapter_count=6, total_words=23861
 [2026-07-10 21:44:03.371] [INFO] [PHASE_EXIT] [pipeline_orchestrator.py:1248 run_pipeline] | phase=export, elapsed_s=72.7, success=True
 [2026-07-10 21:44:03.374] [INFO] [PIPELINE_END] [pipeline_orchestrator.py:1282 run_pipeline] | elapsed_h=1.25, final_score=6.6, phase=complete, total_chapters=6, total_words=23861, revision_cycle=2
+[2026-07-10 23:35:56.930] [INFO] [PATTERN_FALLBACK] [pattern_registry.py:189 _log_fallback]Pattern 'canon.no_new_facts' 全部 1 个变体 未命中，触发兜底: trigger_fallback。文本前 200 字符: gibberish text | pattern=canon.no_new_facts, variants_attempted=['chinese_no_new'], fallback_behavior=trigger_fallback, text_preview=gibberish text, text_length=14

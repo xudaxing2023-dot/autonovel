@@ -395,19 +395,20 @@ def run_drafting(state: dict) -> dict:
             step(f"生成 {word_count} 字")
 
             # 评估（带解析重试：LLM 偶发返回无效 JSON，重新调用评估而非直接崩溃）
+            # ★ parse_score() 现已永不抛异常，返回 0.0 sentinel 表示解析失败
             MAX_EVAL_PARSE_RETRIES = 5
             for eval_try in range(1, MAX_EVAL_PARSE_RETRIES + 1):
                 eval_result = evaluate_chapter(ch)
-                try:
-                    score = parse_score(eval_result, "overall_score")
-                    break  # 解析成功
-                except ValueError:
-                    if eval_try < MAX_EVAL_PARSE_RETRIES:
-                        step(f"评估 JSON 解析失败 (尝试 {eval_try}/{MAX_EVAL_PARSE_RETRIES})，重试评估...")
-                        continue
-                    else:
-                        step(f"⚠ 评估解析全部 {MAX_EVAL_PARSE_RETRIES} 次失败，使用阈值分 {threshold} 兜底")
-                        score = threshold
+                score = parse_score(eval_result, "overall_score")
+                # sentinel 0.0 = 解析失败，重试；否则解析成功
+                if score > 0.0 or eval_result.strip().startswith("overall_score:"):
+                    break
+                if eval_try < MAX_EVAL_PARSE_RETRIES:
+                    step(f"评估 JSON 解析失败 (尝试 {eval_try}/{MAX_EVAL_PARSE_RETRIES})，重试评估...")
+                    continue
+                else:
+                    step(f"⚠ 评估解析全部 {MAX_EVAL_PARSE_RETRIES} 次失败，使用阈值分 {threshold} 兜底")
+                    score = threshold
 
             # ★ P2-11 子项 B: slop_penalty 参与决策
             from evaluation.evaluate import get_last_slop_penalty
@@ -587,62 +588,69 @@ def _parse_panel_consensus(panel_path: Optional[Path]) -> list:
     if not panel_path or not panel_path.exists():
         return []
 
-    with open(panel_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open(panel_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
 
-    items = []
+        items = []
 
-    for d in data.get("disagreements", []):
-        items.append({
-            "chapter": d.get("chapter", 0),
-            "question": d.get("question", ""),
-            "flagged_by": d.get("flagged_by", []),
-            "count": len(d.get("flagged_by", [])),
-        })
+        for d in data.get("disagreements", []):
+            items.append({
+                "chapter": d.get("chapter", 0),
+                "question": d.get("question", ""),
+                "flagged_by": d.get("flagged_by", []),
+                "count": len(d.get("flagged_by", [])),
+            })
 
-    # 也扫描 readers 的回答
-    readers = data.get("readers", {})
-    chapter_mentions = {}
-    for reader_key, answers in readers.items():
-        for question in ["momentum_loss", "cut_candidate", "worst_scene",
-                         "thinnest_character", "missing_scene"]:
-            answer = answers.get(question, "")
-            if not isinstance(answer, str):
-                continue
-            # 阿拉伯数字章节号: 第1章, 第12章, 1章
-            chs = re.findall(r'第?\s*(\d+)\s*章', answer)
-            # 中文数字章节号回退: 第一章, 第十二章, 第一百二十三章
-            cn_chs = re.findall(r'(?:第\s*)?([一二三四五六七八九十百零]+)\s*章', answer)
-            for cn_str in cn_chs:
-                arabic = _cn_to_arabic(cn_str)
-                if arabic is not None:
-                    debug_log("panel_cn_chapter", f"中文数字章节号匹配: '{cn_str}' → {arabic} (读者={reader_key}, 问题={question})")
-                    chs.append(str(arabic))
-            for ch_str in chs:
-                ch_num = int(ch_str)
-                key = (ch_num, question)
-                if key not in chapter_mentions:
-                    chapter_mentions[key] = {"chapter": ch_num, "question": question,
-                                             "flagged_by": [], "count": 0}
-                chapter_mentions[key]["flagged_by"].append(reader_key)
-                chapter_mentions[key]["count"] += 1
+        # 也扫描 readers 的回答
+        readers = data.get("readers", {})
+        chapter_mentions = {}
+        for reader_key, answers in readers.items():
+            for question in ["momentum_loss", "cut_candidate", "worst_scene",
+                             "thinnest_character", "missing_scene"]:
+                answer = answers.get(question, "")
+                if not isinstance(answer, str):
+                    continue
+                # 阿拉伯数字章节号: 第1章, 第12章, 1章
+                chs = re.findall(r'第?\s*(\d+)\s*章', answer)
+                # 中文数字章节号回退: 第一章, 第十二章, 第一百二十三章
+                cn_chs = re.findall(r'(?:第\s*)?([一二三四五六七八九十百零]+)\s*章', answer)
+                for cn_str in cn_chs:
+                    arabic = _cn_to_arabic(cn_str)
+                    if arabic is not None:
+                        debug_log("panel_cn_chapter", f"中文数字章节号匹配: '{cn_str}' → {arabic} (读者={reader_key}, 问题={question})")
+                        chs.append(str(arabic))
+                for ch_str in chs:
+                    ch_num = int(ch_str)
+                    key = (ch_num, question)
+                    if key not in chapter_mentions:
+                        chapter_mentions[key] = {"chapter": ch_num, "question": question,
+                                                 "flagged_by": [], "count": 0}
+                    chapter_mentions[key]["flagged_by"].append(reader_key)
+                    chapter_mentions[key]["count"] += 1
 
-    seen = set()
-    for item in items:
-        seen.add((item["chapter"], item["question"]))
-    for key, item in chapter_mentions.items():
-        if key not in seen:
-            items.append(item)
+        seen = set()
+        for item in items:
+            seen.add((item["chapter"], item["question"]))
+        for key, item in chapter_mentions.items():
+            if key not in seen:
+                items.append(item)
 
-    items.sort(key=lambda x: -x["count"])
-    seen_chapters = set()
-    unique = []
-    for item in items:
-        if item["chapter"] not in seen_chapters and item["chapter"] > 0:
-            seen_chapters.add(item["chapter"])
-            unique.append(item)
+        items.sort(key=lambda x: -x["count"])
+        seen_chapters = set()
+        unique = []
+        for item in items:
+            if item["chapter"] not in seen_chapters and item["chapter"] > 0:
+                seen_chapters.add(item["chapter"])
+                unique.append(item)
 
-    return unique[:5]
+        return unique[:5]
+
+    except Exception as e:
+        debug_log("PANEL_PARSE_ERROR",
+                   f"解析 reader_panel.json 失败，返回空列表: {e}",
+                   data={"panel_path": str(panel_path) if panel_path else "None"})
+        return []
 
 
 def _build_fallback_brief(ch_num: int, context: str, label: str = "修订") -> str:

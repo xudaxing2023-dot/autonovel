@@ -18,6 +18,8 @@ import statistics
 from pathlib import Path
 from collections import Counter
 
+from core.pattern_registry import registry
+
 from core.config import CHAPTERS_DIR, OUTPUT_DIR, EDIT_LOGS_DIR
 
 # ============================================================================
@@ -202,36 +204,24 @@ def extract_vocabulary_wells_from_voice(voice_path: Path = None) -> list[set]:
 
     voice_text = voice_path.read_text(encoding="utf-8-sig")
 
-    # 定位 "Vocabulary Register" 节
-    vocab_section_match = re.search(
-        r'###\s*Vocabulary Register.*?\n(.*?)(?=\n###|\n##|\Z)',
-        voice_text, re.DOTALL | re.IGNORECASE,
-    )
-    if not vocab_section_match:
+    # 定位词汇域节（兼容中英文多种可能的标题变体）
+    # 注：prompt 要求生成此节，但 LLM 可能不遵守——若缺失则返回空列表，不影响主流程
+    vocab_section_result = registry.match("voice.vocabulary_section", voice_text)
+    if vocab_section_result.value is None:
         return []
+    vocab_section_match = vocab_section_result.value
 
     vocab_text = vocab_section_match.group(1).strip()
 
-    # 策略1: 解析 LLM 生成的结构化关键词列表
-    wells = []
-    well_pattern = re.compile(
-        r'\d+\.\s*\*{0,2}(.+?)\*{0,2}\s*[：:]\s*(.+)',
-        re.MULTILINE,
-    )
-    for match in well_pattern.finditer(vocab_text):
-        keywords_str = match.group(2).strip()
-        keywords = set()
-        for token in re.split(r'[,，、/\s]+', keywords_str):
-            token = token.strip().lower()
-            if token and len(token) >= 2:
-                keywords.add(token)
-        if keywords:
-            wells.append(keywords)
+    # 通过 Pattern Registry 统一解析词汇域条目
+    well_result = registry.match("voice.vocab_well", vocab_text)
+    well_entries = well_result.value  # list of (name, keywords_set) or []
+    if well_entries:
+        wells = [kw for _, kw in well_entries]
+        if wells:
+            return wells[:3]
 
-    if wells:
-        return wells[:3]
-
-    # 策略2: 回退——从整段文字中提取被引号/括号标注的关键词
+    # 回退：从整段文字中提取被引号/括号标注的关键词
     quoted = set(re.findall(r'[「「](.+?)[」」]', vocab_text))
     if quoted and len(quoted) >= 5:
         return [quoted]
@@ -261,8 +251,8 @@ def analyze_chapter_zh(path: Path, vocab_wells: list[set] = None) -> dict:
     chars = text.replace(" ", "").replace("\n", "").replace("\r", "")
     char_count = len(chars)
 
-    # 句子分析（中文句号、问号、感叹号）
-    sentences = re.split(r'[。！？!?]+', text)
+    # 句子分析（通过 Pattern Registry 统一管理，兼容省略号/分号边界）
+    sentences = registry.match("text.sentence_split", text).value
     sentences = [s.strip() for s in sentences if len(s.strip()) >= 3]
     sent_lengths = [len(s.replace(" ", "")) for s in sentences]
 
@@ -287,8 +277,8 @@ def analyze_chapter_zh(path: Path, vocab_wells: list[set] = None) -> dict:
     dialogue_chars = sum(len(m.replace(" ", "")) for m in dialogue_matches)
     dialogue_ratio = dialogue_chars / char_count if char_count > 0 else 0
 
-    # 破折号密度
-    em_dashes = text.count('—') + text.count('--')
+    # 破折号密度（通过 Pattern Registry 统一管理，统一 —— / — / -- / – 四种变体）
+    em_dashes = registry.match("slop.em_dash", text).value
     em_per_1k = (em_dashes / char_count) * 1000 if char_count > 0 else 0
 
     # 抽象名词密度（中文通用版）

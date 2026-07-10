@@ -12,6 +12,7 @@ from pathlib import Path
 from core.config import config, OUTPUT_DIR
 from core.api_client import call_writer, call_p1_writer
 from core.diagnostic import debug_log
+from core.pattern_registry import registry
 from core.state_manager import step
 from prompts.outline_prompts import (
     build_outline_prompt,
@@ -175,13 +176,11 @@ def _extract_global_prefix(vol_macro_text: str) -> str:
         "全书弧线", "核心冲突", "全局节拍", "MICE",
         "伏笔总账", "跨卷伏笔", "阶段性演化",
     ]
-    # 卷专属段落的分界标记（第一个匹配到的行之前为全局部分）
-    vol_boundary = re.search(
-        r'^#{2,3}\s*(?:逐卷规划|[一二三四五六七八九十]、\s*卷\s*\d|卷\s*\d+\s*[：:])',
-        vol_macro_text, re.MULTILINE)
-    
-    if not vol_boundary:
+    # 卷专属段落的分界标记（通过 Pattern Registry 统一管理，支持更多变体）
+    boundary_result = registry.match("outline.vol_boundary", vol_macro_text)
+    if not boundary_result.value:
         return ""
+    vol_boundary = boundary_result.value  # re.Match 对象
     
     prefix_text = vol_macro_text[:vol_boundary.start()].strip()
     if not prefix_text:

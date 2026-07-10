@@ -22,6 +22,7 @@ from pathlib import Path
 from core.config import config, OUTPUT_DIR, CHAPTERS_DIR, EVAL_LOGS_DIR
 from core.api_client import call_p3_judge
 from core import _stderr_print, _safe_print
+from core.pattern_registry import registry
 from prompts.eval_judge_prompts import (
     build_foundation_eval_prompt,
     build_chapter_eval_prompt,
@@ -44,13 +45,11 @@ def _parse_json_response(text: str) -> dict:
     if not text or not text.strip():
         return {}
 
+    # 第1层：剥除 markdown 代码块标记（通过 Pattern Registry 统一管理）
+    text = registry.match("codeblock.strip", text).value
+    if not text:
+        return {}
     text = text.strip()
-
-    # 第1层：剥除 markdown 代码块标记
-    if text.startswith("```"):
-        text = re.sub(r'^```\w*\n?', '', text)
-        text = re.sub(r'\n?```$', '', text)
-        text = text.strip()
 
     # 第2层：从第一个 { 开始直接解析
     start = text.find('{')
@@ -212,12 +211,9 @@ TRANSITION_OPENERS_ZH = [
 ]
 
 # Tier 3: 结构层面检测
-# — 连续 3+ 四字成语/形容词
-FOUR_CHAR_PATTERN = re.compile(r'[\u4e00-\u9fff]{4}')
-# — 破折号密度
-EM_DASH_PATTERN = re.compile(r'——')
-# — 对话标签重复 「说」「道」
-DIALOG_TAG_PATTERN = re.compile(r'(?:说|道)[,，。！？\s]')
+# — 连续 3+ 四字成语/形容词（已迁移到 Pattern Registry: slop.four_char）
+# — 破折号密度（已迁移到 Pattern Registry: slop.em_dash）
+# — 对话标签重复「说」「道」（已迁移到 Pattern Registry: slop.dialog_tag）
 
 
 def slop_score_zh(text: str) -> dict:
@@ -268,21 +264,21 @@ def slop_score_zh(text: str) -> dict:
         if matches:
             tier2_hits.append((pattern[:30], len(matches)))
 
-    # 四字词密度
-    four_char_matches = FOUR_CHAR_PATTERN.findall(text)
+    # 四字词密度（通过 Pattern Registry 统一管理）
+    four_char_matches = registry.match("slop.four_char", text).value
     four_char_sets = set(four_char_matches)
     four_char_density = len(four_char_matches) / (char_count / 100) if char_count else 0
 
-    # 破折号密度
-    em_count = len(EM_DASH_PATTERN.findall(text))
+    # 破折号密度（通过 Pattern Registry 统一管理，统一 —— / — / -- / – 四种变体）
+    em_count = registry.match("slop.em_dash", text).value
     em_density = (em_count / char_count) * 1000 if char_count else 0
 
-    # 对话标签重复度
-    dialog_tags = len(DIALOG_TAG_PATTERN.findall(text))
+    # 对话标签重复度（通过 Pattern Registry 统一管理，扩展标签列表）
+    dialog_tags = len(registry.match("slop.dialog_tag", text).value)
     dialog_ratio = dialog_tags / max(len(paragraphs), 1)
 
-    # 句子长度变化系数
-    sentences = re.split(r'[。！？.!?]+', text)
+    # 句子长度变化系数（通过 Pattern Registry 统一管理，兼容省略号/分号边界）
+    sentences = registry.match("text.sentence_split", text).value
     sentences = [s.strip() for s in sentences if len(s.strip()) > 3]
     if len(sentences) > 2:
         lengths = [len(s) for s in sentences]
@@ -455,7 +451,10 @@ def evaluate_foundation(
     # 记录日志
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"foundation_{ts}.json"
-    parsed = _parse_json_response(result)
+    try:
+        parsed = _parse_json_response(result)
+    except Exception:
+        parsed = {}
     log_path.write_text(json.dumps({
         "timestamp": ts,
         "phase": "foundation",
@@ -532,7 +531,10 @@ def evaluate_chapter(
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"chapter_{ch_num:02d}_{ts}.json"
-    parsed = _parse_json_response(result)
+    try:
+        parsed = _parse_json_response(result)
+    except Exception:
+        parsed = {}
 
     # ★ 对齐原版：机械 slop 扣分到 overall_score
     if "overall_score" in parsed and isinstance(parsed.get("overall_score"), (int, float)):
@@ -589,7 +591,10 @@ def evaluate_full(
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = EVAL_LOGS_DIR / f"full_{ts}.json"
-    parsed = _parse_json_response(result)
+    try:
+        parsed = _parse_json_response(result)
+    except Exception:
+        parsed = {}
     log_path.write_text(json.dumps({
         "timestamp": ts, "phase": "full",
         "chapter_count": len(chapter_files),

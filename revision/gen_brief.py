@@ -39,10 +39,15 @@ VOICE_PATH = OUTPUT_DIR / "voice.md"
 # =============================================================================
 
 def load_json(path: Path) -> dict:
-    """加载 JSON 文件，文件不存在时退出报错。"""
+    """加载 JSON 文件。文件不存在或格式错误时返回空字典，绝不崩溃。"""
     if not path.exists():
-        sys.exit(f"错误: JSON 文件不存在: {path}")
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+        debug_log("WARNING", f"JSON 文件不存在: {path}", data={"path": str(path)})
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8-sig"))
+    except (json.JSONDecodeError, OSError) as e:
+        debug_log("WARNING", f"JSON 文件解析失败: {path}", data={"path": str(path), "error": str(e)[:200]})
+        return {}
 
 
 def chapter_path(ch: int) -> Path:
