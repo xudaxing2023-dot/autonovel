@@ -176,19 +176,35 @@ def build_volume_outline_prompt_part2(
     total_volumes: int,
     chapters_per_volume: int,
     prior_output: str,
+    story: str = "",
+    world_text: str = "",
+    characters_text: str = "",
+    voice_text: str = "",
 ) -> str:
     """构建卷级总纲调用 2 — 中段卷规划 + 伏笔追踪。
 
     Args:
         prior_output: 调用 1 的全部输出（含全书弧线和前组卷的逐卷规划）。
+        story/world_text/characters_text/voice_text: 基础资料全文（1M 窗口下不截断）。
     """
+    # 基础资料块（与 Part1 保持一致，不截断）
+    base_materials = ""
+    if story:
+        base_materials += f"\n【故事梗概】\n{story}\n"
+    if world_text:
+        base_materials += f"\n【世界观设定】\n{world_text}\n"
+    if characters_text:
+        base_materials += f"\n【角色档案】\n{characters_text}\n"
+    if voice_text:
+        base_materials += f"\n【文风指南】\n{voice_text}\n"
+
     return f"""请继续卷级总纲的第二部分。
 
 【基本信息】
 — 总卷数: {total_volumes}
 — 每卷章数: {chapters_per_volume}
 — 当前规划范围: 卷 {vol_start}–{vol_end}
-
+{base_materials}
 【已完成的前段规划（全文——不可修改）】
 {prior_output}
 
@@ -223,19 +239,35 @@ def build_volume_outline_prompt_part3(
     total_volumes: int,
     chapters_per_volume: int,
     prior_output: str,
+    story: str = "",
+    world_text: str = "",
+    characters_text: str = "",
+    voice_text: str = "",
 ) -> str:
     """构建卷级总纲调用 3 — 末段卷规划 + 跨卷伏笔矩阵 + 连续性契约。
 
     Args:
         prior_output: 调用 1+2 的全部输出。
+        story/world_text/characters_text/voice_text: 基础资料全文（1M 窗口下不截断）。
     """
+    # 基础资料块（与 Part1 保持一致，不截断）
+    base_materials = ""
+    if story:
+        base_materials += f"\n【故事梗概】\n{story}\n"
+    if world_text:
+        base_materials += f"\n【世界观设定】\n{world_text}\n"
+    if characters_text:
+        base_materials += f"\n【角色档案】\n{characters_text}\n"
+    if voice_text:
+        base_materials += f"\n【文风指南】\n{voice_text}\n"
+
     return f"""请完成卷级总纲的第三部分（最后一部分）。
 
 【基本信息】
 — 总卷数: {total_volumes}
 — 每卷章数: {chapters_per_volume}
 — 当前规划范围: 卷 {vol_start}–{vol_end}（最后 {vol_end - vol_start + 1} 卷）
-
+{base_materials}
 【已完成的前中段规划（全文——不可修改）】
 {prior_output}
 

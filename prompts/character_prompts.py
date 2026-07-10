@@ -8,14 +8,74 @@ prompts/character_prompts.py — 角色设计 Prompt (通用中文)
 from core.config import config
 
 
-def build_character_prompt(seed_text: str, world_text: str = "", voice_part2: str = "") -> str:
-    """构建角色注册表生成 prompt。"""
+def build_character_prompt(
+    seed_text: str,
+    world_text: str = "",
+    voice_part2: str = "",
+    previous_output: str = "",
+    eval_feedback: str = "",
+) -> str:
+    """构建角色注册表生成 prompt。
 
+    Args:
+        seed_text: 故事梗概。
+        world_text: 世界观设定文本。
+        voice_part2: 文风身份 Part 2。
+        previous_output: 上一轮迭代的 characters.md 内容（增量改进模式）。
+        eval_feedback: 评估裁判对该步骤的改进建议（增量改进模式）。
+                       两个参数均为空字符串时，使用 from_scratch 模式。
+    """
     cfg = config
     cfg.load()
 
     story = seed_text or cfg.story_summary
 
+    # ── 增量改进模式 ──
+    if previous_output and eval_feedback:
+        return f"""你正在改进角色注册表（CHARACTERS.MD）——小说的角色权威参考。
+
+【当前版本（需要改进的对象）】
+{previous_output}
+
+【改进建议（来自评估裁判）】
+{eval_feedback}
+
+【改进指南】
+1. 保留当前版本中好的角色设定、因果链和对话特征
+2. 针对改进建议逐条修正：加深角色深度、增强区分度、补充秘密细节
+3. 不要改变核心角色设定和故事方向
+4. 只做有针对性的改进，不要推翻重写
+5. 输出完整的改进后角色注册表
+
+【参考上下文】
+故事梗概：
+{story}
+
+{('世界观设定：' + world_text) if world_text else ''}
+
+{('文风身份：' + voice_part2) if voice_part2 else ''}
+
+【角色设计规范 — 每个主要角色必须包含以下维度】
+
+### 三滑块画像 (Sanderson)
+每个角色有三个独立维度（0-10 分）：
+  【主动性】— 推动剧情还是被动反应？
+  【讨喜度】— 读者会同情/喜欢 TA 吗？
+  【能力值】— TA 擅长什么？
+
+### 创伤/欲望/需求/谎言 因果链
+  【创伤事件】→ 【伤口】→ 【谎言】→ 【欲望】→ 【需求】
+
+### 角色弧类型
+  — 正向弧 / 平弧 / 负向弧
+
+### 对话独特性（8 维度）
+  词汇量级、句子长度结构、口语化程度、口头禅/语言习惯、
+  提问 vs 陈述比例、打断与被断模式、比喻域、直率 vs 委婉程度
+
+写出完整的改进后角色注册表。"""
+
+    # ── from_scratch 模式（迭代 1 行为不变）──
     return f"""请为这部长篇小说构建一份完整的角色注册表（CHARACTERS.MD）。
 这是小说「谁存在」的权威参考——每个角色的动机、说话方式、隐藏的秘密。
 

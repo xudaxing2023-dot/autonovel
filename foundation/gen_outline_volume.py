@@ -135,7 +135,11 @@ def _call_volume_segment(
             vol_end=vol_end,
             total_volumes=ctx["total_volumes"],
             chapters_per_volume=ctx["chapters_per_volume"],
-            prior_output=prior_outputs)
+            prior_output=prior_outputs,
+            story=ctx.get("story", ""),
+            world_text=ctx.get("world", ""),
+            characters_text=ctx.get("characters", ""),
+            voice_text=ctx.get("voice", ""))
         label = (
             f"卷级总纲 调用 {segment_index + 1}/{total_segments}: "
             f"卷 {vol_start}–{vol_end}"
@@ -146,7 +150,11 @@ def _call_volume_segment(
             vol_end=vol_end,
             total_volumes=ctx["total_volumes"],
             chapters_per_volume=ctx["chapters_per_volume"],
-            prior_output=prior_outputs)
+            prior_output=prior_outputs,
+            story=ctx.get("story", ""),
+            world_text=ctx.get("world", ""),
+            characters_text=ctx.get("characters", ""),
+            voice_text=ctx.get("voice", ""))
         label = (
             f"卷级总纲 调用 {segment_index + 1}/{total_segments}: "
             f"卷 {vol_start}–{vol_end}"
@@ -182,11 +190,16 @@ def _assemble_volume_outline(outputs: list[str], total_vol: int) -> str:
     return "\n".join(parts)
 
 
-def generate_volume_outline() -> None:
+def generate_volume_outline(previous_output: str = "", eval_feedback: str = "") -> None:
     """生成卷级总纲 → output/outline_volume.md。
 
     根据 total_volumes 自适应拆分为 1–3 次链式 LLM 调用。
     每次调用不再限制 max_tokens，由模型自主决定输出长度。
+
+    Args:
+        previous_output: 上一轮迭代的 outline_volume.md 内容（增量改进模式）。
+        eval_feedback: 评估裁判对该步骤的改进建议（增量改进模式）。
+                       两个参数均为空字符串时，使用 from_scratch 模式（迭代 1 行为不变）。
     """
     ctx = _load_context()
     total_vol = ctx["total_volumes"]
@@ -195,6 +208,48 @@ def generate_volume_outline() -> None:
         f"卷级总纲: {total_vol} 卷, 每卷 {ctx['chapters_per_volume']} 章, "
         f"共 {ctx['total_chapters']} 章"
     )
+
+    # ── 增量改进模式：直接对已有卷级总纲做针对性改进 ──
+    if previous_output and eval_feedback:
+        step("使用增量改进模式生成卷级总纲（基于上一轮输出 + 评估反馈）...")
+        # 使用单次 LLM 调用做改进（不拆分，因为改进通常不需要很多 token）
+        improve_prompt = f"""你正在改进卷级总纲（outline_volume.md）——小说的卷级结构规划。
+
+【当前版本（需要改进的对象）】
+{previous_output}
+
+【改进建议（来自评估裁判）】
+{eval_feedback}
+
+【改进指南】
+1. 保留当前版本中好的卷级规划结构
+2. 针对改进建议逐条修正：调整卷间过渡、补充关键事件、修正角色弧线断层
+3. 不要改变核心设定和故事方向
+4. 只做有针对性的改进，不要推翻重写
+5. 输出完整的改进后卷级总纲
+
+【参考上下文】
+## 故事梗概
+{ctx['story']}
+
+## 世界观设定
+{ctx['world']}
+
+## 角色注册表
+{ctx['characters']}
+
+## 文风参考
+{ctx['voice']}
+
+请输出完整的改进后卷级总纲。"""
+        result = call_p1_writer(
+            improve_prompt,
+            system=VOLUME_OUTLINE_SYSTEM_PROMPT,
+            temperature=0.7)
+        outline_path = OUTPUT_DIR / "outline_volume.md"
+        outline_path.write_text(result, encoding="utf-8")
+        step(f"卷级总纲已更新: {outline_path} ({len(result)} chars)")
+        return
 
     groups = _split_volumes(total_vol)
     total_segments = len(groups)

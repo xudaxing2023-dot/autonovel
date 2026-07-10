@@ -381,7 +381,7 @@ def generate_outline_for_volume(
 # 向后兼容封装 — generate_outline()
 # ============================================================
 
-def generate_outline() -> None:
+def generate_outline(previous_output: str = "", eval_feedback: str = "") -> None:
     """生成 outline.md（向后兼容封装）。
 
     方案 D 始终走分层大纲路径：
@@ -390,17 +390,100 @@ def generate_outline() -> None:
 
     这确保现有消费者（draft_chapter.py、evaluate.py、gen_outline_part2.py）
     无需任何改动即可继续工作。
+
+    Args:
+        previous_output: 上一轮迭代的 outline.md 内容（增量改进模式）。
+        eval_feedback: 评估裁判对该步骤的改进建议（增量改进模式）。
+                       两个参数均为空字符串时，使用 from_scratch 模式（迭代 1 行为不变）。
     """
     cfg = config
     cfg.load()
 
     total_vol = cfg.total_volumes
 
-    step(f"大纲生成: {total_vol} 卷，逐卷生成章级大纲 ...")
+    # ── 增量改进模式：对已有大纲做针对性改进 ──
+    if previous_output and eval_feedback:
+        step("使用增量改进模式生成章级大纲（基于上一轮输出 + 评估反馈）...")
+        # 逐卷使用改进 prompt 重新生成章级大纲
+        for vol in range(1, total_vol + 1):
+            # 读取当前卷的已有章级大纲
+            vol_path = OUTPUT_DIR / f"outline_volume{vol}.md"
+            prev_vol_text = ""
+            if vol_path.exists():
+                prev_vol_text = vol_path.read_text(encoding="utf-8-sig")
 
+            # 加载上下文
+            world_path = OUTPUT_DIR / "world.md"
+            world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
+            chars_path = OUTPUT_DIR / "characters.md"
+            chars = chars_path.read_text(encoding="utf-8-sig") if chars_path.exists() else ""
+            voice_path = OUTPUT_DIR / "voice.md"
+            voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
+
+            # 卷级总纲约束
+            vol_macro_path = OUTPUT_DIR / "outline_volume.md"
+            vol_section = ""
+            if vol_macro_path.exists():
+                vol_macro = vol_macro_path.read_text(encoding="utf-8-sig")
+                vol_section = _extract_volume_section(vol_macro, vol)
+
+            # 构建改进 prompt
+            improve_prompt = f"""你正在改进第 {vol} 卷的章级大纲。
+
+【当前版本（需要改进的对象）】
+{prev_vol_text}
+
+【改进建议（来自评估裁判）】
+{eval_feedback}
+
+【改进指南】
+1. 保留当前版本中好的章级大纲结构
+2. 针对改进建议逐条修正：补充缺失的节拍、调整 try-fail 类型、增强伏笔种植
+3. 不要改变核心设定和故事方向
+4. 只做有针对性的改进，不要推翻重写
+5. 输出完整的改进后章级大纲
+
+【参考上下文】
+## 卷级总纲约束
+{vol_section}
+
+## 世界观设定
+{world}
+
+## 角色注册表
+{chars}
+
+## 文风参考
+{voice}
+
+请输出完整的改进后第 {vol} 卷章级大纲。"""
+
+            step(f"  改进第 {vol} 卷章级大纲 ...")
+            result = call_p1_writer(
+                improve_prompt,
+                system=CHAPTER_OUTLINE_SYSTEM_PROMPT,
+                temperature=0.7)
+            vol_path.write_text(result, encoding="utf-8")
+
+        step("增量改进完成，合并卷级大纲 ...")
+    else:
+        step(f"大纲生成: {total_vol} 卷，逐卷生成章级大纲 ...")
+
+        all_parts = []
+        for vol in range(1, total_vol + 1):
+            generate_outline_for_volume(vol)
+            vol_path = OUTPUT_DIR / f"outline_volume{vol}.md"
+            if vol_path.exists():
+                all_parts.append(
+                    f"\n\n{'=' * 60}\n"
+                    f"## 第 {vol} 卷\n"
+                    f"{'=' * 60}\n\n"
+                    + vol_path.read_text(encoding="utf-8-sig")
+                )
+
+    # 合并所有卷级大纲写入 outline.md
     all_parts = []
     for vol in range(1, total_vol + 1):
-        generate_outline_for_volume(vol)
         vol_path = OUTPUT_DIR / f"outline_volume{vol}.md"
         if vol_path.exists():
             all_parts.append(

@@ -49,6 +49,10 @@ from core.state_manager import (
     count_words_in_chapters, count_chapter_files, get_total_chapters,
     evaluate_chapter_stable, evaluate_foundation_stable)
 from foundation.gen_outline import _cn_to_arabic
+from foundation.feedback_extractor import (
+    load_latest_foundation_eval,
+    extract_feedback,
+    map_feedback_to_step)
 
 
 # ============================================================================
@@ -68,6 +72,36 @@ PHASE_ORDER = ["foundation", "drafting", "revision", "export"]
 # ============================================================================
 # Phase 1 — Foundation (基础构建)
 # ============================================================================
+
+def _load_previous_outputs() -> dict[str, str]:
+    """从 output/ 目录读取上一轮迭代生成的所有文件内容。
+
+    用于增量改进架构：迭代 2+ 时，将上一轮的输出作为
+    previous_output 参数传给各 gen 函数。
+
+    Returns:
+        {文件名（不含路径）: 文件内容} 字典。
+        文件不存在时对应值为空字符串。
+    """
+    files = {
+        "world":        OUTPUT_DIR / "world.md",
+        "characters":   OUTPUT_DIR / "characters.md",
+        "outline":      OUTPUT_DIR / "outline.md",
+        "canon":        OUTPUT_DIR / "canon.md",
+        "voice":        OUTPUT_DIR / "voice.md",
+        "outline_volume": OUTPUT_DIR / "outline_volume.md",
+    }
+    outputs: dict[str, str] = {}
+    for key, path in files.items():
+        if path.exists():
+            try:
+                outputs[key] = path.read_text(encoding="utf-8-sig")
+            except (OSError, UnicodeDecodeError):
+                outputs[key] = ""
+        else:
+            outputs[key] = ""
+    return outputs
+
 
 def run_foundation(state: dict) -> dict:
     banner("PHASE 1: FOUNDATION (基础构建)", "=")
@@ -97,76 +131,119 @@ def run_foundation(state: dict) -> dict:
     for i in range(iteration + 1, max_iters + 1):
         banner(f"基础构建 迭代 {i}/{max_iters}", "-")
         state["iteration"] = i
-        # ★ 新迭代：重置步骤追踪（跨迭代必须全量重生成以提升质量）
+        # ★ 新迭代：重置步骤追踪
+        # 增量改进架构中，迭代 2+ 不再无条件 from_scratch，
+        # 而是基于上一轮输出 + 评估反馈做针对性改进。
+        # 但同迭代断点续传逻辑仍然保留：completed_step 在迭代间重置。
         if completed_step is not None:
             state["foundation_step"] = None
             completed_step = None
             save_state(state)
 
+        # ── 增量改进：加载上一轮输出 + 评估反馈 ──
+        prev_outputs: dict[str, str] = {}
+        eval_feedback: str = ""
+        step_feedbacks: dict[str, str] = {}
+
+        if i > 1:
+            # 迭代 2+：尝试加载上一轮输出和评估反馈
+            prev_outputs = _load_previous_outputs()
+            eval_json = load_latest_foundation_eval()
+            if eval_json:
+                eval_feedback = extract_feedback(eval_json)
+                # 按步骤提取针对性反馈
+                for step_name in _STEP_ORDER:
+                    step_feedbacks[step_name] = map_feedback_to_step(
+                        eval_json, step_name)
+                if eval_feedback:
+                    step(f"已加载评估反馈（{len(eval_feedback)} 字符），"
+                         f"将进行增量改进而非全量重生成")
+                else:
+                    step("评估反馈为空（所有维度均达标），使用 from_scratch 模式")
+            else:
+                step("未找到评估日志，回退到 from_scratch 模式")
+
+        # ── 增量改进模式下跳过同迭代断点续传判断 ──
+        # 增量改进时每个步骤都需要重新执行（基于 feedback），
+        # 同迭代断点续传仅在迭代 1（from_scratch 模式）下生效。
+        _use_resume = (i == 1)  # 只有迭代 1 才允许同迭代断点续传
+
         # 1. 生成世界观
-        if completed_step and _STEP_ORDER.index("world") <= _STEP_ORDER.index(completed_step):
+        if _use_resume and completed_step and _STEP_ORDER.index("world") <= _STEP_ORDER.index(completed_step):
             step("跳过 world.md（同迭代断点续传）")
         else:
             step("生成世界观 world.md ...")
             from foundation.gen_world import generate_world
-            generate_world()
+            prev_world = prev_outputs.get("world", "")
+            fb = step_feedbacks.get("world", eval_feedback)
+            generate_world(previous_output=prev_world, eval_feedback=fb)
             state["foundation_step"] = "world"
             completed_step = "world"
             save_state(state)
 
         # 2. 生成角色
-        if completed_step and _STEP_ORDER.index("characters") <= _STEP_ORDER.index(completed_step):
+        if _use_resume and completed_step and _STEP_ORDER.index("characters") <= _STEP_ORDER.index(completed_step):
             step("跳过 characters.md（同迭代断点续传）")
         else:
             step("生成角色 characters.md ...")
             from foundation.gen_characters import generate_characters
-            generate_characters()
+            prev_chars = prev_outputs.get("characters", "")
+            fb = step_feedbacks.get("characters", eval_feedback)
+            generate_characters(previous_output=prev_chars, eval_feedback=fb)
             state["foundation_step"] = "characters"
             completed_step = "characters"
             save_state(state)
 
         # ★ 方案 D Step 7: 2.5. 生成卷级总纲（output/outline_volume.md）
-        if completed_step and _STEP_ORDER.index("outline_volume") <= _STEP_ORDER.index(completed_step):
+        if _use_resume and completed_step and _STEP_ORDER.index("outline_volume") <= _STEP_ORDER.index(completed_step):
             step("跳过 outline_volume.md（同迭代断点续传）")
         else:
             step("生成卷级总纲 outline_volume.md ...")
             from foundation.gen_outline_volume import generate_volume_outline
-            generate_volume_outline()
+            prev_vol = prev_outputs.get("outline_volume", "")
+            fb = step_feedbacks.get("outline_volume", eval_feedback)
+            generate_volume_outline(previous_output=prev_vol, eval_feedback=fb)
             state["foundation_step"] = "outline_volume"
             completed_step = "outline_volume"
             save_state(state)
         state["volumes_outlined"] = cfg.total_volumes if cfg.loaded else 1
 
         # 3. 生成大纲 (Part 1) — 逐卷章级大纲 + 合并 outline.md
-        if completed_step and _STEP_ORDER.index("outline") <= _STEP_ORDER.index(completed_step):
+        if _use_resume and completed_step and _STEP_ORDER.index("outline") <= _STEP_ORDER.index(completed_step):
             step("跳过 outline.md（同迭代断点续传）")
         else:
             step("生成大纲 outline.md (Part 1) ...")
             from foundation.gen_outline import generate_outline
-            generate_outline()
+            prev_outline = prev_outputs.get("outline", "")
+            fb = step_feedbacks.get("outline", eval_feedback)
+            generate_outline(previous_output=prev_outline, eval_feedback=fb)
             state["foundation_step"] = "outline"
             completed_step = "outline"
             save_state(state)
 
         # 4. 生成大纲 (Part 2 - 伏笔)
-        if completed_step and _STEP_ORDER.index("outline_part2") <= _STEP_ORDER.index(completed_step):
+        if _use_resume and completed_step and _STEP_ORDER.index("outline_part2") <= _STEP_ORDER.index(completed_step):
             step("跳过 outline_part2（同迭代断点续传）")
         else:
             step("生成大纲 outline.md (Part 2 - 伏笔账本) ...")
             from foundation.gen_outline_part2 import generate_outline_part2
-            generate_outline_part2()
+            prev_outline = prev_outputs.get("outline", "")
+            fb = step_feedbacks.get("outline_part2", eval_feedback)
+            generate_outline_part2(previous_output=prev_outline, eval_feedback=fb)
             state["foundation_step"] = "outline_part2"
             completed_step = "outline_part2"
             save_state(state)
 
         # 5. 生成正典（非关键步骤：失败时允许继续）
-        if completed_step and _STEP_ORDER.index("canon") <= _STEP_ORDER.index(completed_step):
+        if _use_resume and completed_step and _STEP_ORDER.index("canon") <= _STEP_ORDER.index(completed_step):
             step("跳过 canon.md（同迭代断点续传）")
         else:
             step("生成正典 canon.md ...")
             from foundation.gen_canon import generate_canon, count_canon_entries
             try:
-                generate_canon()
+                prev_canon = prev_outputs.get("canon", "")
+                fb = step_feedbacks.get("canon", eval_feedback)
+                generate_canon(previous_output=prev_canon, eval_feedback=fb)
             except Exception as e:
                 step(f"⚠ 正典生成失败（非关键），跳过: {e}")
                 debug_log("WARNING", f"正典生成失败: {e}", data={"step": "canon", "iteration": i})
@@ -188,13 +265,15 @@ def run_foundation(state: dict) -> dict:
                 step("正典严重不足，后续迭代将使用更大 token 预算重试…")
 
         # 6. 生成文风指纹（非关键步骤：失败时允许继续）
-        if completed_step and _STEP_ORDER.index("voice") <= _STEP_ORDER.index(completed_step):
+        if _use_resume and completed_step and _STEP_ORDER.index("voice") <= _STEP_ORDER.index(completed_step):
             step("跳过 voice.md（同迭代断点续传）")
         else:
             step("生成文风指纹 voice.md Part 2 ...")
             from foundation.gen_voice import generate_voice
             try:
-                generate_voice()
+                prev_voice = prev_outputs.get("voice", "")
+                fb = step_feedbacks.get("voice", eval_feedback)
+                generate_voice(previous_output=prev_voice, eval_feedback=fb)
             except Exception as e:
                 step(f"⚠ 文风指纹生成失败（非关键），跳过: {e}")
                 debug_log("WARNING", f"文风指纹生成失败: {e}", data={"step": "voice", "iteration": i})

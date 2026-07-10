@@ -218,18 +218,98 @@ def refine_voice(registers_text: str, eval_result: dict, best_register: int,
 
 
 # ============================================================================
+# 增量改进辅助
+# ============================================================================
+
+def _refine_from_feedback(
+    previous_output: str,
+    eval_feedback: str,
+    story: str,
+    world: str,
+    chars: str,
+) -> str:
+    """基于评估反馈精炼已有的文风身份（增量改进模式）。
+
+    从 previous_output 中提取文风身份部分（Part 2），
+    将评估反馈作为弱维度注入，调用 LLM 做针对性改进。
+
+    Returns:
+        改进后的文风身份文本（Part 2 部分）。
+    """
+    # 尝试从 previous_output 中提取 Part 2（--- 分隔符之后的内容）
+    part2 = previous_output
+    if "---" in previous_output:
+        parts = previous_output.split("---", 1)
+        if len(parts) > 1:
+            part2 = parts[1].strip()
+
+    refine_prompt = f"""你正在改进小说的文风身份定义（Voice Identity）。
+
+【当前版本（需要改进的对象）】
+{part2}
+
+【改进建议（来自评估裁判）】
+{eval_feedback}
+
+【改进指南】
+1. 保留当前版本中好的文风规则和范例
+2. 针对改进建议逐条修正：调整文风规则、替换不合适的范例、增强辨识度
+3. 不要改变核心文风定位和故事调性
+4. 只做有针对性的改进，不要推翻重写
+5. 输出完整的改进后文风身份
+
+请按以下结构化格式输出：
+
+## Part 2 — 本书专属文风身份
+
+### 选定风格
+（风格名称和一句话定位）
+
+### Tone（基调）
+（具体描述本小说的笔触）
+
+### Sentence Rhythm（句式节奏）
+（短句/长句分别用于什么场景，给出具体对应）
+
+### Vocabulary Register（词汇域）
+（这部小说的语言质地听起来像什么？列出3个词汇领域及其关键词）
+
+### POV and Tense（视角与时态）
+
+### Dialogue Conventions（对话惯例）
+（对话标签风格、角色语言差异、潜台词规则）
+
+### Exemplar Passages（范例段落）
+（3-5段足以代表本书文风的段落，必须不含 AI 套话）
+
+### Anti-Exemplars（反范例段落）
+（3-5段展示不是本书文风的段落，必须具体展示怎么写错）
+
+### 本小说文风规则
+（列出 5-10 条具体、可操作、可量化的写作规则）"""
+
+    step("调用 LLM 基于反馈精炼文风身份 ...")
+    return call_writer(refine_prompt)
+
+
+# ============================================================================
 # 主函数 — Voice Discovery 子循环编排
 # ============================================================================
 
-def generate_voice() -> None:
+def generate_voice(previous_output: str = "", eval_feedback: str = "") -> None:
     """Voice Discovery 子循环：5段语域 → 评估 → 精炼 → 输出。
 
     流程：
       Step A: 生成5段语域试验
       Step B: 裁判模型评估
       Step C: 若评分 >= 7.0，直接生成文风身份；
-              若评分 < 7.0，进入精炼循环（最多2轮）
+               若评分 < 7.0，进入精炼循环（最多2轮）
       Step D: 合并模板 Part 1 + 生成 Part 2 → output/voice.md
+
+    Args:
+        previous_output: 上一轮迭代的 voice.md 内容（增量改进模式）。
+        eval_feedback: 评估裁判对该步骤的改进建议（增量改进模式）。
+                       两个参数均为空字符串时，使用 from_scratch 模式（迭代 1 行为不变）。
     """
     cfg = config
     cfg.load()
@@ -243,6 +323,19 @@ def generate_voice() -> None:
     # 读取 voice 模板 Part 1
     voice_template = TEMPLATES_DIR / "voice.md"
     existing_voice = voice_template.read_text(encoding="utf-8-sig") if voice_template.exists() else ""
+
+    # ── 增量改进模式：直接精炼已有的文风身份 ──
+    if previous_output and eval_feedback:
+        step("使用增量改进模式精炼文风指纹（基于上一轮输出 + 评估反馈）...")
+        # 利用现有的 refine_voice 机制：将评估反馈作为弱维度注入
+        # 从 previous_output 中提取 Part 2（文风身份部分）
+        voice_identity = _refine_from_feedback(
+            previous_output, eval_feedback, story, world, chars)
+        full_voice = existing_voice.rstrip() + "\n\n---\n\n" + voice_identity
+        voice_path = OUTPUT_DIR / "voice.md"
+        voice_path.write_text(full_voice, encoding="utf-8")
+        step(f"文风定义已更新: {voice_path}")
+        return
 
     # ── Step A: 5段语域试验 ──
     registers_text = generate_5_registers(story, world, chars)

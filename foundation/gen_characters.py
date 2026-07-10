@@ -22,8 +22,14 @@ CHARACTER_SYSTEM_PROMPT = """你是一位精通角色设计的创作者，深谙
 你的汉语写作简洁直接，不使用 AI 套话词汇。"""
 
 
-def generate_characters() -> None:
-    """生成 characters.md 并写入 output/ 目录。"""
+def generate_characters(previous_output: str = "", eval_feedback: str = "") -> None:
+    """生成 characters.md 并写入 output/ 目录。
+
+    Args:
+        previous_output: 上一轮迭代的 characters.md 内容（增量改进模式）。
+        eval_feedback: 评估裁判对该步骤的改进建议（增量改进模式）。
+                       两个参数均为空字符串时，使用 from_scratch 模式（迭代 1 行为不变）。
+    """
     cfg = config
     cfg.load()
 
@@ -33,7 +39,14 @@ def generate_characters() -> None:
     voice_path = OUTPUT_DIR / "voice.md"
     voice = voice_path.read_text(encoding="utf-8-sig") if voice_path.exists() else ""
 
-    prompt = build_character_prompt(story, world_text=world, voice_part2=voice)
+    # ── 增量改进模式 vs from_scratch 模式 ──
+    if previous_output and eval_feedback:
+        step("使用增量改进模式生成角色注册表（基于上一轮输出 + 评估反馈）...")
+        prompt = build_character_prompt(
+            story, world_text=world, voice_part2=voice,
+            previous_output=previous_output, eval_feedback=eval_feedback)
+    else:
+        prompt = build_character_prompt(story, world_text=world, voice_part2=voice)
 
     step("调用 LLM 生成角色注册表 ...")
     result = call_writer(prompt, system=CHARACTER_SYSTEM_PROMPT)

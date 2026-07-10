@@ -21,8 +21,14 @@ CANON_SYSTEM_PROMPT = """你是一位严谨的设定审计员。你从世界设�
 你的汉语写作简洁直接，不使用 AI 套话。"""
 
 
-def generate_canon() -> None:
-    """生成 canon.md 并写入 output/ 目录。"""
+def generate_canon(previous_output: str = "", eval_feedback: str = "") -> None:
+    """生成 canon.md 并写入 output/ 目录。
+
+    Args:
+        previous_output: 上一轮迭代的 canon.md 内容（增量改进模式）。
+        eval_feedback: 评估裁判对该步骤的改进建议（增量改进模式）。
+                       两个参数均为空字符串时，使用 from_scratch 模式（迭代 1 行为不变）。
+    """
     world_path = OUTPUT_DIR / "world.md"
     world = world_path.read_text(encoding="utf-8-sig") if world_path.exists() else ""
     chars_path = OUTPUT_DIR / "characters.md"
@@ -32,7 +38,53 @@ def generate_canon() -> None:
     cfg.load()
     total_ch = cfg.total_chapters if cfg.loaded else 24
 
-    prompt = f"""请根据以下世界观和角色信息，提取一份结构化正典（CANON.md）。
+    # ── 增量改进模式 vs from_scratch 模式 ──
+    if previous_output and eval_feedback:
+        step("使用增量改进模式生成正典（基于上一轮输出 + 评估反馈）...")
+        prompt = f"""你正在改进正典（CANON.md）——小说的硬事实权威参考。
+
+【当前版本（需要改进的对象）】
+{previous_output}
+
+【改进建议（来自评估裁判）】
+{eval_feedback}
+
+【改进指南】
+1. 保留当前版本中正确且有用的事实条目
+2. 针对改进建议逐条修正：补充缺失的事实、修正矛盾、增加细节
+3. 不要改变核心设定和故事方向
+4. 只做有针对性的改进，不要推翻重写
+5. 输出完整的改进后正典（不要只输出变更部分）
+
+【参考上下文】
+## 世界观设定
+{world}
+
+## 角色信息
+{chars}
+
+【正典格式要求】
+## 一、世界观硬事实
+逐条列出已明确陈述的世界设定事实。每条以「—」开头。
+
+## 二、角色硬事实
+逐条列出已明确陈述的角色事实。每条以「—」开头。
+
+## 三、时间线硬事实
+按时间顺序列出已明确陈述的历史事件。
+
+## 四、规则硬事实
+列出核心规则/特殊体系的硬规则。
+
+## 五、矛盾标注
+如果发现任何矛盾或冲突的事实，标注在此处。
+
+【规则】
+1. 只提取已经明确陈述的事实，不推断、不假设
+2. 每条事实可独立验证
+3. 目标：400+ 条事实"""
+    else:
+        prompt = f"""请根据以下世界观和角色信息，提取一份结构化正典（CANON.md）。
 
 【世界观设定】
 {world}
