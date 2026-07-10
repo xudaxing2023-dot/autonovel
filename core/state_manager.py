@@ -415,7 +415,9 @@ def _try_json_extract(text: str, key: str):
         if key in data:
             return float(data[key])
     except (json.JSONDecodeError, ValueError, TypeError):
-        pass
+        _debug_log("JSON_PARSE_FALLBACK",
+                   f"直接 json.loads 失败, key={key}",
+                   data={"strategy": "direct_loads", "preview": str(text)[:100]})
 
     # 尝试提取 ```json ... ``` 代码块
     m = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', text, re.DOTALL)
@@ -425,7 +427,9 @@ def _try_json_extract(text: str, key: str):
             if key in data:
                 return float(data[key])
         except (json.JSONDecodeError, ValueError, TypeError):
-            pass
+            _debug_log("JSON_PARSE_FALLBACK",
+                       f"json 代码块解析失败, key={key}",
+                       data={"strategy": "fenced_block", "preview": m.group(1).strip()[:100]})
 
     # 尝试从第一个 { 到最后一个 } 提取
     start = text.find('{')
@@ -436,7 +440,9 @@ def _try_json_extract(text: str, key: str):
             if key in data:
                 return float(data[key])
         except (json.JSONDecodeError, ValueError, TypeError):
-            pass
+            _debug_log("JSON_PARSE_FALLBACK",
+                       f"花括号提取解析失败, key={key}",
+                       data={"strategy": "brace_extract", "preview": text[start:end + 1][:100]})
 
     return None
 
@@ -519,4 +525,7 @@ def parse_lore_score(stdout: str) -> float:
     try:
         return parse_score(stdout, "lore_score")
     except (ValueError, KeyError):
+        _debug_log("SCORE_PARSE_WARN",
+                   "lore_score 解析失败，返回 0.0",
+                   data={"preview": str(stdout)[:200]})
         return 0.0

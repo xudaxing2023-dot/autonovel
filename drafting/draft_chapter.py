@@ -12,6 +12,7 @@ from pathlib import Path
 
 from core.config import config, OUTPUT_DIR, CHAPTERS_DIR, TEMPLATES_DIR
 from core.api_client import call_p2_writer
+from core.diagnostic import debug_log
 from core.state_manager import step
 from core import _stderr_print
 from prompts.chapter_prompts import build_chapter_prompt
@@ -29,7 +30,8 @@ def load_file(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8-sig")
     except (FileNotFoundError, IsADirectoryError, PermissionError,
-            UnicodeDecodeError, OSError):
+            UnicodeDecodeError, OSError) as e:
+        debug_log("FILE_READ_WARN", f"文件读取失败: {path}, 错误: {e}")
         return ""
 
 
@@ -92,10 +94,14 @@ def _load_recent_chapters(chapter_num: int) -> str:
             break
         prev_path = CHAPTERS_DIR / f"ch_{prev_ch:02d}.md"
         if prev_path.exists():
-            text = prev_path.read_text(encoding="utf-8-sig")
-            recent_chapters.append(
-                f"【第 {prev_ch} 章全文】\n{text}"
-            )
+            try:
+                text = prev_path.read_text(encoding="utf-8-sig")
+                recent_chapters.append(
+                    f"【第 {prev_ch} 章全文】\n{text}"
+                )
+            except (FileNotFoundError, IsADirectoryError, PermissionError,
+                    UnicodeDecodeError, OSError) as e:
+                debug_log("FILE_READ_WARN", f"文件读取失败: {prev_path}, 错误: {e}")
 
     if not recent_chapters:
         return "(第一章——无前文)"

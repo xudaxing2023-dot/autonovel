@@ -28,6 +28,8 @@ from core.config import OUTPUT_DIR, CHAPTERS_DIR, BRIEFS_DIR, EDIT_LOGS_DIR, EVA
 from core.state_manager import step
 from core import _stderr_print
 
+from core.diagnostic import debug_log
+
 # voice.md 路径
 VOICE_PATH = OUTPUT_DIR / "voice.md"
 
@@ -101,7 +103,12 @@ def extract_voice_rules() -> list[str]:
     if not VOICE_PATH.exists():
         return ["(voice.md 未找到)"]
 
-    voice_text = VOICE_PATH.read_text(encoding="utf-8-sig")
+    try:
+        voice_text = VOICE_PATH.read_text(encoding="utf-8-sig")
+    except (FileNotFoundError, IsADirectoryError, PermissionError,
+            UnicodeDecodeError, OSError) as e:
+        debug_log("FILE_READ_WARN", f"文件读取失败: {VOICE_PATH}, 错误: {e}")
+        return ["(voice.md 读取失败)"]
     rules: list[str] = []
 
     # 匹配模式: "1. **规则名**：规则描述" 或 "1. **规则名** — 规则描述"

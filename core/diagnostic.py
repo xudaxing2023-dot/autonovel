@@ -14,8 +14,16 @@ from pathlib import Path
 LOGS_DIR = Path(__file__).parent.parent / "logs"
 LOG_PATH = LOGS_DIR / "diagnostic.log"
 DEBUG_LOG_PATH = LOGS_DIR / "debug.log"
+JSONL_LOG_PATH = LOGS_DIR / "debug.jsonl"
 _CLEARED = False
 _DEBUG_CLEARED = False
+
+# P0-1: event → level 隐式映射（未列出的默认为 INFO）
+_EVENT_LEVEL = {
+    "CRASH": "ERROR", "API_FAIL": "ERROR", "STATE_ERROR": "ERROR",
+    "WARNING": "WARNING", "API_RETRY": "WARNING", "JSON_PARSE_FALLBACK": "WARNING",
+    "FILE_READ_WARN": "WARNING", "SCORE_PARSE_WARN": "WARNING",
+}
 
 # Windows 终端编码兼容性修复
 if sys.platform == "win32":
@@ -109,21 +117,27 @@ def _debug_caller():
         return "?:?"
 
 
-def debug_log(event: str, detail: str = "", data: dict = None, **kwargs) -> None:
+def debug_log(event: str, detail: str = "", data: dict = None,
+              exc_info: bool = False, **kwargs) -> None:
     """Write a structured debug event to logs/debug.log (append mode).
 
-    Format: [YYYY-MM-DD HH:MM:SS.mmm] [EVENT] [caller] detail | k=v, ...
+    Format: [YYYY-MM-DD HH:MM:SS.mmm] [LEVEL] [EVENT] [caller] detail | k=v, ...
+
+    Also writes a JSON Lines entry to logs/debug.jsonl for machine parsing.
 
     Args:
-        event:  Event code, e.g. "PIPELINE_START", "CHAPTER_DRAFTED"
-        detail: Human-readable context
-        data:   Optional dict of key=value pairs
+        event:    Event code, e.g. "PIPELINE_START", "CHAPTER_DRAFTED"
+        detail:   Human-readable context
+        data:     Optional dict of key=value pairs
+        exc_info: If True, append traceback to the log entry
         **kwargs: Additional key=value pairs merged with data
     """
     try:
         ts = _debug_ts()
         caller = _debug_caller()
-        parts = [f"[{ts}] [{event}] [{caller}]"]
+        # P0-1: 隐式 event → level 映射（未列出的默认为 INFO）
+        level = _EVENT_LEVEL.get(event, "INFO")
+        parts = [f"[{ts}] [{level}] [{event}] [{caller}]"]
         if detail:
             parts.append(detail)
 
@@ -140,12 +154,35 @@ def debug_log(event: str, detail: str = "", data: dict = None, **kwargs) -> None
 
         line = "".join(parts) + "\n"
 
+        # P2-1: 可选 traceback 追加
+        if exc_info:
+            tb = traceback.format_exc()
+            if tb and tb.strip() != "NoneType: None":
+                line += f"  [TRACEBACK]\n{tb}\n"
+
         # Ensure logs/ directory exists
         DEBUG_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
         with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
             f.write(line)
             f.flush()
+
+        # P2-2: 同时写入 JSON Lines 文件（写入失败不阻塞主流程）
+        try:
+            import json as _json
+            _json_line = _json.dumps({
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "level": level,
+                "event": event,
+                "location": caller,
+                "detail": detail,
+                "data": merged,
+            }, ensure_ascii=False)
+            with open(JSONL_LOG_PATH, "a", encoding="utf-8") as jf:
+                jf.write(_json_line + "\n")
+                jf.flush()
+        except Exception:
+            pass
 
         # Also print to stderr for real-time observation
         try:

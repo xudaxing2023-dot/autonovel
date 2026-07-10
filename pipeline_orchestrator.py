@@ -174,9 +174,12 @@ def run_foundation(state: dict) -> dict:
         else:
             step("生成世界观 world.md ...")
             from foundation.gen_world import generate_world
+            _t0 = time.time()
+            debug_log("STEP_BEGIN", f"step=gen_world")
             prev_world = prev_outputs.get("world", "")
             fb = step_feedbacks.get("world", eval_feedback)
             generate_world(previous_output=prev_world, eval_feedback=fb)
+            debug_log("STEP_END", f"step=gen_world", {"elapsed_s": round(time.time() - _t0, 1)})
             state["foundation_step"] = "world"
             completed_step = "world"
             save_state(state)
@@ -187,9 +190,12 @@ def run_foundation(state: dict) -> dict:
         else:
             step("生成角色 characters.md ...")
             from foundation.gen_characters import generate_characters
+            _t0 = time.time()
+            debug_log("STEP_BEGIN", f"step=gen_characters")
             prev_chars = prev_outputs.get("characters", "")
             fb = step_feedbacks.get("characters", eval_feedback)
             generate_characters(previous_output=prev_chars, eval_feedback=fb)
+            debug_log("STEP_END", f"step=gen_characters", {"elapsed_s": round(time.time() - _t0, 1)})
             state["foundation_step"] = "characters"
             completed_step = "characters"
             save_state(state)
@@ -200,9 +206,12 @@ def run_foundation(state: dict) -> dict:
         else:
             step("生成卷级总纲 outline_volume.md ...")
             from foundation.gen_outline_volume import generate_volume_outline
+            _t0 = time.time()
+            debug_log("STEP_BEGIN", f"step=gen_outline_volume")
             prev_vol = prev_outputs.get("outline_volume", "")
             fb = step_feedbacks.get("outline_volume", eval_feedback)
             generate_volume_outline(previous_output=prev_vol, eval_feedback=fb)
+            debug_log("STEP_END", f"step=gen_outline_volume", {"elapsed_s": round(time.time() - _t0, 1)})
             state["foundation_step"] = "outline_volume"
             completed_step = "outline_volume"
             save_state(state)
@@ -214,9 +223,12 @@ def run_foundation(state: dict) -> dict:
         else:
             step("生成大纲 outline.md (Part 1) ...")
             from foundation.gen_outline import generate_outline
+            _t0 = time.time()
+            debug_log("STEP_BEGIN", f"step=gen_outline")
             prev_outline = prev_outputs.get("outline", "")
             fb = step_feedbacks.get("outline", eval_feedback)
             generate_outline(previous_output=prev_outline, eval_feedback=fb)
+            debug_log("STEP_END", f"step=gen_outline", {"elapsed_s": round(time.time() - _t0, 1)})
             state["foundation_step"] = "outline"
             completed_step = "outline"
             save_state(state)
@@ -227,9 +239,12 @@ def run_foundation(state: dict) -> dict:
         else:
             step("生成大纲 outline.md (Part 2 - 伏笔账本) ...")
             from foundation.gen_outline_part2 import generate_outline_part2
+            _t0 = time.time()
+            debug_log("STEP_BEGIN", f"step=gen_outline_part2")
             prev_outline = prev_outputs.get("outline", "")
             fb = step_feedbacks.get("outline_part2", eval_feedback)
             generate_outline_part2(previous_output=prev_outline, eval_feedback=fb)
+            debug_log("STEP_END", f"step=gen_outline_part2", {"elapsed_s": round(time.time() - _t0, 1)})
             state["foundation_step"] = "outline_part2"
             completed_step = "outline_part2"
             save_state(state)
@@ -240,6 +255,8 @@ def run_foundation(state: dict) -> dict:
         else:
             step("生成正典 canon.md ...")
             from foundation.gen_canon import generate_canon, count_canon_entries
+            _t0 = time.time()
+            debug_log("STEP_BEGIN", f"step=gen_canon")
             try:
                 prev_canon = prev_outputs.get("canon", "")
                 fb = step_feedbacks.get("canon", eval_feedback)
@@ -247,6 +264,7 @@ def run_foundation(state: dict) -> dict:
             except Exception as e:
                 step(f"⚠ 正典生成失败（非关键），跳过: {e}")
                 debug_log("WARNING", f"正典生成失败: {e}", data={"step": "canon", "iteration": i})
+            debug_log("STEP_END", f"step=gen_canon", {"elapsed_s": round(time.time() - _t0, 1)})
             state["foundation_step"] = "canon"
             completed_step = "canon"
             save_state(state)
@@ -270,6 +288,8 @@ def run_foundation(state: dict) -> dict:
         else:
             step("生成文风指纹 voice.md Part 2 ...")
             from foundation.gen_voice import generate_voice
+            _t0 = time.time()
+            debug_log("STEP_BEGIN", f"step=gen_voice")
             try:
                 prev_voice = prev_outputs.get("voice", "")
                 fb = step_feedbacks.get("voice", eval_feedback)
@@ -277,6 +297,7 @@ def run_foundation(state: dict) -> dict:
             except Exception as e:
                 step(f"⚠ 文风指纹生成失败（非关键），跳过: {e}")
                 debug_log("WARNING", f"文风指纹生成失败: {e}", data={"step": "voice", "iteration": i})
+            debug_log("STEP_END", f"step=gen_voice", {"elapsed_s": round(time.time() - _t0, 1)})
             state["foundation_step"] = "voice"
             completed_step = "voice"
             save_state(state)
