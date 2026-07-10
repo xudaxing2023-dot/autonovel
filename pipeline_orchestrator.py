@@ -394,9 +394,20 @@ def run_drafting(state: dict) -> dict:
             word_count = len(ch_file.read_text(encoding="utf-8-sig").replace(" ", "").replace("\n", ""))
             step(f"生成 {word_count} 字")
 
-            # 评估
-            eval_result = evaluate_chapter(ch)
-            score = parse_score(eval_result, "overall_score")
+            # 评估（带解析重试：LLM 偶发返回无效 JSON，重新调用评估而非直接崩溃）
+            MAX_EVAL_PARSE_RETRIES = 5
+            for eval_try in range(1, MAX_EVAL_PARSE_RETRIES + 1):
+                eval_result = evaluate_chapter(ch)
+                try:
+                    score = parse_score(eval_result, "overall_score")
+                    break  # 解析成功
+                except ValueError:
+                    if eval_try < MAX_EVAL_PARSE_RETRIES:
+                        step(f"评估 JSON 解析失败 (尝试 {eval_try}/{MAX_EVAL_PARSE_RETRIES})，重试评估...")
+                        continue
+                    else:
+                        step(f"⚠ 评估解析全部 {MAX_EVAL_PARSE_RETRIES} 次失败，使用阈值分 {threshold} 兜底")
+                        score = threshold
 
             # ★ P2-11 子项 B: slop_penalty 参与决策
             from evaluation.evaluate import get_last_slop_penalty
@@ -774,8 +785,8 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
                         "prev_score": prev_score})
 
         # Step 1: 对抗性编辑（retries=3, max_total_time=None  = 自动计算）
-        step("对抗性编辑全部章节 (retries=3, 总超时=自动) ...")
-        run_adversarial_edit("all", retries=3, max_total_time=None)
+        step("对抗性编辑全部章节 (retries=5, 总超时=自动) ...")
+        run_adversarial_edit("all", retries=5, max_total_time=None)
         step("对抗性编辑全部章节 完成 ✓")
 
         # Step 2: 应用裁剪
@@ -786,8 +797,8 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
             step(f"apply_cuts 跳过: {e}")
 
         # Step 3: 读者评审团（retries=3, max_total_time=None = 自动计算）
-        step("运行读者评审团 (retries=3, 总超时=自动) ...")
-        run_reader_panel(retries=3, max_total_time=None)
+        step("运行读者评审团 (retries=5, 总超时=自动) ...")
+        run_reader_panel(retries=5, max_total_time=None)
         step("读者评审团 完成 ✓")
 
         # Step 4: 解析共识
@@ -1049,7 +1060,7 @@ def run_revision(state: dict, max_cycles: int = MAX_REVISION_CYCLES) -> dict:
     # 执行审阅修订闭环
     try:
         _run_review_revision_loop(state, max_revision_rounds=4,
-                                   retries=3, max_total_time=None)
+                                   retries=5, max_total_time=None)
     except Exception as e:
         step(f"审阅修订闭环跳过: {e}")
 

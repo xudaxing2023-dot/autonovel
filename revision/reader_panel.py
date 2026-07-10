@@ -203,7 +203,7 @@ def _find_disagreements_structured(
 # =============================================================================
 
 def run_reader_panel(
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> None:
     """运行读者评审团。
 

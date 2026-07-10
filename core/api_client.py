@@ -267,6 +267,8 @@ def _call_llm_internal(
                              "error": f"Timeout ({attempt_timeout}s)"})
             _stderr_print(f"  [API] 调用失败，重试 {attempt}/{retries}{total_info} — 超时 ({attempt_timeout}s)")
             last_error = RuntimeError(f"请求超时 ({attempt_timeout}s)")
+            if attempt < retries:
+                time.sleep(15 * attempt)
             continue
 
         except httpx.RequestError as e:
@@ -509,7 +511,7 @@ def call_p3_judge(
     prompt: str,
     system: Optional[str] = None,
     temperature: float = 0.3,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> str:
     """Phase 3 裁判调用 — 使用 AUTONOVEL_P3_* 配置。
 

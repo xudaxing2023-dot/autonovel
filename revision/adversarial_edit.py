@@ -93,7 +93,7 @@ def _parse_json_response(text: str) -> dict:
 
 def run_adversarial_edit(
     target: str = "all",
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> None:
     """运行对抗性编辑。"""
     EDIT_LOGS_DIR.mkdir(parents=True, exist_ok=True)

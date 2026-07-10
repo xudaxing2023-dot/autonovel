@@ -23,7 +23,7 @@ from prompts.review_prompts import build_review_prompt, REVIEW_SYSTEM_PROMPT
 def run_review_loop(
     state: dict = None,
     max_rounds: int = 4,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> None:
     """运行深度审阅循环——对齐原版双角色审阅风格。"""
     banner("深度审阅循环", "-")

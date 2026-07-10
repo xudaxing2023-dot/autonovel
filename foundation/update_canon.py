@@ -74,6 +74,6 @@ def update_canon_from_chapter(
         encoding="utf-8")
 
     # 统计新增条目数
-    new_entries = len(re.findall(r"^— ", result, re.MULTILINE))
+    new_entries = len(re.findall(r"^(?:—|-|\*) ", result, re.MULTILINE))
     step(f"正典更新: +{new_entries} 条新事实（第 {chapter_num} 章）")
     return new_entries

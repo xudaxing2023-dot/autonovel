@@ -425,7 +425,7 @@ def _load_outline(chapter_num: int | None = None) -> str:
 # ============================================================================
 
 def evaluate_foundation(
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> str:
     """评估基础构建文档。"""
     cfg = config
@@ -469,7 +469,7 @@ def evaluate_foundation(
 
 def evaluate_chapter(
     ch_num: int,
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> str:
     """评估单个章节。
 
@@ -554,7 +554,7 @@ def evaluate_chapter(
 
 
 def evaluate_full(
-    retries: int = 3,
+    retries: int = 5,
     max_total_time: int = None) -> str:
     """全文评估。"""
     chapter_files = sorted(CHAPTERS_DIR.glob("ch_*.md"))

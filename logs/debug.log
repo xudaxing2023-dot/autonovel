@@ -1,0 +1,448 @@
+[2026-07-10 20:06:48.192] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:06:48.193] [INFO] [PIPELINE_START] [pipeline_orchestrator.py:1192 run_pipeline] | mode=from_scratch, total_volumes=3, total_chapters=6, chapter_word_target=1500
+[2026-07-10 20:06:48.194] [INFO] [PHASE_ENTER] [pipeline_orchestrator.py:1237 run_pipeline] | phase=foundation
+[2026-07-10 20:06:48.197] [INFO] [STEP_BEGIN] [pipeline_orchestrator.py:178 run_foundation]step=gen_world
+[2026-07-10 20:06:48.198] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=1230
+[2026-07-10 20:08:16.583] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=88.4, result_len=7900, tokens=6549
+[2026-07-10 20:08:16.894] [INFO] [STEP_END] [pipeline_orchestrator.py:182 run_foundation]step=gen_world | elapsed_s=88.7
+[2026-07-10 20:08:16.895] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:08:16.896] [INFO] [STEP_BEGIN] [pipeline_orchestrator.py:194 run_foundation]step=gen_characters
+[2026-07-10 20:08:16.903] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=9178
+[2026-07-10 20:09:25.196] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=68.3, result_len=8621, tokens=11517
+[2026-07-10 20:09:25.198] [INFO] [STEP_END] [pipeline_orchestrator.py:198 run_foundation]step=gen_characters | elapsed_s=68.3
+[2026-07-10 20:09:25.199] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:09:25.200] [INFO] [STEP_BEGIN] [pipeline_orchestrator.py:210 run_foundation]step=gen_outline_volume
+[2026-07-10 20:09:25.208] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.7, attempt=1, retries=5, timeout=600, prompt_len=17497
+[2026-07-10 20:10:06.080] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=40.9, result_len=4494, tokens=14212
+[2026-07-10 20:10:06.080] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.7, attempt=1, retries=5, timeout=600, prompt_len=21653
+[2026-07-10 20:10:54.070] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=48.0, result_len=5523, tokens=17342
+[2026-07-10 20:10:54.071] [INFO] [STEP_END] [pipeline_orchestrator.py:214 run_foundation]step=gen_outline_volume | elapsed_s=88.9
+[2026-07-10 20:10:54.073] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:10:54.073] [INFO] [STEP_BEGIN] [pipeline_orchestrator.py:227 run_foundation]step=gen_outline
+[2026-07-10 20:10:54.084] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.7, attempt=1, retries=5, timeout=600, prompt_len=19769
+[2026-07-10 20:11:36.415] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=42.3, result_len=3862, tokens=15036
+[2026-07-10 20:11:36.424] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.7, attempt=1, retries=5, timeout=600, prompt_len=25099
+[2026-07-10 20:12:24.337] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=47.9, result_len=4452, tokens=18671
+[2026-07-10 20:12:24.347] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.7, attempt=1, retries=5, timeout=600, prompt_len=27947
+[2026-07-10 20:13:38.870] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=74.5, result_len=6809, tokens=22348
+[2026-07-10 20:13:38.885] [INFO] [STEP_END] [pipeline_orchestrator.py:231 run_foundation]step=gen_outline | elapsed_s=164.8
+[2026-07-10 20:13:38.886] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:13:38.887] [INFO] [STEP_BEGIN] [pipeline_orchestrator.py:243 run_foundation]step=gen_outline_part2
+[2026-07-10 20:13:38.895] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=24382
+[2026-07-10 20:15:11.217] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=92.3, result_len=1228, tokens=23176
+[2026-07-10 20:15:11.218] [INFO] [STEP_END] [pipeline_orchestrator.py:247 run_foundation]step=gen_outline_part2 | elapsed_s=92.3
+[2026-07-10 20:15:11.219] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:15:11.220] [INFO] [STEP_BEGIN] [pipeline_orchestrator.py:259 run_foundation]step=gen_canon
+[2026-07-10 20:15:11.221] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=16841
+[2026-07-10 20:16:29.556] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=78.3, result_len=16814, tokens=22110
+[2026-07-10 20:16:29.557] [INFO] [STEP_END] [pipeline_orchestrator.py:267 run_foundation]step=gen_canon | elapsed_s=78.3
+[2026-07-10 20:16:29.558] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:16:29.566] [INFO] [STEP_BEGIN] [pipeline_orchestrator.py:292 run_foundation]step=gen_voice
+[2026-07-10 20:16:29.567] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=16906
+[2026-07-10 20:17:06.377] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=36.8, result_len=3229, tokens=12777
+[2026-07-10 20:17:06.378] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=3971
+[2026-07-10 20:17:29.164] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=22.8, result_len=1598, tokens=4553
+[2026-07-10 20:17:29.165] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=3698
+[2026-07-10 20:17:41.585] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=12.4, result_len=108, tokens=3094
+[2026-07-10 20:17:41.586] [INFO] [STEP_END] [pipeline_orchestrator.py:300 run_foundation]step=gen_voice | elapsed_s=72.0
+[2026-07-10 20:17:41.587] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:17:41.605] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=55799
+[2026-07-10 20:18:39.352] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=57.7, result_len=3548, tokens=39952
+[2026-07-10 20:18:39.355] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=55799
+[2026-07-10 20:20:01.595] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=82.2, result_len=4407, tokens=41396
+[2026-07-10 20:20:01.598] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=55799
+[2026-07-10 20:21:11.230] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=69.6, result_len=4400, tokens=40762
+[2026-07-10 20:21:12.272] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=foundation, chapters_drafted=0
+[2026-07-10 20:21:12.272] [INFO] [FOUNDATION_SCORE] [pipeline_orchestrator.py:324 run_foundation] | score=7.5, lore=7.8, iteration=1, best_score=7.5, threshold=6.0
+[2026-07-10 20:21:12.273] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=0
+[2026-07-10 20:21:12.274] [INFO] [PHASE_EXIT] [pipeline_orchestrator.py:1248 run_pipeline] | phase=foundation, elapsed_s=864.1, success=True
+[2026-07-10 20:21:12.274] [INFO] [PHASE_ENTER] [pipeline_orchestrator.py:1237 run_pipeline] | phase=drafting
+[2026-07-10 20:21:12.280] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=35607
+[2026-07-10 20:22:05.525] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=53.2, result_len=5538, tokens=26762
+[2026-07-10 20:22:05.540] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=48716
+[2026-07-10 20:22:51.986] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=46.4, result_len=3283, tokens=34815
+[2026-07-10 20:22:52.567] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=1
+[2026-07-10 20:22:52.568] [INFO] [CHAPTER_DRAFTED] [pipeline_orchestrator.py:426 run_drafting] | ch=1, score=6.0, attempt=1, words=5065, total=6
+[2026-07-10 20:22:52.592] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.5, attempt=1, retries=5, timeout=600, prompt_len=22528
+[2026-07-10 20:23:04.309] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=11.7, result_len=606, tokens=16040
+[2026-07-10 20:23:04.318] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=41753
+[2026-07-10 20:23:45.419] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=41.1, result_len=4266, tokens=29881
+[2026-07-10 20:23:45.431] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=53581
+[2026-07-10 20:24:39.040] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=53.6, result_len=2960, tokens=37952
+[2026-07-10 20:24:40.045] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=2
+[2026-07-10 20:24:40.046] [INFO] [CHAPTER_DRAFTED] [pipeline_orchestrator.py:426 run_drafting] | ch=2, score=6.9, attempt=1, words=3863, total=6
+[2026-07-10 20:24:40.051] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.5, attempt=1, retries=5, timeout=600, prompt_len=21864
+[2026-07-10 20:24:48.783] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=8.7, result_len=509, tokens=15163
+[2026-07-10 20:24:48.793] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=46547
+[2026-07-10 20:25:31.820] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=43.0, result_len=4264, tokens=32760
+[2026-07-10 20:25:31.830] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=53408
+[2026-07-10 20:26:21.768] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=49.9, result_len=3165, tokens=37951
+[2026-07-10 20:26:22.369] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=3
+[2026-07-10 20:26:22.369] [INFO] [CHAPTER_DRAFTED] [pipeline_orchestrator.py:426 run_drafting] | ch=3, score=7.2, attempt=1, words=3851, total=6
+[2026-07-10 20:26:22.374] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.5, attempt=1, retries=5, timeout=600, prompt_len=22373
+[2026-07-10 20:26:38.429] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=16.1, result_len=879, tokens=16238
+[2026-07-10 20:26:38.440] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=46154
+[2026-07-10 20:27:14.141] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=35.7, result_len=3638, tokens=31853
+[2026-07-10 20:27:14.153] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=53661
+[2026-07-10 20:27:53.119] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=39.0, result_len=2844, tokens=36866
+[2026-07-10 20:27:53.120] [WARNING] [JSON_PARSE_FALLBACK] [state_manager.py:418 _try_json_extract]直接 json.loads 失败, key=overall_score | strategy=direct_loads, preview={
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“岩石表面渗水，摸上去滑腻，像是有什么东西在石头上长了一层薄膜。”",
+  
+[2026-07-10 20:27:53.121] [WARNING] [JSON_PARSE_FALLBACK] [state_manager.py:443 _try_json_extract]花括号提取解析失败, key=overall_score | strategy=brace_extract, preview={
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“岩石表面渗水，摸上去滑腻，像是有什么东西在石头上长了一层薄膜。”",
+  
+[2026-07-10 20:27:53.122] [INFO] [PHASE_EXIT] [pipeline_orchestrator.py:1257 run_pipeline] | phase=drafting, elapsed_s=400.8, success=False, error=无法从 LLM 输出中解析 'overall_score' 分数。Prompt 要求 JSON 格式，但 LLM 未遵守。原始输出前 500 字符:
+{
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“岩石表面渗水，摸上去滑腻，像是有什么东西在石头上长了一层薄膜。”",
+    "fix": "将比喻具体化，例如改为‘手摸上
+[2026-07-10 20:27:53.125] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=3
+[CRASH] 崩溃时间 (UTC): 2026-07-10T12:27:53.125768+00:00
+[CRASH] 异常类型: ValueError
+[CRASH] 异常消息: 无法从 LLM 输出中解析 'overall_score' 分数。Prompt 要求 JSON 格式，但 LLM 未遵守。原始输出前 500 字符:
+{
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“岩石表面渗水，摸上去滑腻，像是有什么东西在石头上长了一层薄膜。”",
+    "fix": "将比喻具体化，例如改为‘手摸上去滑腻，像触到某种活物的皮——那层薄膜在指腹下微微蠕动，让人想起下水道里腐烂的菌毯。’",
+    "note": "部分描述停留在感官表面，缺乏穿透力。"
+  },
+  "pacing": {
+    "score": 6,
+    "weakest_moment": "从“黑尘指向暗河下游的方向”到“林恩站在暗河边，水声在洞穴里回荡”，信息密集但缺乏动作，节奏停滞。",
+    "fix": "在关键信息释放时加入林恩的内疚或质疑，例如：‘林恩盯着暗河，水声像父亲的呼吸。她想起铁片上的字——别相信他们说的“自愿”。’",
+    "note": "信息堆砌，无紧张感递进。"
+  },
+  
+[CRASH] Traceback:
+  Traceback (most recent call last):
+    File "e:\2026代码文件夹\my novel\pipeline_orchestrator.py", line 1315, in main
+    run_pipeline(mode=args.mode, max_cycles=args.max_cycles)
+    File "e:\2026代码文件夹\my novel\pipeline_orchestrator.py", line 1242, in run_pipeline
+    state = run_drafting(state)
+            ^^^^^^^^^^^^^^^^^^^
+    File "e:\2026代码文件夹\my novel\pipeline_orchestrator.py", line 399, in run_drafting
+    score = parse_score(eval_result, "overall_score")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "e:\2026代码文件夹\my novel\core\state_manager.py", line 403, in parse_score
+    raise ValueError(
+  ValueError: 无法从 LLM 输出中解析 'overall_score' 分数。Prompt 要求 JSON 格式，但 LLM 未遵守。原始输出前 500 字符:
+{
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“岩石表面渗水，摸上去滑腻，像是有什么东西在石头上长了一层薄膜。”",
+    "fix": "将比喻具体化，例如改为‘手摸上去滑腻，像触到某种活物的皮——那层薄膜在指腹下微微蠕动，让人想起下水道里腐烂的菌毯。’",
+    "note": "部分描述停留在感官表面，缺乏穿透力。"
+  },
+  "pacing": {
+    "score": 6,
+    "weakest_moment": "从“黑尘指向暗河下游的方向”到“林恩站在暗河边，水声在洞穴里回荡”，信息密集但缺乏动作，节奏停滞。",
+    "fix": "在关键信息释放时加入林恩的内疚或质疑，例如：‘林恩盯着暗河，水声像父亲的呼吸。她想起铁片上的字——别相信他们说的“自愿”。’",
+    "note": "信息堆砌，无紧张感递进。"
+  },
+  "character_voice": {
+    "score": 6,
+    "weakest_moment": "灰烬·肖恩的对话：“我们得谈谈
+[CRASH] 上下文:
+  phase = unknown
+  entry = main()
+[CRASH] 工作目录: e:\2026代码文件夹\my novel
+[CRASH] output/ 文件 (17): backups, briefs, canon.md, chapters, characters.md, config.json, edit_logs, eval_logs, outline.md, outline_volume.md, outline_volume1.md, outline_volume2.md, outline_volume3.md, results.tsv, state.json, voice.md, world.md
+============================================================
+[2026-07-10 20:27:53.127] [ERROR] [CRASH] [diagnostic.py:266 crash_handler]ValueError: 无法从 LLM 输出中解析 'overall_score' 分数。Prompt 要求 JSON 格式，但 LLM 未遵守。原始输出前 500 字符:
+{
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“岩石表面渗水，摸上去滑腻，像是有什么东西在石头上长了一层薄膜。”",
+    "fix": "将比喻具体化，例如改为‘手摸上 | phase=unknown, entry=main()
+[2026-07-10 20:28:53.681] [INFO] [STATE_LOAD] [state_manager.py:107 load_state] | phase=drafting, chapters_drafted=3
+[2026-07-10 20:28:53.684] [INFO] [PHASE_ENTER] [pipeline_orchestrator.py:1237 run_pipeline] | phase=drafting
+[2026-07-10 20:28:53.693] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=46154
+[2026-07-10 20:29:40.947] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=47.3, result_len=4496, tokens=32601
+[2026-07-10 20:29:40.963] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=54519
+[2026-07-10 20:30:34.133] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=53.2, result_len=3498, tokens=37878
+[2026-07-10 20:30:35.243] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=4
+[2026-07-10 20:30:35.244] [INFO] [CHAPTER_DRAFTED] [pipeline_orchestrator.py:426 run_drafting] | ch=4, score=6.0, attempt=1, words=4039, total=6
+[2026-07-10 20:30:35.271] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.5, attempt=1, retries=5, timeout=600, prompt_len=23486
+[2026-07-10 20:30:49.374] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=14.1, result_len=698, tokens=16528
+[2026-07-10 20:30:49.383] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=47084
+[2026-07-10 20:31:40.004] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=50.6, result_len=4487, tokens=33087
+[2026-07-10 20:31:40.016] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57799
+[2026-07-10 20:32:24.487] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=44.5, result_len=2647, tokens=39308
+[2026-07-10 20:32:25.473] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=5
+[2026-07-10 20:32:25.474] [INFO] [CHAPTER_DRAFTED] [pipeline_orchestrator.py:426 run_drafting] | ch=5, score=6.8, attempt=1, words=4050, total=6
+[2026-07-10 20:32:25.478] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.5, attempt=1, retries=5, timeout=600, prompt_len=24177
+[2026-07-10 20:32:40.049] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=14.6, result_len=621, tokens=17120
+[2026-07-10 20:32:40.059] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=47930
+[2026-07-10 20:33:21.395] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=41.3, result_len=3446, tokens=32834
+[2026-07-10 20:33:21.407] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57372
+[2026-07-10 20:34:16.354] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=54.9, result_len=2849, tokens=39972
+[2026-07-10 20:34:16.932] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=drafting, chapters_drafted=6
+[2026-07-10 20:34:16.933] [INFO] [CHAPTER_DRAFTED] [pipeline_orchestrator.py:426 run_drafting] | ch=6, score=6.8, attempt=1, words=3147, total=6
+[2026-07-10 20:34:16.937] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.5, attempt=1, retries=5, timeout=600, prompt_len=23759
+[2026-07-10 20:34:22.664] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.7, result_len=508, tokens=16331
+[2026-07-10 20:34:22.666] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=revision, chapters_drafted=6
+[2026-07-10 20:34:22.668] [INFO] [PHASE_EXIT] [pipeline_orchestrator.py:1248 run_pipeline] | phase=drafting, elapsed_s=329.0, success=True
+[2026-07-10 20:34:22.668] [INFO] [PHASE_ENTER] [pipeline_orchestrator.py:1237 run_pipeline] | phase=revision
+[2026-07-10 20:34:22.673] [INFO] [REVISION_CYCLE] [pipeline_orchestrator.py:772 run_revision] | cycle=1, max_cycles=2, prev_score=0.0
+[2026-07-10 20:34:22.674] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=6475
+[2026-07-10 20:35:24.422] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=61.7, result_len=3863, tokens=11368
+[2026-07-10 20:35:24.423] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5203
+[2026-07-10 20:36:09.088] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=44.7, result_len=2297, tokens=8456
+[2026-07-10 20:36:09.090] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5201
+[2026-07-10 20:36:56.441] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=47.4, result_len=4003, tokens=9346
+[2026-07-10 20:36:56.834] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5433
+[2026-07-10 20:37:54.821] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=58.0, result_len=2502, tokens=11056
+[2026-07-10 20:37:54.823] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5424
+[2026-07-10 20:38:53.992] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=59.2, result_len=3470, tokens=10735
+[2026-07-10 20:38:53.994] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=4383
+[2026-07-10 20:39:18.434] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=24.4, result_len=4368, tokens=5741
+[2026-07-10 20:39:18.446] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=5581
+[2026-07-10 20:39:22.694] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=4.2, result_len=140, tokens=3783
+[2026-07-10 20:39:22.695] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4309
+[2026-07-10 20:39:27.717] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.0, result_len=145, tokens=2933
+[2026-07-10 20:39:27.718] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4307
+[2026-07-10 20:39:33.589] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.9, result_len=212, tokens=3044
+[2026-07-10 20:39:33.597] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4421
+[2026-07-10 20:39:38.890] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.3, result_len=195, tokens=3053
+[2026-07-10 20:39:38.891] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4530
+[2026-07-10 20:39:44.212] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.3, result_len=230, tokens=3045
+[2026-07-10 20:39:44.212] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=3489
+[2026-07-10 20:39:48.315] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=4.1, result_len=154, tokens=2494
+[2026-07-10 20:39:48.316] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8225
+[2026-07-10 20:40:13.500] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=25.2, result_len=1521, tokens=6976
+[2026-07-10 20:40:13.501] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8225
+[2026-07-10 20:40:33.466] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=20.0, result_len=1525, tokens=6512
+[2026-07-10 20:40:33.466] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8225
+[2026-07-10 20:40:47.735] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=14.3, result_len=1551, tokens=5991
+[2026-07-10 20:40:47.735] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8225
+[2026-07-10 20:41:08.754] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=21.0, result_len=1398, tokens=6581
+[2026-07-10 20:41:08.764] [INFO] [panel_cn_chapter] [pipeline_orchestrator.py:608 _parse_panel_consensus]中文数字章节号匹配: '一' → 1 (读者=first_reader, 问题=missing_scene)
+[2026-07-10 20:41:08.775] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=58814
+[2026-07-10 20:41:52.931] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=44.2, result_len=2794, tokens=40411
+[2026-07-10 20:41:52.936] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=58814
+[2026-07-10 20:42:22.350] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=29.4, result_len=4039, tokens=39257
+[2026-07-10 20:42:22.363] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=58814
+[2026-07-10 20:43:01.712] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=39.3, result_len=2788, tokens=40449
+[2026-07-10 20:43:01.733] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=30939
+[2026-07-10 20:43:29.848] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=28.1, result_len=4818, tokens=22021
+[2026-07-10 20:43:29.860] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59145
+[2026-07-10 20:44:08.072] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=38.2, result_len=3161, tokens=40393
+[2026-07-10 20:44:08.077] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59145
+[2026-07-10 20:44:39.814] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=31.7, result_len=3117, tokens=39686
+[2026-07-10 20:44:40.152] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59145
+[2026-07-10 20:45:10.860] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=30.7, result_len=2589, tokens=39866
+[2026-07-10 20:45:11.448] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52549
+[2026-07-10 20:46:03.281] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=51.8, result_len=2959, tokens=37819
+[2026-07-10 20:46:03.286] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52549
+[2026-07-10 20:46:42.446] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=39.2, result_len=2909, tokens=36560
+[2026-07-10 20:46:42.451] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52549
+[2026-07-10 20:47:37.736] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=55.3, result_len=2745, tokens=37509
+[2026-07-10 20:47:37.760] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=28505
+[2026-07-10 20:48:14.066] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=36.3, result_len=5394, tokens=21426
+[2026-07-10 20:48:14.078] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52405
+[2026-07-10 20:49:11.839] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=57.8, result_len=2722, tokens=37068
+[2026-07-10 20:49:11.845] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52405
+[2026-07-10 20:50:25.100] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=73.3, result_len=2753, tokens=38976
+[2026-07-10 20:50:25.106] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52405
+[2026-07-10 20:51:13.750] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=48.6, result_len=3097, tokens=36531
+[2026-07-10 20:51:14.256] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56662
+[2026-07-10 20:52:07.107] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=52.9, result_len=2920, tokens=39089
+[2026-07-10 20:52:07.113] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56662
+[2026-07-10 20:52:52.815] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=45.7, result_len=2611, tokens=38858
+[2026-07-10 20:52:52.821] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56662
+[2026-07-10 20:53:46.941] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=54.1, result_len=3269, tokens=40360
+[2026-07-10 20:53:46.961] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=32586
+[2026-07-10 20:54:19.586] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=32.6, result_len=4911, tokens=23211
+[2026-07-10 20:54:19.598] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57307
+[2026-07-10 20:55:06.117] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=46.5, result_len=3972, tokens=39674
+[2026-07-10 20:55:06.435] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57307
+[2026-07-10 20:55:53.922] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=47.5, result_len=3015, tokens=40208
+[2026-07-10 20:55:53.927] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57307
+[2026-07-10 20:56:37.176] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=43.2, result_len=3068, tokens=39871
+[2026-07-10 20:56:37.255] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56767
+[2026-07-10 20:57:28.498] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=51.2, result_len=3244, tokens=40234
+[2026-07-10 20:57:28.503] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56767
+[2026-07-10 20:58:09.242] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=40.7, result_len=2748, tokens=39297
+[2026-07-10 20:58:09.247] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56767
+[2026-07-10 20:59:01.486] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=52.2, result_len=3367, tokens=40317
+[2026-07-10 20:59:01.505] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=32237
+[2026-07-10 20:59:32.252] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=30.7, result_len=4665, tokens=23035
+[2026-07-10 20:59:32.264] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57168
+[2026-07-10 21:00:07.413] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=35.1, result_len=4001, tokens=38593
+[2026-07-10 21:00:07.419] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57168
+[2026-07-10 21:00:41.363] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=33.9, result_len=3296, tokens=38607
+[2026-07-10 21:00:41.369] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57168
+[2026-07-10 21:01:15.540] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=34.2, result_len=3813, tokens=38506
+[2026-07-10 21:01:16.436] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56635
+[2026-07-10 21:01:58.962] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=42.5, result_len=3045, tokens=39203
+[2026-07-10 21:01:58.968] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56635
+[2026-07-10 21:02:36.209] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=37.2, result_len=3085, tokens=38648
+[2026-07-10 21:02:36.215] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56635
+[2026-07-10 21:03:19.024] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=42.8, result_len=2945, tokens=39569
+[2026-07-10 21:03:19.048] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=32495
+[2026-07-10 21:03:45.694] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=26.6, result_len=4590, tokens=22747
+[2026-07-10 21:03:45.707] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56847
+[2026-07-10 21:04:29.017] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=43.3, result_len=2890, tokens=39674
+[2026-07-10 21:04:29.022] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56847
+[2026-07-10 21:05:08.070] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=39.0, result_len=2895, tokens=39220
+[2026-07-10 21:05:08.076] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56847
+[2026-07-10 21:05:46.917] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=38.8, result_len=2481, tokens=39324
+[2026-07-10 21:05:47.734] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=43393
+[2026-07-10 21:06:26.467] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=38.7, result_len=1692, tokens=28966
+[2026-07-10 21:06:26.470] [INFO] [FULL_EVAL] [pipeline_orchestrator.py:859 run_revision] | novel_score=7.0, prev_score=0.0, total_words=25166, cycle=1
+[2026-07-10 21:06:27.277] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=revision, chapters_drafted=6
+[2026-07-10 21:06:27.277] [INFO] [REVISION_CYCLE] [pipeline_orchestrator.py:772 run_revision] | cycle=2, max_cycles=2, prev_score=7.0
+[2026-07-10 21:06:27.278] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=6331
+[2026-07-10 21:07:31.597] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=64.3, result_len=3171, tokens=11937
+[2026-07-10 21:07:31.599] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5848
+[2026-07-10 21:08:13.299] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=41.7, result_len=2607, tokens=9219
+[2026-07-10 21:08:13.301] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5602
+[2026-07-10 21:09:10.954] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=57.7, result_len=2786, tokens=9771
+[2026-07-10 21:09:10.955] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5527
+[2026-07-10 21:10:22.322] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=71.4, result_len=2635, tokens=11830
+[2026-07-10 21:10:22.324] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=5755
+[2026-07-10 21:11:22.492] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=60.2, result_len=2533, tokens=10673
+[2026-07-10 21:11:22.494] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=4383
+[2026-07-10 21:13:11.352] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=108.9, result_len=3469, tokens=16540
+[2026-07-10 21:13:11.394] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=5437
+[2026-07-10 21:13:17.104] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.7, result_len=216, tokens=3749
+[2026-07-10 21:13:17.105] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4954
+[2026-07-10 21:13:22.160] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.1, result_len=185, tokens=3280
+[2026-07-10 21:13:22.161] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4708
+[2026-07-10 21:13:27.389] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.2, result_len=200, tokens=3132
+[2026-07-10 21:13:27.390] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4633
+[2026-07-10 21:13:33.768] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=6.4, result_len=194, tokens=3286
+[2026-07-10 21:13:33.769] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=4861
+[2026-07-10 21:13:39.452] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.7, result_len=215, tokens=3310
+[2026-07-10 21:13:39.453] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=3489
+[2026-07-10 21:13:45.225] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=5.8, result_len=149, tokens=2569
+[2026-07-10 21:13:45.225] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8308
+[2026-07-10 21:14:17.114] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=31.9, result_len=1418, tokens=7716
+[2026-07-10 21:14:17.115] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8308
+[2026-07-10 21:14:42.241] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=25.1, result_len=1860, tokens=7146
+[2026-07-10 21:14:42.242] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8308
+[2026-07-10 21:15:08.029] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=25.8, result_len=1433, tokens=7283
+[2026-07-10 21:15:08.030] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=8308
+[2026-07-10 21:15:20.275] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=12.2, result_len=1301, tokens=5964
+[2026-07-10 21:15:20.285] [INFO] [panel_cn_chapter] [pipeline_orchestrator.py:608 _parse_panel_consensus]中文数字章节号匹配: '一' → 1 (读者=genre_reader, 问题=momentum_loss)
+[2026-07-10 21:15:20.286] [INFO] [panel_cn_chapter] [pipeline_orchestrator.py:608 _parse_panel_consensus]中文数字章节号匹配: '一' → 1 (读者=writer, 问题=thinnest_character)
+[2026-07-10 21:15:20.286] [INFO] [panel_cn_chapter] [pipeline_orchestrator.py:608 _parse_panel_consensus]中文数字章节号匹配: '三' → 3 (读者=writer, 问题=thinnest_character)
+[2026-07-10 21:15:20.287] [INFO] [panel_cn_chapter] [pipeline_orchestrator.py:608 _parse_panel_consensus]中文数字章节号匹配: '三' → 3 (读者=first_reader, 问题=missing_scene)
+[2026-07-10 21:15:20.291] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59357
+[2026-07-10 21:16:00.295] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=40.0, result_len=2928, tokens=40065
+[2026-07-10 21:16:00.296] [WARNING] [JSON_PARSE_FALLBACK] [state_manager.py:418 _try_json_extract]直接 json.loads 失败, key=overall_score | strategy=direct_loads, preview={
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "林恩站在那里。她看着那些人的脸。有年轻人，二十来岁，眼睛却像六十岁的人——空
+[2026-07-10 21:16:00.297] [WARNING] [JSON_PARSE_FALLBACK] [state_manager.py:443 _try_json_extract]花括号提取解析失败, key=overall_score | strategy=brace_extract, preview={
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "林恩站在那里。她看着那些人的脸。有年轻人，二十来岁，眼睛却像六十岁的人——空
+[2026-07-10 21:16:00.302] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59357
+[2026-07-10 21:16:51.865] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=51.6, result_len=2866, tokens=41171
+[2026-07-10 21:16:51.870] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59357
+[2026-07-10 21:17:37.683] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=45.8, result_len=3068, tokens=40990
+[2026-07-10 21:17:37.702] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=31517
+[2026-07-10 21:18:03.217] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=25.5, result_len=4732, tokens=22412
+[2026-07-10 21:18:03.229] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59271
+[2026-07-10 21:18:54.409] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=51.2, result_len=3174, tokens=41660
+[2026-07-10 21:18:54.415] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59271
+[2026-07-10 21:19:25.032] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=30.6, result_len=3196, tokens=40013
+[2026-07-10 21:19:25.038] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=59271
+[2026-07-10 21:20:02.649] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=37.6, result_len=4029, tokens=40370
+[2026-07-10 21:20:03.523] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56847
+[2026-07-10 21:20:41.650] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=38.1, result_len=3573, tokens=38901
+[2026-07-10 21:20:41.656] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56847
+[2026-07-10 21:21:23.822] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=42.2, result_len=2749, tokens=39475
+[2026-07-10 21:21:23.823] [WARNING] [JSON_PARSE_FALLBACK] [state_manager.py:418 _try_json_extract]直接 json.loads 失败, key=overall_score | strategy=direct_loads, preview={
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“林恩跟着黑尘穿过那条窄通道的时候，手指一直在口袋里摸着那块铁片。”",
+ 
+[2026-07-10 21:21:23.824] [WARNING] [JSON_PARSE_FALLBACK] [state_manager.py:443 _try_json_extract]花括号提取解析失败, key=overall_score | strategy=brace_extract, preview={
+  "prose_quality": {
+    "score": 7,
+    "weakest_moment": "“林恩跟着黑尘穿过那条窄通道的时候，手指一直在口袋里摸着那块铁片。”",
+ 
+[2026-07-10 21:21:23.829] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56847
+[2026-07-10 21:22:04.732] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=40.9, result_len=2972, tokens=39474
+[2026-07-10 21:22:04.752] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=32902
+[2026-07-10 21:22:27.394] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=22.6, result_len=4579, tokens=22987
+[2026-07-10 21:22:27.405] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56836
+[2026-07-10 21:23:06.626] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=39.2, result_len=2506, tokens=39123
+[2026-07-10 21:23:06.947] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56836
+[2026-07-10 21:23:55.451] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=48.5, result_len=4002, tokens=39831
+[2026-07-10 21:23:55.457] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56836
+[2026-07-10 21:24:37.596] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=42.1, result_len=3225, tokens=39297
+[2026-07-10 21:24:38.141] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57168
+[2026-07-10 21:25:24.109] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=46.0, result_len=3227, tokens=39521
+[2026-07-10 21:25:24.114] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57168
+[2026-07-10 21:25:57.216] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=33.1, result_len=3199, tokens=38394
+[2026-07-10 21:25:57.222] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57168
+[2026-07-10 21:26:49.666] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=52.4, result_len=4348, tokens=40103
+[2026-07-10 21:26:49.691] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=32854
+[2026-07-10 21:27:13.276] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=23.6, result_len=4576, tokens=22692
+[2026-07-10 21:27:13.288] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57079
+[2026-07-10 21:28:11.145] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=57.9, result_len=3848, tokens=39790
+[2026-07-10 21:28:11.151] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57079
+[2026-07-10 21:29:08.401] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=57.3, result_len=3226, tokens=40315
+[2026-07-10 21:29:08.407] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=57079
+[2026-07-10 21:30:03.569] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=55.2, result_len=2525, tokens=39620
+[2026-07-10 21:30:04.452] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52405
+[2026-07-10 21:30:50.427] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=46.0, result_len=3525, tokens=36388
+[2026-07-10 21:30:50.432] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52405
+[2026-07-10 21:31:38.843] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=48.4, result_len=3013, tokens=36413
+[2026-07-10 21:31:38.848] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=52405
+[2026-07-10 21:32:20.170] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=41.3, result_len=3225, tokens=36569
+[2026-07-10 21:32:20.189] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=29110
+[2026-07-10 21:32:48.046] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=27.9, result_len=3830, tokens=20561
+[2026-07-10 21:32:48.057] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=50841
+[2026-07-10 21:33:43.501] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=55.4, result_len=2767, tokens=36581
+[2026-07-10 21:33:43.506] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=50841
+[2026-07-10 21:34:16.031] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=32.5, result_len=3280, tokens=34927
+[2026-07-10 21:34:16.035] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=50841
+[2026-07-10 21:34:52.543] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=36.5, result_len=3124, tokens=35132
+[2026-07-10 21:34:53.170] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=58127
+[2026-07-10 21:35:25.369] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=32.2, result_len=2978, tokens=39466
+[2026-07-10 21:35:25.374] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=58127
+[2026-07-10 21:35:59.135] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=33.8, result_len=2876, tokens=39569
+[2026-07-10 21:35:59.140] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=58127
+[2026-07-10 21:36:34.900] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=35.8, result_len=3219, tokens=39458
+[2026-07-10 21:36:34.920] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=26851
+[2026-07-10 21:37:07.091] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=32.2, result_len=2183, tokens=18354
+[2026-07-10 21:37:07.100] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56864
+[2026-07-10 21:37:51.964] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=44.9, result_len=2848, tokens=39259
+[2026-07-10 21:37:51.968] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56864
+[2026-07-10 21:38:30.817] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=38.8, result_len=4344, tokens=38726
+[2026-07-10 21:38:30.822] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=56864
+[2026-07-10 21:39:20.557] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=49.7, result_len=3085, tokens=39792
+[2026-07-10 21:39:20.629] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=43393
+[2026-07-10 21:40:03.623] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=43.0, result_len=1920, tokens=29555
+[2026-07-10 21:40:03.625] [INFO] [FULL_EVAL] [pipeline_orchestrator.py:859 run_revision] | novel_score=6.6, prev_score=7.0, total_words=22335, cycle=2
+[2026-07-10 21:40:04.243] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=revision, chapters_drafted=6
+[2026-07-10 21:40:04.246] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=25193
+[2026-07-10 21:40:38.472] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=34.2, result_len=3520, tokens=17688
+[2026-07-10 21:40:38.494] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=3, timeout=600, prompt_len=33016
+[2026-07-10 21:41:17.095] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=38.6, result_len=4758, tokens=23361
+[2026-07-10 21:41:17.985] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=3, timeout=600, prompt_len=30528
+[2026-07-10 21:42:06.324] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=48.3, result_len=6146, tokens=22702
+[2026-07-10 21:42:07.421] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=revision, chapters_drafted=6
+[2026-07-10 21:42:07.437] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.3, attempt=1, retries=3, timeout=600, prompt_len=26789
+[2026-07-10 21:42:50.678] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=43.2, result_len=4697, tokens=19243
+[2026-07-10 21:42:50.687] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=export, chapters_drafted=6
+[2026-07-10 21:42:50.688] [INFO] [PHASE_EXIT] [pipeline_orchestrator.py:1248 run_pipeline] | phase=revision, elapsed_s=4108.0, success=True
+[2026-07-10 21:42:50.688] [INFO] [PHASE_ENTER] [pipeline_orchestrator.py:1237 run_pipeline] | phase=export
+[2026-07-10 21:42:50.691] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=26657
+[2026-07-10 21:43:29.348] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=38.7, result_len=4254, tokens=19053
+[2026-07-10 21:43:29.351] [INFO] [API_CALL] [api_client.py:185 _call_llm_internal] | model=deepseek-v4-flash, temperature=0.8, attempt=1, retries=5, timeout=600, prompt_len=53224
+[2026-07-10 21:44:02.798] [INFO] [API_SUCCESS] [api_client.py:208 _call_llm_internal] | model=deepseek-v4-flash, latency_s=33.4, result_len=2613, tokens=34413
+[2026-07-10 21:44:03.370] [INFO] [STATE_SAVE] [state_manager.py:124 save_state] | phase=complete, chapters_drafted=6
+[2026-07-10 21:44:03.371] [INFO] [EXPORT_COMPLETE] [pipeline_orchestrator.py:1116 run_export] | chapter_count=6, total_words=23861
+[2026-07-10 21:44:03.371] [INFO] [PHASE_EXIT] [pipeline_orchestrator.py:1248 run_pipeline] | phase=export, elapsed_s=72.7, success=True
+[2026-07-10 21:44:03.374] [INFO] [PIPELINE_END] [pipeline_orchestrator.py:1282 run_pipeline] | elapsed_h=1.25, final_score=6.6, phase=complete, total_chapters=6, total_words=23861, revision_cycle=2
